@@ -11,6 +11,11 @@
 !psd_fpga.all_src/
 !psd_fpga.all_src/**
 
+# Do ignore generated xdc files. Only true version is the csv + pin2xdc.tcl. 
+psd_fpga.all_src/xdc/psd_fpga.xdc
+psd_fpga.all_src/xdc/psd_fpga_xdc.log
+psd_fpga.all_src/xdc/psd_fpga_top.vh
+
 # Don't ignore the two symlinks
 !new_ws.csh
 !run
