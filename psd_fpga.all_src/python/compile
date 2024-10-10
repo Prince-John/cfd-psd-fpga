@@ -1,0 +1,7 @@
+#!/usr/bin/tcsh
+#
+# Script to compile my C functions so I can use in Python
+#
+
+cd $FHOME/python
+cc -fPIC -std=c99 -shared -o cobs.so cobs.c

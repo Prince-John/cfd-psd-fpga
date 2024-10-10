@@ -1,0 +1,311 @@
+;
+; Quick little test program for our picoblaze
+; For starters just blink led connected to bit 0
+; of output port #0
+;
+
+; Output ports
+
+			constant	MISC, 00
+			constant	ADC_CTL, 01
+			constant	DAT_TAG, 02
+			constant	TDC_DAT, 03
+			constant	TDC_CTL, 04
+			constant	OP5, 05
+			constant	OP6, 06
+			constant	OP7, 07 
+;
+; A write to "VALID" port asserts FIFO tvalid signal
+; A write to "LAST" port asserts FIFO tvalid and tlast signals
+; The value we write to port makes NO DIFFERENCE
+
+			constant	VALID, fe
+			constant	LAST, ff
+
+; Input ports
+
+			constant	IP0, 00
+			constant	IP1, 01
+			constant	IP2, 02		
+			constant	IP3, 03
+
+; For our LEDs
+			
+			constant	LED_ON, 01
+			constant	LED_OFF, 00
+;
+; Picoblaze has 16 general purpose registers
+; Give more desciptive names to some of our registers
+;
+			namereg		s0, op			; Output port register
+			namereg		s1, ip        	; Input port register
+			namereg		s2, scr0       	; Scratchpad register 0
+			namereg		s3, scr1 		; Scratchpad register 1
+			namereg		s4, scr2 		; Scratchpad register 2
+			namereg		s5, cnt     	; Used in counters
+			namereg		s6, dreg		; Used in delay_1us routine
+			namereg		s7, adc_reg		; Used by adc routine
+			namereg		s8, adc_mask	; Used by adc routine
+			namereg		s9, pkt_size	; Size of packet
+			namereg		sA, status		; Global variable with status info
+;
+; We'll make sF special and use it for the stack pointer!
+; Start stack at end of 64-byte scratchpad (using macro!)
+; Stack grows down
+
+			namereg		sf, SP
+;
+; We will use macros but only sparingly!
+; A 16-bit register with scr1 (upper) and scr0 (lower)
+
+			reg16(rx, scr1, scr0)
+			
+;********************************************
+; Our vector to main is stored at address 000
+;********************************************
+;
+      		address      000
+      		
+origin:  	jump      	 main
+		
+; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+; Subroutine Name: init
+; Initialize the stack pointer, SP
+; Set all output port bits low
+; Uses scr1 BUT restores it!!!!
+; Demos out to work with stack!
+; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+init:
+		
+; Initialize the stack pointer
+
+			use_stack(SP, 0x3F) 
+
+;  Push scr1 onto the stack
+
+			push(scr1)
+			
+; Clear the 8 output port registers
+
+			load		scr1, 00
+			output		scr1, MISC
+			output		scr1, ADC_CTL
+			output		scr1, DAT_TAG
+			output		scr1, TDC_DAT
+			output		scr1, TDC_CTL
+			output		scr1, OP5
+			output		scr1, OP6
+			output		scr1, OP7						
+	
+; Restore scr1 register
+			
+			pop(scr1)
+			return
+ 
+; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+; Subroutine Name: dly_100ns
+;
+; Delay of 100 ns
+;
+; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+dly_100ns: 	
+			nop
+			nop
+			nop
+			return
+			   
+; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+; Subroutine Name: dly_us
+;
+; Delay of 1 usec
+; Delay is [(4 * dreg) + 6] / Fclk
+; constant = (clock rate - 6) / 4 where clock rate is in MHz
+;
+; Routine uses dreg and does not restore it
+;
+; 24 (i.e $18) assumes a 100 MHz clock
+; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+dly_us:		
+			load        dreg, 24'd
+.wait_us:	sub         dreg, 01
+			jump		NZ, .wait_us
+			return	
+          
+; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+; Subroutine Name: dly_100ms
+; 
+; Delay for "about" 100ms by repeatly calling 
+; delay_1us subroutine
+; Note: 100,000 is $0186A0
+;
+; Uses scr0, scr1, scr2 and does not restore them
+; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+dly_100ms:	
+			load		scr2, 01
+			load		scr1, 86
+			load		scr0, A0
+.loop:		call		dly_us
+			sub			scr0, 01
+			subcy		scr1, 00
+			subcy		scr2, 00
+			jump		NC, .loop
+			return
+
+; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+; Subroutine Name: dly_sec
+; Delays for about 1 second
+; Uses cnt but saves it on stack and then
+; pops it off the stack before returning
+; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+dly_sec:	
+			push(cnt)
+			load		cnt, 10'd
+.loop:		call		dly_100ms
+			sub			cnt, 01
+			jump		NZ, .loop
+			pop(cnt)
+			return
+
+; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+; Subroutine Name: adc_convert
+; 
+; Output port 1 (ADC_PORT) constrols the ADC
+; adc_reg bit assignments
+;
+; 0		ADC sclk for PSD 0
+; 1		ADC sclk for PSD 1
+; 2		ADC conv for PSD 0
+; 3		ADC conv for PSD 1
+; 4		adc_mux_sel bit 0
+; 5		adc_mux_sel bit 1
+; 6		adc_mux_sel bit 2
+; 7		adc_reg_reset
+;
+; For time being only control the PSD 0 ADC bank
+;
+; Uses the cnt register but restores it
+; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+adc_conv:
+
+; Save cnt register
+
+			push(cnt) 
+	
+; Reset the ADC shift registers
+
+			load		adc_reg, 00
+			load		adc_mask, 01
+			setbit(adc_reg, 7)
+			output		adc_reg, ADC_CTL
+			clearbit(adc_reg, 7)
+			output		adc_reg, ADC_CTL
+
+; Bring conv high for about 2 us
+
+			setbit(adc_reg, 2)
+			output		adc_reg, ADC_CTL
+			call		dly_us
+			call		dly_us
+			
+; Bring conv low
+
+			clearbit(adc_reg, 2)
+			output		adc_reg, ADC_CTL
+			
+; Apply 16 clock pulses (takes about 2 usec)
+
+			load		cnt, 16'd
+.clk_loop:	xor			adc_reg, adc_mask
+			output		adc_reg, ADC_CTL
+			xor			adc_reg, adc_mask
+			nop
+			nop
+			output		adc_reg, ADC_CTL
+			sub			cnt, 01
+			jump		NZ, .clk_loop	
+
+; Either assert just "tvalid" or 
+; assert "tvalid" and "tlast" to send to FIFO.
+; Check bit 0 of status register to see which 
+; port we need to write to!
+; What we write to VALID and LAST ports
+; makes no difference
+
+			test		status, 01
+			jump		Z, .loc0
+
+; Last write in packet so assert "tlast" and "tvalid"
+
+			output		scr0, LAST		
+			jump		.loc1
+
+; Not last value in packet so assert just "tvalid"
+
+.loc0:		output		scr0, VALID	
+
+; Restore cnt register
+
+.loc1:		pop(cnt)
+
+			return
+
+; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+; Name: get_packet
+; Routine to get a packet 
+; Packet size is specified in psize register
+; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+get_packet:	
+.loop:		call		adc_conv
+			sub			pkt_size, 01
+			jump		NZ, .loop
+			return
+			
+;^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+; ******* MAIN ROUTINE *********
+;^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   
+
+main:		
+			call		init
+
+.main_loop:	load		op, LED_ON
+			output		op, MISC
+			load16(rx, 1000)			
+.loop0:		load		pkt_size, 100'd
+			call		get_packet
+			add16(rx, -1)
+			jump		NZ, .loop0	
+			load		op, LED_OFF
+			output		op, MISC
+			load16(rx, 1000)			
+.loop1:		load		pkt_size, 150'd
+			call		get_packet
+			add16(rx, -1)
+			jump		NZ, .loop1
+			jump		.main_loop
+			
+; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+; Interrupt service routine
+; Currently not using interrupts so just return
+;
+; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+			address     380
+
+my_isr:     
+			returni    	disable 
+;          
+; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+; Interrupt vector is stored at location $3FF
+; We will jump to our ISR routine
+; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+
+            address    3FF                         
+            jump       my_isr
+            

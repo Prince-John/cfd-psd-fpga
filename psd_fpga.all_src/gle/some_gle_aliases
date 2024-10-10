@@ -1,0 +1,55 @@
+#
+# Opens the file manager
+# go ./ is what I frequently use
+
+alias 	go	'gio open'
+
+#
+# Piccom set up for 3 MBaud
+# --echo allows you see what you type to sent to microblaze
+#
+alias uart	"picocom /dev/ttyUSB1 --nolock --echo --baud 3000000"
+
+#
+# Used to see nicely formatted binary files
+#
+alias	see_hex	'hexdump -C'
+
+#
+# Activate python virtual environment
+#
+alias opbasm-venv 'source ~/.venv/opbasm-venv/bin/activate.csh ; cd $FHOME'	
+
+#
+# Quickly bring up the ods (excel) files 
+
+alias 	gpio-ods	'libreoffice $FHOME/gpio/gpio.ods'
+alias	xdc-ods		'libreoffice $FHOME/xdc/psd_fpga_cmod_trenz.ods'
+
+# Digilent dev board
+
+alias	target-cmod-a7		' \
+setenv	VIVADO_PROJECT psd_fpga ; \
+setenv 	VIVADO_PROJECTS	$HOME/VIVADO_FPGA/Cmod-A7-Projects ; \
+setenv	CSV_DELIMITER tab ; \
+setenv	FPGA_BOARD cmod-a7 ; \
+setenv	FHOME $VIVADO_PROJECTS/$VIVADO_PROJECT ; \
+cd		$FHOME ; \
+echo	"FPGA board --> $FPGA_BOARD" '
+
+# Trenz dev board
+
+alias	target-trenz		' \
+setenv	VIVADO_PROJECT psd_fpga ; \
+setenv 	VIVADO_PROJECTS	$HOME/VIVADO_FPGA/Trenz-Projects ; \
+setenv	CSV_DELIMITER tab ; \
+setenv	FPGA_BOARD trenz ; \
+setenv	FHOME $VIVADO_PROJECTS/$VIVADO_PROJECT ; \
+cd		$FHOME ; \
+echo	"FPGA board --> $FPGA_BOARD" '
+
+
+
+
+
+

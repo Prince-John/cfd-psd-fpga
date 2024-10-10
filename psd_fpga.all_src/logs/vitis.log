@@ -1,0 +1,14 @@
+08:42:38 INFO  : updated workspace path: 
+08:42:38 INFO  : updated workspace path: 
+08:42:38 INFO  : bash, -c, source /tools/Xilinx/classic/Vitis/2023.2/tps/lnx64/lopper-1.1.0/env/bin/activate && python /tools/Xilinx/classic/Vitis/2023.2/data/embeddedsw/scripts/pyesw//repo.py -st  /tools/Xilinx/classic/Vitis/2023.2/data/embeddedsw && deactivate
+08:42:40 INFO  : Successfully created repository data at /tmp/rigel_lopper_gle12874458494119925890
+08:42:40 INFO  : bash, -c, source /tools/Xilinx/classic/Vitis/2023.2/tps/lnx64/lopper-1.1.0/env/bin/activate && python /tools/Xilinx/classic/Vitis/2023.2/data/embeddedsw/scripts/pyesw//get_template_data.py -d /tmp/rigel_lopper_gle10462440612655198979 -r /tmp/rigel_lopper_gle12874458494119925890/.repo.yaml && deactivate
+08:42:41 INFO  : Embedded Template List generated successfully
+08:42:41 INFO  : bash, -c, source /tools/Xilinx/classic/Vitis/2023.2/tps/lnx64/lopper-1.1.0/env/bin/activate && python /tools/Xilinx/classic/Vitis/2023.2/data/embeddedsw/scripts/pyesw//repo.py -st  /tools/Xilinx/classic/Vitis/2023.2/data/embeddedsw && deactivate
+08:42:41 INFO  : Successfully created repository data at /tmp/rigel_lopper_gle10547703719257365262
+08:42:41 INFO  : bash, -c, source /tools/Xilinx/classic/Vitis/2023.2/tps/lnx64/lopper-1.1.0/env/bin/activate && python /tools/Xilinx/classic/Vitis/2023.2/data/embeddedsw/scripts/pyesw//get_template_data.py -d /tmp/rigel_lopper_gle6423145402358901118 -r /tmp/rigel_lopper_gle10547703719257365262/.repo.yaml && deactivate
+08:42:42 ERROR : Error in generating Application Template List.
+08:42:42 ERROR : Error in generating Application Template List.
+08:42:42 INFO  : Terminating Vitis C++ Server
+08:42:42 INFO  : bash, -c, source /tools/Xilinx/classic/Vitis/2023.2/tps/lnx64/lopper-1.1.0/env/bin/activate && python /tools/Xilinx/classic/Vitis/2023.2/data/embeddedsw/scripts/pyesw//repo.py -st  /tools/Xilinx/classic/Vitis/2023.2/data/embeddedsw && deactivate
+08:42:42 INFO  : Vitis C++ Server terminated

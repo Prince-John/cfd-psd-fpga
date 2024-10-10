@@ -1,0 +1,1 @@
+../tcl/pin2xdc.tcl

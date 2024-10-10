@@ -1,0 +1,16 @@
+# Ignore everything
+*
+
+# But don't ignore .gitignore itself
+!.gitignore
+
+# Don't ignore the README file
+!README.md
+
+# Don't ignore files inside psd_fpga.all_src directory
+!psd_fpga.all_src/
+!psd_fpga.all_src/**
+
+# Don't ignore the two symlinks
+!new_ws.csh
+!run

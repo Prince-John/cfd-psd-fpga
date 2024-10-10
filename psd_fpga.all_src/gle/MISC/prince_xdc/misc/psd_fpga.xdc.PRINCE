@@ -1,0 +1,227 @@
+
+# ************************************
+# Pin location constraints!!!!   
+# Timestamp:  Thu Sep 19 16:18:35 CDT 2024
+# Version:  18-Sep-2024
+# FPGA development board: trenz
+# ************************************
+
+
+### Signal: 	adc_0_sdo_a can be found on board connector JB1-70
+### Signal: 	adc_0_sdo_a can be found on breakout connector J13-7
+
+set_property	PACKAGE_PIN	A14  	 [get_ports {adc_0_sdo_a}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {adc_0_sdo_a}]
+
+### Signal: 	board_id[0] can be found on board connector JB1-55
+### Signal: 	board_id[0] can be found on breakout connector J11-12
+
+set_property	PACKAGE_PIN	K13  	 [get_ports {board_id[0]}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {board_id[0]}]
+
+### Signal: 	board_id[1] can be found on board connector JB1-56
+### Signal: 	board_id[1] can be found on breakout connector J13-18
+
+set_property	PACKAGE_PIN	A16  	 [get_ports {board_id[1]}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {board_id[1]}]
+
+### Signal: 	board_id[2] can be found on board connector JB1-57
+### Signal: 	board_id[2] can be found on breakout connector J11-11
+
+set_property	PACKAGE_PIN	J13  	 [get_ports {board_id[2]}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {board_id[2]}]
+
+### Signal: 	board_id[3] can be found on board connector JB1-58
+### Signal: 	board_id[3] can be found on breakout connector J13-17
+
+set_property	PACKAGE_PIN	A15  	 [get_ports {board_id[3]}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {board_id[3]}]
+
+### Signal: 	board_id[4] can be found on board connector JB1-59
+### Signal: 	board_id[4] can be found on breakout connector J13-12
+
+set_property	PACKAGE_PIN	K15  	 [get_ports {board_id[4]}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {board_id[4]}]
+
+### Signal: 	board_id[5] can be found on board connector JB1-61
+### Signal: 	board_id[5] can be found on breakout connector J13-11
+
+set_property	PACKAGE_PIN	J15  	 [get_ports {board_id[5]}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {board_id[5]}]
+
+### Signal: 	btn[0] can be found on board connector JB1-99
+### Signal: 	btn[0] can be found on breakout connector J11-5
+
+set_property	PACKAGE_PIN	B12  	 [get_ports {btn[0]}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {btn[0]}]
+
+### Signal: 	btn[1] can be found on board connector JB1-44
+### Signal: 	btn[1] can be found on breakout connector J11-6
+
+set_property	PACKAGE_PIN	A18  	 [get_ports {btn[1]}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {btn[1]}]
+
+### Signal: 	sys_clk can be found on board connector SYS_CLK
+### Signal: 	sys_clk can be found on breakout connector SYS_CLK
+
+set_property	PACKAGE_PIN	P17  	 [get_ports {sys_clk}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {sys_clk}]
+
+### Signal: 	uart_rx can be found on board connector UART_TX
+### Signal: 	uart_rx can be found on breakout connector UART_TX
+
+set_property	PACKAGE_PIN	R11  	 [get_ports {uart_rx}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {uart_rx}]
+
+### Signal: 	adc_0_conv can be found on board connector JB1-69
+### Signal: 	adc_0_conv can be found on breakout connector J11-10
+
+set_property	PACKAGE_PIN	H17  	 [get_ports {adc_0_conv}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {adc_0_conv}]
+
+### Signal: 	adc_0_sclk can be found on board connector JB1-71
+### Signal: 	adc_0_sclk can be found on breakout connector J11-9
+
+set_property	PACKAGE_PIN	G17  	 [get_ports {adc_0_sclk}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {adc_0_sclk}]
+
+### Signal: 	dly_sclk can be found on board connector JB1-46
+### Signal: 	dly_sclk can be found on breakout connector J11-17
+
+set_property	PACKAGE_PIN	B17  	 [get_ports {dly_sclk}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {dly_sclk}]
+
+### Signal: 	dly_sen[0] can be found on board connector JB1-47
+### Signal: 	dly_sen[0] can be found on breakout connector J11-13
+
+set_property	PACKAGE_PIN	F18  	 [get_ports {dly_sen[0]}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {dly_sen[0]}]
+
+### Signal: 	dly_sen[1] can be found on board connector JB1-48
+### Signal: 	dly_sen[1] can be found on breakout connector J13-21
+
+set_property	PACKAGE_PIN	B16  	 [get_ports {dly_sen[1]}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {dly_sen[1]}]
+
+### Signal: 	dly_sen[2] can be found on board connector JB1-49
+### Signal: 	dly_sen[2] can be found on breakout connector J13-14
+
+set_property	PACKAGE_PIN	J14  	 [get_ports {dly_sen[2]}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {dly_sen[2]}]
+
+### Signal: 	dly_sen[3] can be found on board connector JB1-50
+### Signal: 	dly_sen[3] can be found on breakout connector J13-20
+
+set_property	PACKAGE_PIN	D12  	 [get_ports {dly_sen[3]}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {dly_sen[3]}]
+
+### Signal: 	dly_sen[4] can be found on board connector JB1-51
+### Signal: 	dly_sen[4] can be found on breakout connector J13-13
+
+set_property	PACKAGE_PIN	H15  	 [get_ports {dly_sen[4]}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {dly_sen[4]}]
+
+### Signal: 	dly_sen[5] can be found on board connector JB1-52
+### Signal: 	dly_sen[5] can be found on breakout connector J13-19
+
+set_property	PACKAGE_PIN	D13  	 [get_ports {dly_sen[5]}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {dly_sen[5]}]
+
+### Signal: 	dly_sin can be found on board connector JB1-45
+### Signal: 	dly_sin can be found on breakout connector J11-14
+
+set_property	PACKAGE_PIN	G18  	 [get_ports {dly_sin}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {dly_sin}]
+
+### Signal: 	led[0] can be found on board connector LED_1
+### Signal: 	led[0] can be found on breakout connector LED_1
+
+set_property	PACKAGE_PIN	L15  	 [get_ports {led[0]}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {led[0]}]
+
+### Signal: 	led[1] can be found on board connector LED_2
+### Signal: 	led[1] can be found on breakout connector LED_2
+
+set_property	PACKAGE_PIN	R17  	 [get_ports {led[1]}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {led[1]}]
+
+### Signal: 	led0_b can be found on board connector JB1-3
+### Signal: 	led0_b can be found on breakout connector J14-2
+
+set_property	PACKAGE_PIN	L4  	 [get_ports {led0_b}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {led0_b}]
+
+### Signal: 	led0_g can be found on board connector JB1-5
+### Signal: 	led0_g can be found on breakout connector J14-3
+
+set_property	PACKAGE_PIN	K5  	 [get_ports {led0_g}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {led0_g}]
+
+### Signal: 	led0_r can be found on board connector JB1-9
+### Signal: 	led0_r can be found on breakout connector J14-4
+
+set_property	PACKAGE_PIN	N6  	 [get_ports {led0_r}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {led0_r}]
+
+### Signal: 	psd_sclk can be found on board connector JB1-44
+### Signal: 	psd_sclk can be found on breakout connector J11-6
+
+
+
+set_property	PACKAGE_PIN	G6  	 [get_ports {psd_sclk}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {psd_sclk}]
+
+### Signal: 	psd_sin can be found on board connector JB1-42
+### Signal: 	psd_sin can be found on breakout connector J11-18
+
+set_property	PACKAGE_PIN	H2  	 [get_ports {psd_sin}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {psd_sin}]
+
+### Signal: 	uart_tx can be found on board connector UART_RX
+### Signal: 	uart_tx can be found on breakout connector UART_RX
+
+set_property	PACKAGE_PIN	L16  	 [get_ports {uart_tx}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {uart_tx}]
+
+### Signal: 	scl can be found on board connector JB2-24
+### Signal: 	scl can be found on breakout connector J5-7
+
+set_property	PACKAGE_PIN	T15  	 [get_ports {scl}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {scl}]
+
+### Signal: 	sda can be found on board connector JB2-28
+### Signal: 	sda can be found on breakout connector J5-8
+
+set_property	PACKAGE_PIN	R15  	 [get_ports {sda}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {sda}]
+
+
+# *********************************************************
+# Default common settings that do not depend assembly variant
+# **********************************************************
+
+set_property BITSTREAM.GENERAL.COMPRESS TRUE [current_design]
+set_property BITSTREAM.CONFIG.CONFIGRATE 66 [current_design]
+set_property CONFIG_VOLTAGE 3.3 [current_design]
+set_property CFGBVS VCCO [current_design]
+set_property CONFIG_MODE SPIx4 [current_design]
+set_property BITSTREAM.CONFIG.SPI_32BIT_ADDR YES [current_design]
+set_property BITSTREAM.CONFIG.SPI_BUSWIDTH 4 [current_design]
+set_property BITSTREAM.CONFIG.M1PIN PULLNONE [current_design]
+set_property BITSTREAM.CONFIG.M2PIN PULLNONE [current_design]
+set_property BITSTREAM.CONFIG.M0PIN PULLNONE [current_design]
+set_property BITSTREAM.CONFIG.USR_ACCESS TIMESTAMP [current_design]
+set_property BITSTREAM.CONFIG.UNUSEDPIN PULLDOWN [current_design]
+set_property PULLDOWN true [get_ports reset]
+# *********************************************************
+# Handle a few special FPGA pins for Trenz board           
+# *********************************************************
+
+set_property DRIVE 12 [get_ports {led[1]}]
+set_property SLEW SLOW [get_ports {led[1]}]
+set_property DRIVE 12 [get_ports {led[0]}]
+set_property SLEW SLOW [get_ports {led[0]}]
+
+set_property BOARD_PART_PIN dummy_rst [get_ports reset]
+set_property IOSTANDARD LVCMOS18 [get_ports reset]
+set_property PACKAGE_PIN D9 [get_ports reset]

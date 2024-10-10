@@ -1,0 +1,4 @@
+#!/usr/bin/tcsh
+cd ~/.venv
+echo "Creating opbasm-venv in ~/.venv directory"
+python3 -m venv opbasm-venv

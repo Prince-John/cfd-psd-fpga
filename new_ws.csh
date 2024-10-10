@@ -1,0 +1,1 @@
+./psd_fpga.all_src/csh/new-vitis-project.csh

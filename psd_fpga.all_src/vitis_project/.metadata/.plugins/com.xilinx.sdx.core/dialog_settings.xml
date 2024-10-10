@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section name="Workbench">
+	<item key="sdx.custom.platform.repository.locations" value="/home/gengel/VIVADO_FPGA/Trenz-Projects/psd_fpga/psd_fpga.all_src/vitis_project/psd_fpga_platform/export/psd_fpga_platform;/home/prince/Vivado_projects/Trenz-Projects/psd_fpga_gle_2_oct_2024/psd_fpga.all_src/vitis_project/psd_fpga_platform/export/psd_fpga_platform"/>
+</section>

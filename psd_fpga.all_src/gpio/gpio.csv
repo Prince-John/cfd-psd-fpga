@@ -1,0 +1,182 @@
+GPIO,Dir,Bit,Nickname,Verilog Signal,Comment
+,,,,,
+0,in,0,>,board_id[0],Board ID bit 0 (input pin)
+0,in,1,>,board_id[1],Board ID bit 1 (input pin)
+0,in,2,>,board_id[2],Board ID bit 2 (input pin)
+0,in,3,>,board_id[3],Board ID bit 3 (input pin)
+0,in,4,>,board_id[4],Board ID bit 4 (input pin)
+0,in,5,>,board_id[5],Board ID bit 5 (input pin)
+0,in,6,>,common_stop,Common stop signal from host (input pin)
+0,in,7,>,glob_ena,Global enable signal from host (input pin)
+0,in,8,>,event_ena,Event enable signal from host (input pin)
+0,in,9,>,force_reset,Force reset signal from the host (input pin)
+0,in,10,>,take_event,Take event signal from the host (input pin)
+0,in,11,?,0,Ground unused input line
+0,in,12,?,0,Ground unused input line
+0,in,13,?,0,Ground unused input line
+0,in,14,?,0,Ground unused input line
+0,in,15,?,0,Ground unused input line
+0,in,16,?,0,Ground unused input line
+0,in,17,?,0,Ground unused input line
+0,in,18,?,0,Ground unused input line
+0,in,19,?,0,Ground unused input line
+0,in,20,?,0,Ground unused input line
+0,in,21,?,0,Ground unused input line
+0,in,22,?,0,Ground unused input line
+0,in,23,?,0,Ground unused input line
+0,in,24,?,0,Ground unused input line
+0,in,25,?,0,Ground unused input line
+0,in,26,?,0,Ground unused input line
+0,in,27,?,0,Ground unused input line
+0,in,28,?,0,Ground unused input line
+0,in,29,?,0,Ground unused input line
+0,in,30,?,0,Ground unused input line
+0,in,31,?,0,Ground unused input line
+,,,,,
+1,in,0,psd0_chan_addr_in_0,0,PSD 0 channel address input bit 0
+1,in,1,psd0_chan_addr_in_1,0,PSD 0 channel address input bit 1
+1,in,2,psd0_chan_addr_in_2,0,PSD 0 channel address input bit 2
+1,in,3,psd0_chan_addr_in_3,0,PSD 0 channel address input bit 3
+1,in,4,psd0_chan_addr_in_4,0,PSD 0 channel address input bit 4
+1,in,5,psd1_chan_addr_in_0,0,PSD 1 channel address input bit 0
+1,in,6,psd1_chan_addr_in_1,0,PSD 1 channel address input bit 1
+1,in,7,psd1_chan_addr_in_2,0,PSD 1 channel address input bit 2
+1,in,8,psd1_chan_addr_in_3,0,PSD 1 channel address input bit 3
+1,in,9,psd1_chan_addr_in_4,0,PSD 1 channel address input bit 4
+1,in,10,?,0,Ground unused input line
+1,in,11,?,0,Ground unused input line
+1,in,12,?,0,Ground unused input line
+1,in,13,?,0,Ground unused input line
+1,in,14,?,0,Ground unused input line
+1,in,15,?,0,Ground unused input line
+1,in,16,?,0,Ground unused input line
+1,in,17,?,0,Ground unused input line
+1,in,18,?,0,Ground unused input line
+1,in,19,?,0,Ground unused input line
+1,in,20,?,0,Ground unused input line
+1,in,21,?,0,Ground unused input line
+1,in,22,?,0,Ground unused input line
+1,in,23,?,0,Ground unused input line
+1,in,24,?,0,Ground unused input line
+1,in,25,?,0,Ground unused input line
+1,in,26,?,0,Ground unused input line
+1,in,27,?,0,Ground unused input line
+1,in,28,?,0,Ground unused input line
+1,in,29,?,0,Ground unused input line
+1,in,30,?,0,Ground unused input line
+1,in,31,?,0,Ground unused input line
+,,,,,
+1,out,0,>,psd0_chan_addr_out[0],PSD 0 channel address out bit 0
+1,out,1,>,psd0_chan_addr_out[1],PSD 0 channel address out bit 1
+1,out,2,>,psd0_chan_addr_out[2],PSD 0 channel address out bit 2
+1,out,3,>,psd0_chan_addr_out[3],PSD 0 channel address out bit 3
+1,out,4,>,psd0_chan_addr_out[4],PSD 0 channel address out bit 4
+1,out,5,>,psd1_chan_addr_out[0],PSD 1 channel address out bit 0
+1,out,6,>,psd1_chan_addr_out[1],PSD 1 channel address out bit 1
+1,out,7,>,psd1_chan_addr_out[2],PSD 1 channel address out bit 2
+1,out,8,>,psd1_chan_addr_out[3],PSD 1 channel address out bit 3
+1,out,9,>,psd1_chan_addr_out[4],PSD 1 channel address out bit 4
+,,,,,
+2,in,0,>,psd_sout,Serial output from PSD 1 config register (input pin)
+2,in,1,?,0,Ground unused input line
+2,in,2,?,0,Ground unused input line
+2,in,3,?,0,Ground unused input line
+2,in,4,?,0,Ground unused input line
+2,in,5,?,0,Ground unused input line
+2,in,6,?,0,Ground unused input line
+2,in,7,?,0,Ground unused input line
+2,in,8,?,0,Ground unused input line
+2,in,9,?,0,Ground unused input line
+2,in,10,?,0,Ground unused input line
+2,in,11,?,0,Ground unused input line
+2,in,12,?,0,Ground unused input line
+2,in,13,?,0,Ground unused input line
+2,in,14,?,0,Ground unused input line
+2,in,15,?,0,Ground unused input line
+2,in,16,?,0,Ground unused input line
+2,in,17,?,0,Ground unused input line
+2,in,18,?,0,Ground unused input line
+2,in,19,?,0,Ground unused input line
+2,in,20,?,0,Ground unused input line
+2,in,21,?,0,Ground unused input line
+2,in,22,?,0,Ground unused input line
+2,in,23,?,0,Ground unused input line
+2,in,24,?,0,Ground unused input line
+2,in,25,?,0,Ground unused input line
+2,in,26,?,0,Ground unused input line
+2,in,27,?,0,Ground unused input line
+2,in,28,?,0,Ground unused input line
+2,in,29,?,0,Ground unused input line
+2,in,30,?,0,Ground unused input line
+2,in,31,?,0,Ground unused input line
+,,,,,
+2,out,0,>,busy_out,Busy out signal to busy tri-state circuits
+2,out,1,>,delay_data,Serial data into the delay ICs (output pin)
+2,out,2,>,delay_clk,Clock for the delay ICs (output pin)
+2,out,3,>,delay_en_l[0],Serial enable (active LOW) for delay chip #0 (output pin)
+2,out,4,>,delay_en_l[1],Serial enable (active LOW) for delay chip #1 (output pin)
+2,out,5,>,delay_en_l[2],Serial enable (active LOW) for delay chip #2 (output pin)
+2,out,6,>,delay_en_l[3],Serial enable (active LOW) for delay chip #3 (output pin)
+2,out,7,>,delay_en_l[4],Serial enable (active LOW) for delay chip #4 (output pin)
+2,out,8,>,delay_en_l[5],Serial enable (active LOW) for delay chip #5 (output pin)
+2,out,9,>,mux_en,Test MUX enable (output pin)
+2,out,10,>,mux_sel[0],Test MUX select bit 0 (output pin)
+2,out,11,>,mux_sel[1],Test MUX select bit 1 (output pin)
+2,out,12,>,mux_sel[2],Test MUX select bit 2 (output pin)
+2,out,13,>,mux_sel[3],Test MUX select bit 3 (output pin)
+2,out,14,>,dac_ld,Octal DAC load signal (output pin)
+2,out,15,>,dac_sclk,Octal DAC serial clock (output pin)
+2,out,16,>,dac_din,Octal DAC serial input (output pin)
+2,out,17,>,psd_dac_stb_0,PSD chip 0 DAC strobe (output pin)
+2,out,18,>,psd_dac_stb_1,PSD chip 1 DAC strobe (output pin)
+2,out,19,>,psd_acq_all,ACQ all to both PSD chips (output pin)
+2,out,20,>,psd_cfd_bypass,Selects cfd-bypass mode for PSDs (output pin)
+2,out,21,>,psd_sin,Serial input  into PSD 0 (output pin)
+2,out,22,>,psd_sclk,Serial clock into PSD 0 and 1 (output pin)
+,,,,,
+3,in,0,>,cfd_ad_in[0],Bit 0 of cfd_ad_in bus from the cfd_ad tri-state circuits
+3,in,1,>,cfd_ad_in[1],Bit 1 of cfd_ad_in bus from the cfd_ad tri-state circuits
+3,in,2,>,cfd_ad_in[2],Bit 2 of cfd_ad_in bus from the cfd_ad tri-state circuits
+3,in,3,>,cfd_ad_in[3],Bit 3 of cfd_ad_in bus from the cfd_ad tri-state circuits
+3,in,4,>,cfd_ad_in[4],Bit 4 of cfd_ad_in bus from the cfd_ad tri-state circuits
+3,in,5,>,cfd_ad_in[5],Bit 5 of cfd_ad_in bus from the cfd_ad tri-state circuits
+3,in,6,>,cfd_ad_in[6],Bit 6 of cfd_ad_in bus from the cfd_ad tri-state circuits
+3,in,7,>,cfd_ad_in[7],Bit 7 of cfd_ad_in bus from the cfd_ad tri-state circuits
+3,in,8,?,0,Ground unused input line
+3,in,9,?,0,Ground unused input line
+3,in,10,?,0,Ground unused input line
+3,in,11,?,0,Ground unused input line
+3,in,12,?,0,Ground unused input line
+3,in,13,?,0,Ground unused input line
+3,in,14,?,0,Ground unused input line
+3,in,15,?,0,Ground unused input line
+3,in,16,?,0,Ground unused input line
+3,in,17,?,0,Ground unused input line
+3,in,18,?,0,Ground unused input line
+3,in,19,?,0,Ground unused input line
+3,in,20,?,0,Ground unused input line
+3,in,21,?,0,Ground unused input line
+3,in,22,?,0,Ground unused input line
+3,in,23,?,0,Ground unused input line
+3,in,24,?,0,Ground unused input line
+3,in,25,?,0,Ground unused input line
+3,in,26,?,0,Ground unused input line
+3,in,27,?,0,Ground unused input line
+3,in,28,?,0,Ground unused input line
+3,in,29,?,0,Ground unused input line
+3,in,30,?,0,Ground unused input line
+3,in,31,?,0,Ground unused input line
+,,,,,
+3,out,0,>,cfd_ad_out[0],Bit 0 of cfd_ad_out bus from the cfd_ad tri-state circuits
+3,out,1,>,cfd_ad_out[1],Bit 1 of cfd_ad_out bus from the cfd_ad tri-state circuits
+3,out,2,>,cfd_ad_out[2],Bit 2 of cfd_ad_out bus from the cfd_ad tri-state circuits
+3,out,3,>,cfd_ad_out[3],Bit 3 of cfd_ad_out bus from the cfd_ad tri-state circuits
+3,out,4,>,cfd_ad_out[4],Bit 4 of cfd_ad_out bus from the cfd_ad tri-state circuits
+3,out,5,>,cfd_ad_out[5],Bit 5 of cfd_ad_out bus from the cfd_ad tri-state circuits
+3,out,6,>,cfd_ad_out[6],Bit 6 of cfd_ad_out bus from the cfd_ad tri-state circuits
+3,out,7,>,cfd_ad_out[7],Bit 7 of cfd_ad_out bus from the cfd_ad tri-state circuits
+3,out,8,>,cfd_stb,CFD chip strobe (output pin)
+3,out,9,>,cfd_write,CFD write (output pin)
+3,out,10,>,cfd_neg_pol,When high select negative pulses (output pin)
+3,out,11,>,cfd_reset,Resets CFD chip (output pin)
+3,out,12,>,cfd_global_ena,CFD global enable (output pin)

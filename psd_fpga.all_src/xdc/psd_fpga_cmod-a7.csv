@@ -1,0 +1,63 @@
+      Name        Direction       Pin       Board-Pin         DUMMY         X    
+                                                                        
+    sys_clk         Input         L17        sys_clk       ***********  
+     led[0]         Output        A17         Led[0]       ***********  
+     led[1]         Output        C16         Led[1]       ***********  
+  dummy_reset       Input         A18         Btn[0]       ***********  
+   take_event       Input         B18         Btn[1]       ***********  
+    uart_tx         Output        J18        uart_tx       ***********  
+    uart_rx         Input         J17        uart_rx       ***********  
+    i2c_scl         BiDir         M3          PIN_1        ***********  
+    i2c_sda         BiDir         L3          PIN_2        ***********  
+    psd_sout        Input         A16         PIN_3        ***********  
+    psd_sin         Output        K3          PIN_4        ***********  
+    psd_sclk        Output        C15         PIN_5        ***********  
+   delay_data       Output        H1          PIN_6        ***********  
+   delay_clk        Output        A15         PIN_7        ***********  
+ delay_en_l[0]      Output        B15         PIN_8        ***********  
+ delay_en_l[1]      Output        A14         PIN_9        ***********  
+ delay_en_l[2]      Output        J3          PIN_10       ***********  
+ delay_en_l[3]      Output        J1          PIN_11       ***********  
+ delay_en_l[4]      Output        K2          PIN_12       ***********  
+ delay_en_l[5]      Output        L1          PIN_13       ***********  
+  board_id[0]       Input         L2          PIN_14       ***********  
+  board_id[1]       Input         G3          PIN_15       ***********  
+  board_id[2]       Input         H2          PIN_16       ***********  
+  board_id[3]       Input         M1          PIN_17       ***********  
+  board_id[4]       Input         N3          PIN_18       ***********  
+  board_id[5]       Input         P3          PIN_19       ***********  
+  common_stop       Input         M2          PIN_20       ***********  
+    glob_ena        Input         N1          PIN_21       ***********  
+   event_ena        Input         N2          PIN_22       ***********  
+  force_reset       Input         P1          PIN_23       ***********  
+    busy_out        Output        R3          PIN_26       ***********  
+     mux_en         Output        T3          PIN_27       ***********  
+   mux_sel[0]       Output        R2          PIN_28       ***********  
+   mux_sel[1]       Output        T1          PIN_29       ***********  
+   mux_sel[2]       Output        T2          PIN_30       ***********  
+   mux_sel[3]       Output        U1          PIN_31       ***********  
+     dac_ld         Output        W2          PIN_32       ***********  
+    dac_sclk        Output        V2          PIN_33       ***********  
+    dac_din         Output        W3          PIN_34       ***********  
+    cfd_stb         Output        V3          PIN_35       ***********  
+   cfd_write        Output        W5          PIN_36       ***********  
+  cfd_neg_pol       Output        V4          PIN_37       ***********  
+   cfd_reset        Output        U4          PIN_38       ***********  
+ cfd_global_ena     Output        V5          PIN_39       ***********  
+   cfd_ad[0]        Output        W4          PIN_40       ***********  
+   cfd_ad[1]        Output        U5          PIN_41       ***********  
+   cfd_ad[2]        Output        U2          PIN_42       ***********  
+   cfd_ad[3]        Output        W6          PIN_43       ***********  
+   cfd_ad[4]        Output        U3          PIN_44       ***********  
+   cfd_ad[5]        Output        U7          PIN_45       ***********  
+   cfd_ad[6]        Output        W7          PIN_46       ***********  
+   cfd_ad[7]        Output        U8          PIN_47       ***********  
+       ?            Input         V8          PIN_48       ***********      X    
+     Conv_0         Output        G17       PMOD_JA_1      ***********  
+       ?            Input         G19       PMOD_JA_2      ***********      X    
+    sdo_t_0         Input         N18       PMOD_JA_3      ***********  
+   adc_sclk_0       Output        L18       PMOD_JA_4      ***********  
+       ?            Input         H17       PMOD_JA_7      ***********      X    
+       ?            Input         H19       PMOD_JA_8      ***********      X    
+       ?            Input         J19       PMOD_JA_9      ***********      X    
+       ?            Input         K18       PMOD_JA_10     ***********      X    

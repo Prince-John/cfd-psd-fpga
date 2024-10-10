@@ -1,0 +1,35 @@
+{comment}
+
+sys_clk       Input       P17        SYS_CLK    SYS_CLK  
+reset		  Input		  D9		 RESET		RESET
+led[0]        Output      L15        LED_1      LED_1      
+led[1]        Output      R17        LED_2      LED_2      
+led0_b        Output      L4         JB1-3      J14-2      
+led0_g        Output      K5         JB1-5      J14-3      
+led0_r        Output      N6         JB1-9      J14-4      
+btn[0]        Input		  B12		 JB1-99		J11-5 
+btn[1]        Input		  G6		 JB1-44		J11-6      
+uart_tx       Output      L16        UART_RX    UART_RX    
+uart_rx       Input       R11        UART_TX    UART_TX    
+scl           BiDir	  	  T15	     JB2-24		J5-7  
+sda           BiDir	  	  R15	     JB2-28		J5-8      
+psd_sin       Output      B18        JB1-42     J11-18     
+psd_sclk      Output      A18        JB1-44     J11-6      
+dly_sin       Output      G18        JB1-45     J11-14     
+dly_sclk      Output      B17        JB1-46     J11-17     
+dly_sen[0]    Output      F18        JB1-47     J11-13     
+dly_sen[1]    Output      B16        JB1-48     J13-21     
+dly_sen[2]    Output      J14        JB1-49     J13-14     
+dly_sen[3]    Output      D12        JB1-50     J13-20     
+dly_sen[4]    Output      H15        JB1-51     J13-13     
+dly_sen[5]    Output      D13        JB1-52     J13-19     
+board_id[0]   Input       K13        JB1-55     J11-12     
+board_id[1]   Input       A16        JB1-56     J13-18     
+board_id[2]   Input       J13        JB1-57     J11-11     
+board_id[3]   Input       A15        JB1-58     J13-17     
+board_id[4]   Input       K15        JB1-59     J13-12     
+board_id[5]   Input       J15        JB1-61     J13-11     
+adc_0_conv    Output      H17        JB1-69     J11-10     
+adc_0_sdo_a   Input       A14        JB1-70     J13-7      
+adc_0_sclk    Output      G17        JB1-71     J11-9      
+

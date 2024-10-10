@@ -1,0 +1,36 @@
+Timestamp: Thu Oct 10 12:40:10 CDT 2024
+Version: 26-Sep-2024 --> Handles Trenz reset (D9) pin
+FPGA Development Board: trenz
+
+Processing file: psd_fpga_trenz.csv
+Creating file: psd_fpga.xdc
+Creating file in verilog directory: psd_fpga_top.vh
+Ignoring line ==> Signal Name	Direction	Pin	b2b_conn	carrier_conn	NO_USE
+Ignoring line ==> 					
+Ignoring line ==> ?	?				X
+Ignoring line ==> ?	?				X
+Ignoring line ==> ?	?	A16	JB1-56	J13-18	X
+Ignoring line ==> ?	?	D13	JB1-52	J13-19	X
+Ignoring line ==> ?	?	D12	JB1-50	J13-20	X
+Ignoring line ==> ?	?	B16	JB1-48	J13-21	X
+Ignoring line ==> ?	?	U12	JB2-12	J13-22	X
+Ignoring line ==> ?	?	P14	JB2-18	J13-23	X
+Ignoring line ==> ?	?	H5	JB2-44	J13-24	X
+Ignoring line ==> ?	?	F6	JB2-68	J13-25	X
+Ignoring line ==> ?	?	G4	JB2-56	J13-26	X
+Ignoring line ==> ?	?	G3	JB2-58	J13-27	X
+Ignoring line ==> ?	?	E7	JB2-72	J13-28	X
+Ignoring line ==> ?	?	T9	JB2-38	J13-29	X
+Ignoring line ==> ?	?	H6	JB2-42	J13-30	X
+Ignoring line ==> ?	?	K2	JB2-35	J13-31	X
+Ignoring line ==> ?	?	B7	JB2-97	J13-32	X
+Ignoring line ==> ?	?	U11	JB2-34	J13-33	X
+Ignoring line ==> ?	?	A5	JB2-91	J13-34	X
+Ignoring line ==> ?	?	B3	JB2-83	J13-35	X
+Ignoring line ==> ?	?	B1	JB2-75	J13-36	X
+Ignoring line ==> ?	?	C2	JB2-73	J13-37	X
+Ignoring line ==> ?	?	F1	JB2-65	J13-38	X
+Ignoring line ==> ?	?	E3	JB2-55	J13-39	X
+Ignoring line ==> ?	?	D3	JB2-57	J13-40	X
+File creation successful!!! ... Exiting ...
+

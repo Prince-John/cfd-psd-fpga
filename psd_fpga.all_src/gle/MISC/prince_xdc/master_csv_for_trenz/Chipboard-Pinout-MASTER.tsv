@@ -1,0 +1,125 @@
+SDO_A_0	Input	L4	JB1-3	J14-1	
+SDO_B_0	Input	K5	JB1-5	J14-2	
+SDO_C_0	Input	N6	JB1-9	J14-3	
+SDO_T_0	Input	M6	JB1-11	J14-4	
+SDO_A_1	Input	T8	JB1-15	J14-5	
+SDO_B_1	Input	R8	JB1-17	J14-6	
+SDO_C_1	Input	L6	JB1-21	J14-7	
+SDO_T_1	Input	L5	JB1-23	J14-8	
+ADC_SCLK_0	Output	F13	JB1-32	Not exposed on 705	
+ADC_SCLK_1	Output	F14	JB1-34	Not exposed on 705	
+CONV_0	Output	E18	JB1-35	J11-12	
+CONV_1	Output	H14	JB1-36	Not exposed on 705	
+DAC_LD	Output	D18	JB1-37	J11-11	
+DAC_SCLK	Output	G14	JB1-38	Not exposed on 705	
+DAC_DIN	Output	J18	JB1-39	J13-12	
+UNUSED	--	J17	JB1-41	J13-11	Not Connected
+cfd_AD[7]	BiDir	B18	JB1-42	J11-14	
+cfd_AD[6]	BiDir	A18	JB1-44	J11-2	
+cfd_AD[5]	BiDir	G18	JB1-45	J11-10	
+cfd_AD[4]	BiDir	B17	JB1-46	J11-13	
+cfd_AD[3]	BiDir	F18	JB1-47	J11-9	
+cfd_AD[2]	BiDir	B16	JB1-48	J13-17	
+cfd_AD[1]	BiDir	J14	JB1-49	J13-10	
+cfd_AD[0]	BiDir	D12	JB1-50	J13-16	
+cfd_stb	Output	H15	JB1-51	J13-9	
+cfd_write	Output	D13	JB1-52	J13-15	
+cfd_neg_pol	Output	K13	JB1-55	J11-8	
+cfd_or	Input	A16	JB1-56	J13-14	
+cfd_reset	Output	J13	JB1-57	J11-7	
+cfd_global_ena	Output	A15	JB1-58	J13-13	
+psd_sin	Output	K15	JB1-59	J13-8	
+psd_sclk	Output	G16	JB1-60	Not exposed on 705	
+psd_sout	Input	J15	JB1-61	J13-7	
+psd_acq_ack_0	Input	H16	JB1-62	Not exposed on 705	
+psd_acq_clk_0	Output	E16	JB1-65	Not exposed on 705	
+psd_cfd_out_0	Input	F16	JB1-66	Not exposed on 705	
+psd_chan_addr_0[0]	BiDir	E15	JB1-67	Not exposed on 705	
+psd_chan_addr_0[1]	BiDir	F15	JB1-68	Not exposed on 705	
+psd_chan_addr_0[2]	BiDir	H17	JB1-69	J11-6	
+psd_chan_addr_0[3]	BiDir	A14	JB1-70	J13-3	
+psd_chan_addr_0[4]	BiDir	G17	JB1-71	J11-5	
+UNUSED	--	A13	JB1-72	Not exposed on 705	Not Connected
+psd_dac_stb_0	Output	E17	JB1-75	J13-6	
+psd_intx_out_0	Input	C15	JB1-76	Not exposed on 705	
+psd_or_out_0	Input	D17	JB1-77	J13-5	
+psd_sc0_0	Output	D15	JB1-78	Not exposed on 705	
+psd_sc1_0	Output	C17	JB1-79	J13-4	
+psd_sel_ext_addr_0	Output	C16	JB1-81	J11-4	
+psd_test_mode_int_0	Output	A11	JB1-82	Not exposed on 705	
+UNUSED	--	B11	JB1-84	Not exposed on 705	Not Connected
+psd_token_in_0	Output	D14	JB1-85	Not exposed on 705	
+psd_token_out_0	Input	R10	JB1-86	J1-1	
+psd_acq_ack_1	Input	C14	JB1-87	J11-3	
+psd_acq_clk_1	Output	R13	JB1-88	J1-6	
+psd_cfd_out_1	Input	N17	JB1-91	J1-2	
+psd_chan_addr_1[0]	BiDir	R12	JB1-92	J1-4	
+psd_chan_addr_1[1]	BiDir	B14	JB1-93	J13-1	
+psd_chan_addr_1[2]	BiDir	L18	JB1-94	J1-3	
+psd_chan_addr_1[3]	BiDir	B13	JB1-95	J13-2	
+psd_chan_addr_1[4]	BiDir	M13	JB1-96	J1-5	
+UNUSED	--	C12	JB1-97	Not exposed on 705	Not Connected
+psd_dac_stb_1	Output	M18	JB1-98	J1-7	
+psd_intx_out_1	Input	B12	JB1-99	J11-1	
+psd_or_out_1	Input	R16	JB1-100	Not exposed on 705	
+psd_sc0_1	Output	U12	JB2-12	J13-18	
+psd_sc1_1	Output	V11	JB2-13	Not exposed on 705	
+psd_sel_ext_addr_1	Output	V12	JB2-14	J11-15	
+psd_test_mode_int_1	Output	V10	JB2-15	Not exposed on 705	
+psd_token_in_1	Output	N14	JB2-16	J11-16	
+psd_token_out_1	Input	P14	JB2-18	J13-19	
+psd_acq_all	Output	N15	JB2-21	J5-3	
+psd_cfd_bypass	Output	T14	JB2-22	J5-5	
+psd_force_rst	Output	N16	JB2-23	J5-1	
+psd_global_ena	Output	T15	JB2-24	J5-7	
+psd_reset	Output	M16	JB2-25	J5-4	
+psd_veto_reset	Output	P15	JB2-26	J5-6	
+DELAY_CLK	Output	M17	JB2-27	J5-2	
+DELAY_DATA	Output	R15	JB2-28	J5-8	
+DELAY_EN_L[0]	Output	E6	JB2-31	J6-8	
+DELAY_EN_L[1]	Output	T11	JB2-32	J11-17	
+DELAY_EN_L[2]	Output	E5	JB2-33	J6-6	
+DELAY_EN_L[3]	Output	U11	JB2-34	J13-29	
+DELAY_EN_L[4]	Output	K2	JB2-35	J13-27	
+DELAY_EN_L[5]	Output	T10	JB2-36	J11-18	
+BOARD_ID[0]	Input	T3	JB3-1	Not exposed on 705	
+BOARD_ID[1]	Input	M4	JB3-2	Not exposed on 705	
+BOARD_ID[2]	Input	R3	JB3-3	Not exposed on 705	
+BOARD_ID[3]	Input	N4	JB3-4	Not exposed on 705	
+BOARD_ID[4]	Input	U7	JB3-7	Not exposed on 705	
+BOARD_ID[5]	Input	R6	JB3-8	Not exposed on 705	
+I2C_SCL	Output	U6	JB3-9	Not exposed on 705	
+I2C_SDA	BiDir	R5	JB3-10	Not exposed on 705	
+TDC_SCLK	Output	R2	JB3-13	Not exposed on 705	
+TDC_DOUT	Input	R7	JB3-14	Not exposed on 705	
+TDC_DIN	Output	P2	JB3-15	Not exposed on 705	
+TDC_ENABLE	Output	T6	JB3-16	Not exposed on 705	
+TDC_CSB	Output	V7	JB3-19	Not exposed on 705	
+TDC_INTB	Input	V9	JB3-20	Not exposed on 705	
+TDC_START	Output	V6	JB3-21	Not exposed on 705	
+TDC_STOP	Output	U9	JB3-22	Not exposed on 705	
+BUSY_OUT_L	Output	U4	JB3-25	Not exposed on 705	
+UNUSED	--	V5	JB3-26	Not exposed on 705	Not Connected
+TSTAMP_CLK	Input	U3	JB3-27	Not exposed on 705	
+TSTAMP_RST	Input	V4	JB3-28	Not exposed on 705	
+COMMON_STOP	Input	T5	JB3-31	Not exposed on 705	
+GLOB_ENA	Input	N5	JB3-32	Not exposed on 705	
+EVENT_ENA	Input	T4	JB3-33	Not exposed on 705	
+FORCE_RESET	Input	P5	JB3-34	Not exposed on 705	
+TAKE_EVENT	Input	V1	JB3-37	Not exposed on 705	
+OR	Output	K3	JB3-38	Not exposed on 705	
+INTX_OUT	Output	U1	JB3-39	Not exposed on 705	
+CFD_OUT	Output	L3	JB3-40	Not exposed on 705	
+MUX_SEL[0]	Output	K1	JB2-37	Not exposed on 705	
+MUX_SEL[1]	Output	T9	JB2-38	J13-25	
+MUX_SEL[2]	Output	J2	JB2-41	J6-7	
+MUX_SEL[3]	Output	H6	JB2-42	J13-26	
+MUX_EN	Output	J3	JB2-43	J6-5	
+DEBUG_GPIO[0]	BiDir	H5	JB2-44	J13-20	
+DEBUG_GPIO[1]	BiDir	J4	JB2-46	J11-25	
+DEBUG_GPIO[2]	BiDir	B1	JB2-75	J13-32	
+DEBUG_GPIO[3]	BiDir	E2	JB2-52	J11-20	
+DEBUG_GPIO[4]	BiDir	C2	JB2-73	J13-33	
+DEBUG_GPIO[5]	BiDir	G4	JB2-56	J13-22	
+DEBUG_GPIO[6]	BiDir	A1	JB2-77	J11-32	
+DEBUG_GPIO[7]	BiDir	H2	JB2-62	J11-23	

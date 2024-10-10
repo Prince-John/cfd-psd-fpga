@@ -1,0 +1,89 @@
+PicoBlaze OUTPUT port assignments
+
+--------------------------------
+PORT 0 (Misc stuff
+--------------------------------
+0		Heartbeat LED
+1		load_tdc_byte_0
+2		load_tdc_byte_1
+3		load_tdc_byte_2
+4
+5
+6
+7
+
+--------------------------------
+PORT 1 (ADC control)
+--------------------------------
+0		ADC sclk for PSD 0
+1		ADC sclk for PSD 1
+2		ADC conv for PSD 0
+3		ADC conv for PSD 1
+4		adc_mux_sel bit 0
+5		adc_mux_sel bit 1
+6		adc_mux_sel bit 2
+7		adc_reg_reset
+
+--------------------------------
+PORT 2 (Data identifier or tag)
+--------------------------------
+0		psd addr bit 0
+1		psd addr bit 1
+2		psd addr bit 2
+3		psd addr bit 3 n(0 = PSD 0, 1 = PSD 1)
+4		sc bit 0	
+5		sc bit 1
+6		bit 0 of type	
+7		bit 1 of type
+
+type = 00 ---> ADC data 
+type = 01 ---> Board id 
+type = 10 ---> TDC data (lower 24 bits)
+type = 11 ---> TDC data (upper 24 bits)
+
+sc = 00 -----> integrator A
+sc = 01 -----> integrator B
+sc = 10 -----> integrator C
+sc = 11 -----> time
+
+--------------------------------
+PORT 3 (TDC byte)
+-------------------------------- 
+
+0		d0
+1		d1
+2		d2
+3		d3
+4		d4
+5		d5
+6		d6
+7		d7
+
+
+--------------------------------
+PORT 4 (TDC register control)
+-------------------------------- 
+
+0		tdc_reg_ld_0
+1		tdc_reg_ld_1
+2		tdc_reg_ld_2
+3		tdc_reg_rst
+4		tdc_reg_shift
+5		tdc_reg_sclk
+6
+7
+
+--------------------------------
+PORT 5 
+--------------------------------
+
+--------------------------------
+PORT 6 
+-------------------------------- 
+
+
+--------------------------------
+PORT 7 
+-------------------------------- 
+ 
+

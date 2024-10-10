@@ -1,0 +1,90 @@
+     Signal Name      Direction    Pin      b2b_conn    carrier_conn   NO_USE  
+                                                                     
+     dummy_reset        Input       D9     dummy_reset       $$$     
+       Led[0]           Output      A8       Led[0]          $$$     
+       Led[1]           Output     L15       Led[1]          $$$     
+       sys_clk          Input      P17       sys_clk         $$$     
+       uart_rx          Input      R11       uart_rx         $$$     
+       uart_tx          Output     L16       uart_tx         $$$     
+                                                                     
+          ?               ?        R10       JB1-86         J1-05        X     
+          ?               ?        N17       JB1-91         J1-07        X     
+          ?               ?        L18       JB1-94         J1-08        X     
+          ?               ?        R12       JB1-92         J1-09        X     
+          ?               ?        M13       JB1-96         J1-10        X     
+          ?               ?        R13       JB1-88         J1-11        X     
+          ?               ?        M18       JB1-98         J1-12        X     
+                                                                     
+     BOARD_ID[0]        Input      B12       JB1-99        J11-05    
+     BOARD_ID[1]        Input      A18       JB1-44        J11-06    
+     BOARD_ID[2]        Input      C14       JB1-87        J11-07    
+     BOARD_ID[3]        Input      C16       JB1-81        J11-08    
+     BOARD_ID[4]        Input      G17       JB1-71        J11-09    
+     BOARD_ID[5]        Input      H17       JB1-69        J11-10    
+      DELAY_CLK         Output     J13       JB1-57        J11-11    
+     DELAY_DATA         Output     K13       JB1-55        J11-12    
+    DELAY_EN_L[0]       Output     F18       JB1-47        J11-13    
+    DELAY_EN_L[1]       Output     G18       JB1-45        J11-14    
+    DELAY_EN_L[2]       Output     D18       JB1-37        J11-15    
+    DELAY_EN_L[3]       Output     E18       JB1-35        J11-16    
+    DELAY_EN_L[4]       Output     B17       JB1-46        J11-17    
+    DELAY_EN_L[5]       Output     B18       JB1-42        J11-18    
+       I2C_SCL          BiDir      V12       JB2-14        J11-19    
+       I2C_SDA          BiDir      N14       JB2-16        J11-20    
+       SDO_T_0          Input      T11       JB2-32        J11-21    
+     ADC_SCLK_0         Output     T10       JB2-36        J11-22    
+       CONV_0           Output      H4       JB2-48        J11-23    
+       psd_sin          Output      E2       JB2-52        J11-24    
+      psd_sclk          Output      G2       JB2-64        J11-25    
+       I2C_SCL          BiDir       G6       JB2-66        J11-26    
+       I2C_SDA          BiDir       H2       JB2-62        J11-27    
+          ?               ?         D7       JB2-74        J11-28        X     
+          ?               ?         J4       JB2-46        J11-29        X     
+          ?               ?         D2       JB2-54        J11-30        X     
+          ?               ?         J5       JB2-99        J11-31        X     
+          ?               ?         B6       JB2-95        J11-32        X     
+          ?               ?         A4       JB2-87        J11-33        X     
+          ?               ?         A3       JB2-85        J11-34        X     
+          ?               ?         B2       JB2-81        J11-35        X     
+          ?               ?         A1       JB2-77        J11-36        X     
+          ?               ?         E1       JB2-67        J11-37        X     
+          ?               ?         C1       JB2-71        J11-38        X     
+          ?               ?         H1       JB2-61        J11-39        X     
+          ?               ?         G1       JB2-63        J11-40        X     
+                                                                     
+          ?               ?        B14       JB1-93        J13-05        X     
+          ?               ?        B13       JB1-95        J13-06        X     
+          ?               ?        A14       JB1-70        J13-07        X     
+          ?               ?        C17       JB1-79        J13-08        X     
+          ?               ?        D17       JB1-77        J13-09        X     
+          ?               ?        E17       JB1-75        J13-10        X     
+          ?               ?        J15       JB1-61        J13-11        X     
+          ?               ?        K15       JB1-59        J13-12        X     
+          ?               ?        H15       JB1-51        J13-13        X     
+          ?               ?        J14       JB1-49        J13-14        X     
+          ?               ?        J17       JB1-41        J13-15        X     
+          ?               ?        J18       JB1-39        J13-16        X     
+          ?               ?        A15       JB1-58        J13-17        X     
+          ?               ?        A16       JB1-56        J13-18        X     
+          ?               ?        D13       JB1-52        J13-19        X     
+          ?               ?        D12       JB1-50        J13-20        X     
+          ?               ?        B16       JB1-48        J13-21        X     
+          ?               ?        U12       JB2-12        J13-22        X     
+          ?               ?        P14       JB2-18        J13-23        X     
+          ?               ?         H5       JB2-44        J13-24        X     
+          ?               ?         F6       JB2-68        J13-25        X     
+          ?               ?         G4       JB2-56        J13-26        X     
+          ?               ?         G3       JB2-58        J13-27        X     
+          ?               ?         E7       JB2-72        J13-28        X     
+          ?               ?         T9       JB2-38        J13-29        X     
+          ?               ?         H6       JB2-42        J13-30        X     
+          ?               ?         K2       JB2-35        J13-31        X     
+          ?               ?         B7       JB2-97        J13-32        X     
+          ?               ?        U11       JB2-34        J13-33        X     
+          ?               ?         A5       JB2-91        J13-34        X     
+          ?               ?         B3       JB2-83        J13-35        X     
+          ?               ?         B1       JB2-75        J13-36        X     
+          ?               ?         C2       JB2-73        J13-37        X     
+          ?               ?         F1       JB2-65        J13-38        X     
+          ?               ?         E3       JB2-55        J13-39        X     
+          ?               ?         D3       JB2-57        J13-40        X     

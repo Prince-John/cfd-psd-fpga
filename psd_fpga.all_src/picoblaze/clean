@@ -1,0 +1,5 @@
+rm *.log
+rm *.mem
+rm *.v
+rm *.fmt
+

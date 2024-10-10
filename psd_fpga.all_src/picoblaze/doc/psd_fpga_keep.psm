@@ -1,0 +1,500 @@
+;
+; PicoBlaze program to control a PSD chip on new chip board
+; George L. Engel
+; Modified on Aug 10, 2011 
+;
+; Modified on Aug 12, 2011 to double check the veto_reset input
+;
+; Modified 29 Feb 2012 to shorten conv signal
+; Delay routines assuming a 70 MHz clock in this version
+
+;
+; This code eventually will attempt to solve the problems
+; identified when multiple chipboards are used.
+; All constant values are in HEX!
+; Define the various bit masks
+;
+            CONSTANT     b0msk, 01
+            CONSTANT     b1msk, 02
+            CONSTANT     b2msk, 04
+            CONSTANT     b3msk, 08
+            CONSTANT     b4msk, 10
+            CONSTANT     b5msk, 20
+            CONSTANT     b6msk, 40
+            CONSTANT     b7msk, 80
+            CONSTANT     bits_2and3, 0C
+
+            CONSTANT     b0mskN, FE
+            CONSTANT     b1mskN, FD
+            CONSTANT     b2mskN, FB
+            CONSTANT     b3mskN, F7
+            CONSTANT     b4mskN, EF
+            CONSTANT     b5mskN, DF
+            CONSTANT     b6mskN, BF
+            CONSTANT     b7mskN, 7F
+
+;
+; Picoblaze has 16 general purpose registers
+;
+; Registers used in data_acq subroutine
+;
+            NAMEREG      s0, op0         ; Output port #0
+            NAMEREG      s1, op1         ; Output port #1
+            NAMEREG      s2, op4         ; Output port #4
+            NAMEREG      s3, op5         ; Output port #5
+            NAMEREG      s4, ip0         ; Input port #0
+            NAMEREG      s5, ip1         ; Input port #1
+
+;
+; Give more desciptive names to some of our registers
+;
+            NAMEREG      s6, scr0        ; Scratchpad register
+            NAMEREG      s7, scr1 
+            NAMEREG      s8, scr2 
+            NAMEREG      s9, cnt         ; Used in for loops
+            NAMEREG      sA, isr_reg     ; Used in ISR
+            NAMEREG      sB, dreg        ; Used by delays
+            NAMEREG      sC, adc_bits    ; Sto sdi_abc and sdi_t
+
+;
+; Added by GLE on 29 feb 2012 to see if I can speed up adc clock
+;
+            NAMEREG      sD, adc_clk_h   ; Stores adc clk high 
+            NAMEREG      sE, adc_clk_l   ; Stores adc clk low 
+
+;******************************************************************
+;
+; MAIN ROUTINE
+;        
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+            ADDRESS      000
+
+start:      DISABLE      INTERRUPT 
+            CALL         init      
+;
+            ENABLE       INTERRUPT 
+;
+; Sit in a tight loop polling the veto_rst line.
+; Waiting for veto_rst to be HIGH
+; veto_rst is bit 0 of input port 0
+;
+wait:       INPUT        ip0, 00
+            TEST         ip0, b0msk
+            JUMP     	   Z, wait 
+;
+; Let us check again just to be sure its really HIGH !
+;
+            INPUT        ip0, 00
+            TEST         ip0, b0msk
+            JUMP     	   Z, wait 
+
+;
+; Call the data acquisition routine
+; The first thing I do is to reset the FSMs and
+; then I set the busy flag!
+;            
+            CALL         data_acq    
+
+;
+; Wait for veto reset to go LOW (bit 0, input port 0)
+; Check twice to be absolutely sure!
+;
+
+wait1:      INPUT        ip0, 00
+            TEST         ip0, b0msk
+            JUMP     	   NZ, wait1 
+
+            INPUT        ip0, 00
+            TEST         ip0, b0msk
+            JUMP     	   NZ, wait1 
+
+
+; Reset transfer FSM and RD/WR ptrs
+
+            OUTPUT       scr0, 07      
+
+            JUMP         wait 
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; Name: data_acq 
+;
+; This routine will acquire data from the 4 ADCs (A, B, C, T)
+; Send 00 followed by 14 0s for (+)
+; Send 01 following by 14 0s for (-)
+;   
+; Apply 16 ADC clocks ... first two are special
+;
+;
+; data_acq:    OUTPUT     scr0, 07      ; Reset xfer FSM and ptrs
+
+data_acq:    OR         op4, b3msk    ; Set the busy bit
+             OUTPUT     op4, 04
+;
+; Check the OR out of the PSD chip (bit 7 of input port #1)
+; If it is LOW then we are done
+;
+             INPUT      ip1, 01       ; Check the OR 
+             TEST       ip1, b7msk
+             JUMP       Z, acq_done   
+
+             AND        op0, b2mskN   ; Bring token_in_PSD LOW.
+             OUTPUT     op0, 00
+
+acq0:        OR         op0, b6msk    ; Bring acq_clk high
+             OUTPUT     op0, 00  
+             CALL       sample        ; Sample A, B, C, T 
+             CALL       convert       ; Apply a 3.2 usec CONV 
+             INPUT      ip1, 01       ; Read PSD addresses
+             AND        op0, b6mskN   ; Bring acq_clk_PSD low 
+             OUTPUT     op0, 00 
+             INPUT      ip0, 00       ; Check token_out_PSD
+             INPUT      ip0, 00       ; Check token_out_PSD
+             TEST       ip0, b6msk    
+             JUMP       Z, acq2       ; Done if token_out low
+ 
+acq1:        OR         op0, b6msk    ; Bring acq_clk high
+             OUTPUT     op0, 00    
+             CALL       sample        ; Sample A, B, C, T 
+             OUTPUT     scr0, 06      ; Tell FSM to xfer data 
+             CALL       convert       ; Apply a 3.2 usec CONV 
+             INPUT      ip1, 01       ; Read PSD addresses
+             AND        op0, b6mskN   ; Bring acq_clk_PSD low 
+             OUTPUT     op0, 00 
+             INPUT      ip0, 00       ; Check token_out_PSD
+             INPUT      ip0, 00       ; Check token_out_PSD
+             TEST       ip0, b6msk    
+             JUMP       NZ, acq1      ; If token_out HIGH cont
+
+acq2:        CALL       sample        ; Readout last set of vals 
+             OUTPUT     scr0, 06      ; Tell FSM to transfer data
+
+acq_done:    OR         op0,b2msk     ; Bring token_in_PSD high
+             OUTPUT     op0, 00  
+
+             AND        op4, b3mskN   ; Unset busy flag
+             OUTPUT     op4, 04  
+
+             RETURN
+
+; ************************************************************
+; Routine to sample the A, B, C, T signals
+; Send 16 ADC serial clocks
+; ************************************************************
+
+; clk pulse 1
+sample:      LOAD       adc_clk_h, b3msk  
+             OUTPUT     adc_clk_h, 05  
+             OR         adc_clk_h, adc_bits
+             LOAD       adc_clk_l, adc_clk_h
+             AND        adc_clk_l, b3mskN
+             OUTPUT     adc_clk_l, 05
+
+; clk pulse 2
+             OUTPUT     adc_clk_h, 05  ; Bring clock high
+             OUTPUT     adc_clk_l, 05  ; Bring clock low
+; clk pulse 3
+             OUTPUT     adc_clk_h, 05  ; Bring clock high
+             OUTPUT     adc_clk_l, 05  ; Bring clock low
+; clk pulse 4
+             OUTPUT     adc_clk_h, 05  ; Bring clock high
+             OUTPUT     adc_clk_l, 05  ; Bring clock low 
+; clk pulse 5
+             OUTPUT     adc_clk_h, 05  ; Bring clock high
+             OUTPUT     adc_clk_l, 05  ; Bring clock low 
+; clk pulse 6
+             OUTPUT     adc_clk_h, 05  ; Bring clock high
+             OUTPUT     adc_clk_l, 05  ; Bring clock low 
+; clk pulse 7
+             OUTPUT     adc_clk_h, 05  ; Bring clock high
+             OUTPUT     adc_clk_l, 05  ; Bring clock low 
+; clk pulse 8
+             OUTPUT     adc_clk_h, 05  ; Bring clock high
+             OUTPUT     adc_clk_l, 05  ; Bring clock low 
+; clk pulse 9
+             OUTPUT     adc_clk_h, 05  ; Bring clock high
+             OUTPUT     adc_clk_l, 05  ; Bring clock low 
+; clk pulse 10
+             OUTPUT     adc_clk_h, 05  ; Bring clok high
+             OUTPUT     adc_clk_l, 05  ; Bring clock low
+; clk pulse 11
+             OUTPUT     adc_clk_h, 05  ; Bring clock high
+             OUTPUT     adc_clk_l, 05  ; Bring clock low 
+; clk pulse 12
+             OUTPUT     adc_clk_h, 05  ; Bring clock high
+             OUTPUT     adc_clk_l, 05  ; Bring clock low 
+; clk pulse 13
+             OUTPUT     adc_clk_h, 05  ; Bring clock high
+             OUTPUT     adc_clk_l, 05  ; Bring clock low 
+; clk pulse 14
+             OUTPUT     adc_clk_h, 05  ; Bring clock high
+             OUTPUT     adc_clk_l, 05  ; Bring clock low 
+; clk pulse 15
+             OUTPUT     adc_clk_h, 05  ; Bring clock high
+             OUTPUT     adc_clk_l, 05  ; Bring clock low 
+; clk pulse 16
+             OUTPUT     adc_clk_h, 05  ; Bring clock high
+             OUTPUT     adc_clk_l, 05  ; Bring clock low 
+
+             RETURN
+
+; *************************************************************
+; Routine to send approx 3.2 us conversion signal to ADCs
+; *************************************************************
+
+convert:     OR         op5, b2msk    ; Bring ADC conv high
+             OUTPUT     op5, 05      
+             CALL	  dly_3000ns    ; Uses dreg
+             AND        op5, b2mskN   ; Bring ADC conv low
+             OUTPUT     op5, 05 
+             RETURN      
+
+;
+; **************************************************************
+; Routine to define values on various bits in the 6 output ports
+; Make copies of what we write out in locations $20 thru $25
+; Uses scr1 register and does not restore it
+; *****************************************************************
+
+init:       LOAD        op0, 00
+;
+; Output port #0 bits all LOW except ...
+;
+            OR          op0, b2msk     ; HIGH on token_in_PSD
+            OUTPUT      op0, 00
+;
+; Make all bits in output port #1 LOW
+;
+            LOAD        op1, 00
+            OUTPUT      op1, 01
+;
+; Make all bits in output port #2 HIGH
+; Changed: 10 august 2011 (was low)
+; Port #2 is lower byte of DB bus
+;
+            LOAD        scr0, ff
+            OUTPUT      scr0, 02
+            STORE       scr0, 22
+;
+; Make all bits in output port #3 HIGH
+; Changed: 10 august 2011 (was low)
+; Port #3 is upper byte of DB bus
+;
+            OUTPUT      scr0, 03
+            STORE       scr0, 23
+
+;
+; Make bits in output port #4 LOW except bit 7 
+; which is the selFIFO line.
+; The FIFO output should drive Jon's DB bus.
+; Shadow register stuff and the BIDIR control signals
+;
+
+            LOAD        op4, 00
+            OR          op4, b7msk    ; HIGH on the selFIFO line
+            OUTPUT      op4, 04
+;
+; Port #5 contains the ADC signals
+; All lines should be LOW
+;
+
+            LOAD        op5, 00
+            OUTPUT      op5, 05
+;
+; A write to port #7 of ANY value will cause RD and WR pointers
+; along with FSMs in FIFO to be reset
+;
+
+            OUTPUT      scr0, 07
+;
+; Load the adc_bits register with appropriate values
+;
+
+            LOAD        adc_bits, 00
+            INPUT       scr0, 09           ; Get CR32 - CR39
+            AND         scr0, b7msk        ; Inspect polarity bit
+
+;           JUMP        Z, init0           ; Original
+            JUMP        NZ, init0          ; Changed sep 9 2010 
+
+            OR          adc_bits, b0msk    ; sdi_abc
+init0:      OR          adc_bits, b1msk    ; sdi_t
+            
+            RETURN
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; Name:  config_PSD
+; Uses: scr1, scr2, cnt, dreg
+;
+; Routine used to configure the PSD chip.
+; Need to shift in 48 bits of configuration information.
+; Bit 47 goes in first and bit 0 goes in last
+;
+; Assign all chips an ID of 00
+; So first byte we send should always by $00
+;
+; Routine uses the scr1 register and does not restore it.
+;
+
+config_PSD:    LOAD         scr1, 00       ; Chip is always $00
+               CALL         send_byte
+
+               INPUT        scr1, 09       ; Input port #9 
+               CALL         send_byte
+
+               INPUT        scr1, 08       ; Input port #8
+               CALL         send_byte
+  
+               INPUT        scr1, 07       ; Input port #7
+               CALL         send_byte
+
+               INPUT        scr1, 06       ; Input port #6
+               CALL         send_byte
+
+               INPUT        scr1, 05       ; Input port #5
+               CALL         send_byte
+
+               RETURN
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; Name: send_byte (passed into routine in scr1)
+;
+; Routine to send (bitwise serially) 1 byte of information.
+; Byte to transmitted is passed into routine in scr1 register
+; Use scr2 as our bit mask
+; Use cnt to keep track of how many bits we have sent
+; scr0 gets used by the delay_1us routine
+; So it takes 2 us per bit or about 100 usec to load the register
+; Bit 3 of output port 0 is sin_PSD
+; Bit 4 of output port 0 is sclk_PSD
+;
+
+send_byte:     LOAD         cnt, 08            ; Num bits 2 shift
+               LOAD         scr2, b7msk        ; scr2 is bit mask
+
+send_byte0:    OR           op0, b3msk         ; Make sin high
+               TEST         scr1, scr2         ; Should be high?
+               JUMP         NZ, send_byte1
+     
+; If suppose to be high skip next instruction
+
+               XOR          op0, b3msk         ; else clr sin bit
+send_byte1:    OUTPUT       op0, 00            ; 
+               XOR          op0, b4msk         ; Bring sclk low
+               OUTPUT       op0, 00            ; Write to port #0
+               CALL         delay_1us          ; Wait 1 us
+               XOR          op0, b4msk         ; Bring sclk high
+               OUTPUT       op0, 00            ; Write to port #0
+               CALL         delay_1us          ; Wait  1 us
+               SR0          scr2               ; Shift mask                		    
+		    SUB          cnt, 01            ; Update counter
+               JUMP         NZ, send_byte0
+
+               RETURN
+;                    
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;              
+;
+; Name: delay_1us
+;
+; Delay of 1 usec
+; Delay is [(4 * dreg) + 6] / Fclk
+; Constant = (clock rate - 6) / 4 where clock rate is in MHz
+; Routine uses dreg and does not restore it
+;
+; 20 (i.e. $14) assumes 84 MHz clock
+; 11 (i.e. $0B) assumes 50 MHz clock
+; 6 (i.e. $06) assumes 30 MHz clock
+; 16 (i.e $10) assumes a 70 MHz clock
+; 
+;
+delay_1us:  LOAD        dreg, 10
+wait_1us:   SUB         dreg, 01
+            JUMP        NZ, wait_1us
+            RETURN
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;              
+;
+; Name: dly_3000ns
+;
+
+;
+; Delay is [(4 * dreg) + 6] / Fclk
+;
+; $33 (i.e. 51) is for a 70 MHz clock
+; 
+;
+dly_3000ns:  LOAD        dreg, 33
+dly0:        SUB         dreg, 01
+             JUMP        NZ, dly0
+             RETURN
+
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; ISR
+;
+; An interrupt occurs when "sclk" transitions high
+; Configuration data is about to be sent.
+; Job of ISR is just to wait for all of the config data
+; to be read.
+;
+; We will know that all of the configuration data has
+; been sent when there is a pulse on the dac_sgn line.
+;
+; All we need to do is sit and wait for dac_sgn pulse
+; dac_sgn is bit 4 of port #4 
+;
+; dac_sgn pulse should be qualified with sc1 and sc0 being hign
+;
+; Uses scr1 and does not restore register
+;
+            ADDRESS     300
+
+isr:        INPUT       isr_reg, 04
+            AND         isr_reg, bits_2and3     ; sc1 & sc0 high
+            SUB         isr_reg, bits_2and3
+            JUMP        NZ, isr      
+           
+;
+; Now wait for trailing  edge of dac_sgn pulse
+;
+
+isr1:       INPUT       isr_reg, 04
+            AND         isr_reg, bits_2and3
+            SUB         isr_reg, bits_2and3
+            JUMP        Z, isr1
+
+;
+; Configure the PSD chip
+; Load it twice helps in debugging
+;
+           CALL        config_PSD
+;          CALL        config_PSD     ;  Useful for debugging
+
+;
+; Assert the clr_int control to purge the pending interrupt
+; else we will load the PSD config register a second time
+;
+           OR          op0, b0msk
+           OUTPUT      op0, 00
+           AND         op0, b0mskN
+           OUTPUT      op0, 00
+;
+; Re-init everything
+;
+
+           CALL        init
+
+;                
+           RETURNI     ENABLE   
+   
+;
+; Interrupt vector is stored at location $3FF
+; We will jump to our ISR routine
+; 
+            ADDRESS    3FF                         
+            JUMP       isr

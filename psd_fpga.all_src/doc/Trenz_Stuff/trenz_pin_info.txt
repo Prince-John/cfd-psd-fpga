@@ -1,0 +1,8 @@
+System Controller CPLD
+The system controller is used to coordinate the configuration of the FPGA. The FPGA is held in reset (by driving the PROG_B signal) until the power supplies have sequenced. Low level at NRST_SC0 pin also resets the FPGA. This signal can be driven from the user’s PCB via the B2B connector pin JM2-18. Input EN_SC3 is also gated to FPGA Reset and should be open or pulled up for normal operation. EN_SC3 low turns off on board DC-DC converters and stops power-on sequencing.
+
+It is possible for the user to create their own system controller design using the Lattice Diamond software. Once created the design can be programmed into the device using the JTAG pins. The signal JTAGSEL should be set to 3.3V to enable programming mode. For normal operation it should be set to 0V.
+
+There are one status LED connected to the system controller CPLD. When the FPGA is not configured the LED will flash continuously. Finally once FPGA configuration has completed the LEDs can be used in the user's FPGA design.
+
+

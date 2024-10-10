@@ -1,0 +1,370 @@
+// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+// Configuration routines
+// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+bool	isConfigMode() {
+	if (!uart_byte_ready()) return false ;
+//
+// Might be special command
+// If it is, STX then send ACK
+// If ETX then NAK
+//
+	if (uart_get_str() == 2 ) {
+		if (uartStr[0] == STX) {
+			uart_send_byte(ACK) ;
+			return true ;
+		}
+		if (uartStr[0] == ETX) {
+			uart_send_byte(NAK) ;
+			return false ;
+		}
+	}
+	return false ;
+}
+
+#include	"main.h"
+
+// ****************************************************
+// configHandler()
+//
+// Routine called when host wants us to configure something.
+// Reception of STX is what initiates the call to this
+// handler.
+// ****************************************************
+
+void	configHandler() {
+
+// Number of bytes returned from str_to_bytes()
+
+	int		numBytes ;
+
+// Pointer to u8 data
+
+	u8		*buff ;
+
+// Value (a byte) we want to transmit to delay chip
+// delay_data : 0 a b v w x y z (see datasheet)
+// Host sends us a byte with v w x y z
+// We'll tack on the channel info i.e. (a b) here
+// in command handler
+
+	u8 		dlyVal ;
+
+// Token representing which command was received
+
+	enum	cmd_tokens token ;
+
+// Use when we configure the delay chips
+
+	u8	chip_num ;
+
+// Wait for configuration commands from the host
+// Exit the do-loop when we receive a ETX from Host
+// ETX says leave configuration mode
+
+    do {
+    	numBytes = uart_get_str() ;
+
+// Handle some "special" cases (2 byte strings are special, second byte is NULL)
+
+    	if ( (numBytes == 2) || (numBytes == 1) ){
+    		switch (uartStr[0]) {
+    			case STX : 	uart_send_byte(NAK) ; // Shouldn't see another STX so NAK
+    						return ;
+    			case ETX :  uart_send_byte(ACK) ;  // Leave config mode
+    						return ;
+    			default :	uart_send_byte(NAK) ;  // ???? so send NAK
+    						break ;
+    		} // end switch
+    	} // end if
+
+// So we think we have a configuration command from the host!
+// Analyze string and get a token telling us what we need to do
+
+    	token = get_token() ;
+
+// When we return, data field (if any) starts at uartStr[4]
+
+    	switch (token) {
+
+// Configure delay ICs
+// Configure the delay chips (For each chip we need to load the 3 channels: R G B
+// chip_num :  delay chip (0 - 5)
+// delay_data : 0 a b v w x y z (see datasheet)
+// Host is sending us the 5-bit value {v w x y z}
+
+    		case CONFIG_DELAY :	buff = &uartStr[4] ;			// string past the :
+    			    			numBytes = str_to_bytes(buff) ;		// number of hex bytes
+    			    			if (numBytes == 18) {				// Need 18 bytes to configure delay ICs
+    	   							for (chip_num = 0; chip_num < 6; chip_num++) {
+    	   								dlyVal = buff[(3 * chip_num)] | (1 << 5 );			// Red channel i.e. channel 1
+    	    							configure_delay_chips(chip_num, dlyVal) ;
+    	   								dlyVal = buff[(3 * chip_num) + 1] | (2 << 5) ;    	// Green channel i.e. channel 2
+    	    							configure_delay_chips(chip_num, dlyVal) ;
+    	   								dlyVal = buff[(3 * chip_num) + 2] | (3 << 5 );    	// Blue channel i.e. channel 3
+    	    							configure_delay_chips(chip_num, dlyVal) ;
+    			    				} // end for-loop
+    	    						uart_send_byte(ACK) ;
+    			    			} else {
+    			    				uart_send_byte(NAK) ;
+    			    			} // end if-then-else
+    							break ;
+
+// Configure PSD serial register
+
+    		case CONFIG_PSD :	buff = &uartStr[4] ;  			// 3 ascii character command plus the :
+								numBytes = str_to_bytes(buff) ;		// number of hex bytes it should return
+								if (numBytes == 12) {				// Takes 12 bytes to configure both PSD chips
+									configure_psd_chips(buff) ;
+									uart_send_byte(ACK) ;
+									break;
+								} else {
+									uart_send_byte(NAK) ;
+									break ;
+								}
+
+// Get board ID
+
+       		case GET_BOARD_ID :	if (useLCD) {
+       	    						lcd_clear();
+       	    						lite_sprintf(LCDstr, "Board ID: %d", get_board_id() ) ;
+       	    						lcd_print_str(LCDstr) ;
+       	    						sleep(2) ;
+       	    					}
+    							uart_send_byte(ACK) ;
+    							break ;
+
+// Write to CFD register
+
+       		case WRITE_TO_CFD :	buff = &uartStr[4] ;  					// 3 ascii character command plus the :
+								numBytes = str_to_bytes(buff) ;			// number of hex bytes it should return
+    			    			if (numBytes == 2) {					// 2 bytes {addr/mode, data}
+           							write_cfd_reg(buff[0], buff[1]) ;
+    	    						uart_send_byte(ACK) ;
+    			    			} else {
+    			    				uart_send_byte(NAK) ;
+    			    			} // end if-then-else
+    							break ;
+
+// Couldn't understand or cannot do command
+// Send back negative acknowledge
+
+    		default :			uart_send_byte(NAK) ;
+    							break ;
+
+    	} // end switch
+
+    } while (true) ; // end do-while loop
+
+// Not really an infinite loop, we exit when ETX comes in
+
+	return ;
+}
+
+// ****************************************************
+// isConfigMode()
+// Check if STX as a string has come in from host
+// uartStr is a global
+// ***************************************************
+
+// *****************************************************************
+// get_token() takes the global string, uartStr, and returns a token
+// ******************************************************************
+
+enum cmd_tokens get_token() {
+	int		i ;
+
+// Flag for each command
+
+	bool 	isDEL = true ;
+	bool	isPSD = true ;
+	bool	isBID = true ;
+	bool	isCFD = true ;
+	bool	isRST = true ;
+	bool	isDEB = true ;
+	bool	isMUX = true ;
+	bool	isDAC = true ;
+
+
+// Our commands
+
+	u8	del[4]  = {'D', 'L', 'Y', ':'} ;
+	u8	psd[4]  = {'P', 'S', 'D', ':'} ;
+	u8	bid[4]  = {'B', 'I', 'D', ':'} ;
+	u8	cfd[4]  = {'C', 'F', 'D', ':'} ;
+	u8	mux[4]  = {'M', 'U', 'X', ':'} ;
+	u8	dac[4]  = {'D', 'A', 'C', ':'} ;
+	u8	rst[4]  = {'R', 'S', 'T', ':'} ;
+
+// See if we recognize a command
+
+	for (i = 0; i < 4; i++) {
+		if (uartStr[i] != del[i]) isDEL = false ;
+		if (uartStr[i] != psd[i]) isPSD = false ;
+		if (uartStr[i] != bid[i]) isBID = false ;
+		if (uartStr[i] != cfd[i]) isCFD = false ;
+		if (uartStr[i] != mux[i]) isMUX = false ;
+		if (uartStr[i] != dac[i]) isDAC = false ;
+		if (uartStr[i] != rst[i]) isRST = false ;
+	}
+
+	if (isDEL == true) return CONFIG_DELAY ;
+	if (isPSD == true) return CONFIG_PSD ;
+	if (isBID == true) return GET_BOARD_ID ;
+	if (isCFD == true) return WRITE_TO_CFD ;
+	if (isMUX == true) return CONFIG_MUX ;
+
+	return ERROR ;
+}
+
+// ******************************************************************************
+// Routine to get the board ID (6 bits) and save to global variable board_id
+// ******************************************************************************
+
+u8	get_board_id() {
+	u8		board_id ;
+	board_id = (u8) read_gpio_port(BOARD_ID_PORT, 6, BOARD_ID_0) ;
+	return board_id ;
+}
+
+// ***************************************************
+// Routine to control the cfd_write line
+// We really have no need to read from CFD
+// Call this routine from main() and set line HIGH
+// Just leave it high!
+// *****************************************************
+
+void  	cfd_write(u8 value) {
+	write_gpio_port(CFD_PORT, 1, CFD_WRITE, value) ;
+	return ;
+}
+
+// ***************************************************
+// Routine to control the cfd strobe line
+// Value should be either LOW or HIGH
+// *****************************************************
+
+void	cfd_strobe(u8 value) {
+	write_gpio_port(CFD_PORT, 1, CFD_STB, value) ;
+}
+
+// ******************************************************************************
+// Write to CFD chip internal registers
+// ******************************************************************************
+
+void	write_cfd_reg(u8 addr_mode, u8 data) {
+
+// Makse sure strobe is LOW
+
+	cfd_strobe(LOW) ;
+
+// Write out address/mode info
+
+	write_gpio_port(CFD_PORT, 8, CFD_AD_OUT_0, addr_mode) ;
+
+// Bring strobe high
+
+	cfd_strobe(HIGH) ;
+
+// Write out address/mode info
+
+	write_gpio_port(CFD_PORT, 8, CFD_AD_OUT_0, data) ;
+
+// Bring strobe back low
+
+	cfd_strobe(LOW) ;
+	return ;
+}
+
+
+// ***********************************
+// Load the two PSD chips
+// Each psd register is 48 bits wide
+// 96 serial clocks
+// Least significant bit goes in first
+// Put data out on falling edge of clock
+// PSD chip latches data on rising edge
+// *********************************
+
+void  configure_psd_chips(u8 *psd_config_data) {
+    int     i ;
+    int     j ;
+    u32     byte ;
+    u32		value ;
+    u32		psd_sclk ;
+    u32		psd_sin ;
+
+// 2-bit field {psd_sclk, psd_sin}
+// (1 << j) is mask to pick of the jth bit
+
+    for (i = 0; i < 12 ; i++) {
+        byte = (u32) psd_config_data[i] ;
+        for (j = 0 ; j < 8 ; j++) {
+        	psd_sin = (byte & (1 << j)) >> j ;
+        	psd_sclk = LOW ;
+           	value = (psd_sclk << 1) | psd_sin ;
+            write_gpio_port(PSD_SERIAL_CONFIG_OUT_PORT, 2, PSD_SIN, value) ;
+        	psd_sclk = HIGH ;
+           	value = (psd_sclk << 1) | psd_sin ;
+            write_gpio_port(PSD_SERIAL_CONFIG_OUT_PORT, 2, PSD_SIN, value) ;
+        }
+    }
+    return ;
+
+// It would be nice if returned an array of sdo data rather than void!!!
+
+}
+
+// *****************************************************************S
+// Configure the delay chips
+// chip_num :  delay chip (0 - 5)
+// delay_data : 0 a b v w x y z (see datasheet)
+// *****************************************************************
+
+void configure_delay_chips(u8 chip_num, u8 delay_data) {
+    u32     ena_val ;
+    u32		clk_val ;
+    u32		data_val ;
+    u32		value ;
+    int     j ;
+
+// Assumption is that clock is low when we enter routine
+// Make sure it's low when we exit routine
+// Only one enable should be active LOW!
+
+// Bring serial enable low (active)
+// Serial clock should be low
+// 8 bit field --> ena [6], delay_clk [1], delay_data[1]
+
+   ena_val = (1 << chip_num) ;
+   ena_val = ~ena_val ;
+   ena_val = ena_val & 0x003f ;
+   value = (ena_val << 2) ; 	// enable with clock and data low so now we have 8 bits
+   write_gpio_port(DELAY_CHIP_PORT, 8, DELAY_DATA, value) ;
+
+// Put data out on rising edge of clock
+
+    for (j = 7; j >= 0 ; j--) {
+    	data_val = delay_data & (1 << j) ;
+    	data_val = (data_val >> j) ;
+
+    	clk_val = HIGH ;
+    	value = data_val | (clk_val << 1) ;
+    	write_gpio_port(DELAY_CHIP_PORT, 2, DELAY_DATA, value) ;
+
+    	clk_val = LOW ;
+    	value = clk_val ;
+    	write_gpio_port(DELAY_CHIP_PORT, 1, DELAY_CLK, value) ;
+    }
+        
+// Bring serial enable high (i.e. NOT active)
+
+    ena_val = 0x003f ;
+    clk_val = 0 ;
+    data_val = 0 ;
+	value = data_val | (clk_val << 1) | (ena_val << 2) ;
+	write_gpio_port(DELAY_CHIP_PORT, 8, DELAY_DATA, value) ;
+
+    return ;
+}
+

@@ -1,0 +1,13 @@
+#!/bin/tcsh
+
+echo ""
+echo "VIVADO_PROJECTS = $VIVADO_PROJECTS"	
+echo "VIVADO_PROJECT = $VIVADO_PROJECT"
+echo "FHOME = $FHOME"
+echo "CSV_DELIMITER = $CSV_DELIMITER"
+echo "FPGA_BOARD = $FPGA_BOARD"
+echo "FPGA_NUM_JOBS = $FPGA_NUM_JOBS"
+echo "EDITOR = $EDITOR"
+echo ""
+
+
