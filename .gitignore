@@ -16,6 +16,20 @@ psd_fpga.all_src/xdc/psd_fpga.xdc
 psd_fpga.all_src/xdc/psd_fpga_xdc.log
 psd_fpga.all_src/xdc/psd_fpga_top.vh
 
+# Do ignore Vittis IDE log and generated files.
+psd_fpga.all_src/vitis_project/.analytics
+psd_fpga.all_src/vitis_project/IDE.log
+psd_fpga.all_src/vitis_project/.metadata/
+psd_fpga.all_src/vitis_project/**/*.launch
+psd_fpga.all_src/vitis_project/psd_fpga_platform/.log/*
+psd_fpga.all_src/vitis_project/psd_fpga_platform/logs/platform.log
+psd_fpga.all_src/vitis_project/psd_fpga_app/_ide/bitstream/*.bit
+psd_fpga.all_src/vitis_project/psd_fpga_platform/hw/*.bit
+psd_fpga.all_src/vitis_project/psd_fpga_platform/tempdsa/*.bit
+psd_fpga.all_src/vitis_project/psd_fpga_platform/hw/*.xsa
+psd_fpga.all_src/vitis_project/psd_fpga_platform/tempdsa/*.xsa
+psd_fpga.all_src/vitis_project/psd_fpga_app/_ide/hwspec.checksum
+
 # Don't ignore the two symlinks
 !new_ws.csh
 !run
