@@ -71,7 +71,7 @@ int main() {
 // Send something to make sure UART functional
 
     init_uart() ;
-	xil_printf("PSD_FPGA Version 0.1\r\n") ;
+	xil_printf("PSD_FPGA %s \r\n", PROJECT_VERSION) ;
 
 // Init timer/counter
 
@@ -96,7 +96,8 @@ int main() {
 
 	if (useLCD) {
 	    //lcd_clear();
-	    lcd_print_str("PSD_FPGA Version 0.1") ;
+	    lcd_print_str("PSD_FPGA: ") ;
+	    lcd_print_str(PROJECT_VERSION) ;
 	    lcd_set_cursor(1,0) ;
 	    lcd_print_str("--> Main loop!") ;
 	}

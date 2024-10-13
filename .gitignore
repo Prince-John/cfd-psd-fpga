@@ -30,6 +30,24 @@ psd_fpga.all_src/vitis_project/psd_fpga_platform/hw/*.xsa
 psd_fpga.all_src/vitis_project/psd_fpga_platform/tempdsa/*.xsa
 psd_fpga.all_src/vitis_project/psd_fpga_app/_ide/hwspec.checksum
 
+
+# Ignore all Debug and Release build artifacts
+psd_fpga.all_src/vitis_project/psd_fpga_app/Debug/
+psd_fpga.all_src/vitis_project/psd_fpga_app/Debug/*.elf
+psd_fpga.all_src/vitis_project/psd_fpga_app/Debug/*.elf.size
+psd_fpga.all_src/vitis_project/psd_fpga_app/Debug/*.build.ui.log
+psd_fpga.all_src/vitis_project/psd_fpga_app/Debug/src/*.d
+psd_fpga.all_src/vitis_project/psd_fpga_app/Debug/src/*.o
+psd_fpga.all_src/vitis_project/psd_fpga_app/Release/
+psd_fpga.all_src/vitis_project/psd_fpga_app/Release/*.elf
+psd_fpga.all_src/vitis_project/psd_fpga_app/Release/*.elf.size
+psd_fpga.all_src/vitis_project/psd_fpga_app/Release/*.build.ui.log
+psd_fpga.all_src/vitis_project/psd_fpga_app/Release/src/*.d
+psd_fpga.all_src/vitis_project/psd_fpga_app/Release/src/*.o
+psd_fpga.all_src/vitis_project/psd_fpga_app/_ide/
+psd_fpga.all_src/vitis_project/psd_fpga_app_system/_ide/
+
+
 # Don't ignore the two symlinks
 !new_ws.csh
 !run

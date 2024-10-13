@@ -1,71 +1,0 @@
-2024-10-10T15:10:37.35640600255-15:10:37 **** Build of configuration Debug for project psd_fpga_app ****
-000-make all 
-000-Building file: ../src/config_routines.c
-000-Invoking: MicroBlaze gcc compiler
-000-mb-gcc -Wall -O0 -g3 -c -fmessage-length=0 -MT"src/config_routines.o" -I/home/prince/Vivado_projects/Trenz-Projects/psd_fpga_gle_2_oct_2024/psd_fpga.all_src/vitis_project/psd_fpga_platform/export/psd_fpga_platform/sw/psd_fpga_platform/standalone_domain/bspinclude/include -mlittle-endian -mxl-barrel-shift -mxl-pattern-compare -mno-xl-soft-div -mcpu=v11.0 -mno-xl-soft-mul -Wl,--no-relax -ffunction-sections -fdata-sections -MMD -MP -MF"src/config_routines.d" -MT"src/config_routines.o" -o "src/config_routines.o" "../src/config_routines.c"
-000-../src/config_routines.c: In function 'get_token':
-000/psd_fpga_app/src/config_routines.c207-1-1variable 'isDAC' set but not used [-Wunused-but-set-variable]1-../src/config_routines.c:207:17: warning: variable 'isDAC' set but not used [-Wunused-but-set-variable]
-000-  207 |         bool    isDAC = true ;
-000-      |                 ^~~~~
-000/psd_fpga_app/src/config_routines.c205-1-1unused variable 'isDEB' [-Wunused-variable]1-../src/config_routines.c:205:17: warning: unused variable 'isDEB' [-Wunused-variable]
-000-  205 |         bool    isDEB = true ;
-000-      |                 ^~~~~
-000/psd_fpga_app/src/config_routines.c204-1-1variable 'isRST' set but not used [-Wunused-but-set-variable]1-../src/config_routines.c:204:17: warning: variable 'isRST' set but not used [-Wunused-but-set-variable]
-000-  204 |         bool    isRST = true ;
-000-      |                 ^~~~~
-000-Finished building: ../src/config_routines.c
-000- 
-000-Building file: ../src/event.c
-000-Invoking: MicroBlaze gcc compiler
-000-mb-gcc -Wall -O0 -g3 -c -fmessage-length=0 -MT"src/event.o" -I/home/prince/Vivado_projects/Trenz-Projects/psd_fpga_gle_2_oct_2024/psd_fpga.all_src/vitis_project/psd_fpga_platform/export/psd_fpga_platform/sw/psd_fpga_platform/standalone_domain/bspinclude/include -mlittle-endian -mxl-barrel-shift -mxl-pattern-compare -mno-xl-soft-div -mcpu=v11.0 -mno-xl-soft-mul -Wl,--no-relax -ffunction-sections -fdata-sections -MMD -MP -MF"src/event.d" -MT"src/event.o" -o "src/event.o" "../src/event.c"
-000-Finished building: ../src/event.c
-000- 
-000-Building file: ../src/gpio.c
-000-Invoking: MicroBlaze gcc compiler
-000-mb-gcc -Wall -O0 -g3 -c -fmessage-length=0 -MT"src/gpio.o" -I/home/prince/Vivado_projects/Trenz-Projects/psd_fpga_gle_2_oct_2024/psd_fpga.all_src/vitis_project/psd_fpga_platform/export/psd_fpga_platform/sw/psd_fpga_platform/standalone_domain/bspinclude/include -mlittle-endian -mxl-barrel-shift -mxl-pattern-compare -mno-xl-soft-div -mcpu=v11.0 -mno-xl-soft-mul -Wl,--no-relax -ffunction-sections -fdata-sections -MMD -MP -MF"src/gpio.d" -MT"src/gpio.o" -o "src/gpio.o" "../src/gpio.c"
-000-Finished building: ../src/gpio.c
-000- 
-000-Building file: ../src/i2c.c
-000-Invoking: MicroBlaze gcc compiler
-000-mb-gcc -Wall -O0 -g3 -c -fmessage-length=0 -MT"src/i2c.o" -I/home/prince/Vivado_projects/Trenz-Projects/psd_fpga_gle_2_oct_2024/psd_fpga.all_src/vitis_project/psd_fpga_platform/export/psd_fpga_platform/sw/psd_fpga_platform/standalone_domain/bspinclude/include -mlittle-endian -mxl-barrel-shift -mxl-pattern-compare -mno-xl-soft-div -mcpu=v11.0 -mno-xl-soft-mul -Wl,--no-relax -ffunction-sections -fdata-sections -MMD -MP -MF"src/i2c.d" -MT"src/i2c.o" -o "src/i2c.o" "../src/i2c.c"
-000-Finished building: ../src/i2c.c
-000- 
-000-Building file: ../src/main.c
-000-Invoking: MicroBlaze gcc compiler
-000-mb-gcc -Wall -O0 -g3 -c -fmessage-length=0 -MT"src/main.o" -I/home/prince/Vivado_projects/Trenz-Projects/psd_fpga_gle_2_oct_2024/psd_fpga.all_src/vitis_project/psd_fpga_platform/export/psd_fpga_platform/sw/psd_fpga_platform/standalone_domain/bspinclude/include -mlittle-endian -mxl-barrel-shift -mxl-pattern-compare -mno-xl-soft-div -mcpu=v11.0 -mno-xl-soft-mul -Wl,--no-relax -ffunction-sections -fdata-sections -MMD -MP -MF"src/main.d" -MT"src/main.o" -o "src/main.o" "../src/main.c"
-000-Finished building: ../src/main.c
-000- 
-000-Building file: ../src/self_test.c
-000-Invoking: MicroBlaze gcc compiler
-000-mb-gcc -Wall -O0 -g3 -c -fmessage-length=0 -MT"src/self_test.o" -I/home/prince/Vivado_projects/Trenz-Projects/psd_fpga_gle_2_oct_2024/psd_fpga.all_src/vitis_project/psd_fpga_platform/export/psd_fpga_platform/sw/psd_fpga_platform/standalone_domain/bspinclude/include -mlittle-endian -mxl-barrel-shift -mxl-pattern-compare -mno-xl-soft-div -mcpu=v11.0 -mno-xl-soft-mul -Wl,--no-relax -ffunction-sections -fdata-sections -MMD -MP -MF"src/self_test.d" -MT"src/self_test.o" -o "src/self_test.o" "../src/self_test.c"
-000-Finished building: ../src/self_test.c
-000- 
-000-Building file: ../src/str_utils.c
-000-Invoking: MicroBlaze gcc compiler
-000-mb-gcc -Wall -O0 -g3 -c -fmessage-length=0 -MT"src/str_utils.o" -I/home/prince/Vivado_projects/Trenz-Projects/psd_fpga_gle_2_oct_2024/psd_fpga.all_src/vitis_project/psd_fpga_platform/export/psd_fpga_platform/sw/psd_fpga_platform/standalone_domain/bspinclude/include -mlittle-endian -mxl-barrel-shift -mxl-pattern-compare -mno-xl-soft-div -mcpu=v11.0 -mno-xl-soft-mul -Wl,--no-relax -ffunction-sections -fdata-sections -MMD -MP -MF"src/str_utils.d" -MT"src/str_utils.o" -o "src/str_utils.o" "../src/str_utils.c"
-000-Finished building: ../src/str_utils.c
-000- 
-000-Building file: ../src/timer.c
-000-Invoking: MicroBlaze gcc compiler
-000-mb-gcc -Wall -O0 -g3 -c -fmessage-length=0 -MT"src/timer.o" -I/home/prince/Vivado_projects/Trenz-Projects/psd_fpga_gle_2_oct_2024/psd_fpga.all_src/vitis_project/psd_fpga_platform/export/psd_fpga_platform/sw/psd_fpga_platform/standalone_domain/bspinclude/include -mlittle-endian -mxl-barrel-shift -mxl-pattern-compare -mno-xl-soft-div -mcpu=v11.0 -mno-xl-soft-mul -Wl,--no-relax -ffunction-sections -fdata-sections -MMD -MP -MF"src/timer.d" -MT"src/timer.o" -o "src/timer.o" "../src/timer.c"
-000-Finished building: ../src/timer.c
-000- 
-000-Building file: ../src/uart.c
-000-Invoking: MicroBlaze gcc compiler
-000-mb-gcc -Wall -O0 -g3 -c -fmessage-length=0 -MT"src/uart.o" -I/home/prince/Vivado_projects/Trenz-Projects/psd_fpga_gle_2_oct_2024/psd_fpga.all_src/vitis_project/psd_fpga_platform/export/psd_fpga_platform/sw/psd_fpga_platform/standalone_domain/bspinclude/include -mlittle-endian -mxl-barrel-shift -mxl-pattern-compare -mno-xl-soft-div -mcpu=v11.0 -mno-xl-soft-mul -Wl,--no-relax -ffunction-sections -fdata-sections -MMD -MP -MF"src/uart.d" -MT"src/uart.o" -o "src/uart.o" "../src/uart.c"
-000-Finished building: ../src/uart.c
-000- 
-000-Building target: psd_fpga_app.elf
-000-Invoking: MicroBlaze gcc linker
-000-mb-gcc -Wl,-T -Wl,../src/lscript.ld -L/home/prince/Vivado_projects/Trenz-Projects/psd_fpga_gle_2_oct_2024/psd_fpga.all_src/vitis_project/psd_fpga_platform/export/psd_fpga_platform/sw/psd_fpga_platform/standalone_domain/bsplib/lib -mlittle-endian -mxl-barrel-shift -mxl-pattern-compare -mno-xl-soft-div -mcpu=v11.0 -mno-xl-soft-mul -Wl,--no-relax -Wl,--gc-sections -o "psd_fpga_app.elf" ./src/config_routines.o ./src/event.o ./src/gpio.o ./src/i2c.o ./src/main.o ./src/self_test.o ./src/str_utils.o ./src/timer.o ./src/uart.o   -Wl,--start-group,-lxil,-lgcc,-lc,--end-group
-000-Finished building target: psd_fpga_app.elf
-000- 
-000-Invoking: MicroBlaze Print Size
-000-mb-size psd_fpga_app.elf  |tee "psd_fpga_app.elf.size"
-000-   text	   data	    bss	    dec	    hex	filename
-000-  15848	    356	   3532	  19736	   4d18	psd_fpga_app.elf
-000-Finished building: psd_fpga_app.elf.size
-000- 
-00255-
-15:10:38 Build Finished (took 933ms)
-

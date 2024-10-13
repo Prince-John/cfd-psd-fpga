@@ -5,6 +5,8 @@
 Author: 	gle
 Date:		18-Sep-2024
 Version:	26-Sep-2024
+Current version: `v0.0.0`  # The `run` script will update this line automatically
+
 
 *****************************************************************
 
@@ -84,6 +86,31 @@ from the $FHOME directory
 
 To test the delay chip stuff ... trigger off of DELAY_CLK
 and then also look at the enables ... 
+
+
+******************************************************************
+
+Date: Oct 10
+Author: Prince
+
+## Semantic Versioning. 
+
+I have now implemented version control and semantic versioning for tracking stable builds of this project. 
+
+Only the `psd_fpga.all_src` folder is tracked with some exclusions put in for vitis metadata and build files. Every time this project is pulled to a new machine the `run` script must be executed from a `tcsh` shell to generate the complete project files. 
+
+### Verison Numbers: 
+
+Semantic versioning uses the format MAJOR.MINOR.PATCH:
+
+MAJOR: Increment for incompatible API changes, would require a project rebuild.
+MINOR: Increment for new features that are backward-compatible, require the xsa to be updated in vitis.
+PATCH: Increment for backward-compatible bug fixes, no hardware changes just firmware bugfixes.
+
+The `git tag` command is used to tag every version on the master branch which we want to increment into new release versions. 
+ 
+UNDER construction still, at some point all generated scripts will pull last version tag and current datetime and include it into the logs.
+
 
 
 

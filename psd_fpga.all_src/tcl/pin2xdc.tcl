@@ -7,13 +7,22 @@
 # Only handle pin related xdc info
 # We will have another xdc file for timing constraints
 #
+######################
+# Prince:: 10 Oct, 2024. 
+# Version number updates. 
 
 #
 # Version
-# Keep this up to date so we know which build of pin2xdc.tcl was used
+# Keep this up to date so we know which build of pin2xdc.tcl was used. 
 #
+# Now automated. Just update a patch tag with git, this script should automatically find the latest global version. 
 
-set		version		"26-Sep-2024 --> Handles Trenz reset (D9) pin"
+
+# Get the latest tag
+set latest_tag [exec git describe --tags --abbrev=0]
+set last_tag_date [exec git log -1 --format=%cd --date=format:%Y-%m-%d\ %H:%M:%S $latest_tag]
+
+set		version		"$latest_tag released at\t$last_tag_date"
 
 #
 # Check to see which development board we are using

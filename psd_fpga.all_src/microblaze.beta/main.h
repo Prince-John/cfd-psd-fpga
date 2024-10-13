@@ -8,6 +8,9 @@
 #ifndef SRC_MAIN_H_
 #define SRC_MAIN_H_
 
+//Automated version tagging
+#include "version.h"
+
 // Boolean support
 
 #include    <stdbool.h>

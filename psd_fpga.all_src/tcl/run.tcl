@@ -3,9 +3,14 @@
 # We will store our variables in an assoiciative array
 # We can then access them easily from within a procedure 
 
+
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # Project related stuff
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+# Get the latest version tag for this project from git  
+set vars(VERSION_TAG) [exec git describe --tags]
+set varsMsg(VERSION_TAG) "Current project version:\t$vars(VERSION_TAG)"
 
 set vars(PROJECT_ROOT) 		$env(VIVADO_PROJECTS)
 set varsMsg(PROJECT_ROOT) 	"Root directory for projects:\t$vars(PROJECT_ROOT)"	
@@ -199,8 +204,8 @@ proc readme_proc {} {
 	set		editor		$vars(EDITOR)
 	
 	switch $editor {
-		"gedit"	 { set	cmd	 [list exec gedit $project_dir/README] }
-		"vim"	 { set  cmd [list exec vim <@ stdin >@ stdout 2>@ stderr $project_dir/README] }
+		"gedit"	 { set	cmd	 [list exec gedit $project_dir/README.md] }
+		"vim"	 { set  cmd [list exec vim <@ stdin >@ stdout 2>@ stderr $project_dir/README.md] }
 		default  { puts "Don't recognize $editor ... aborting" ; return }
 	}
 	{*}$cmd		
@@ -643,6 +648,33 @@ proc xsa_proc {} {
 	return	
 }
 
+
+
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# Update the version header file
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+proc update_version_proc {} {
+	global vars
+	
+	set		project_dir	$vars(PROJECT_DIR)
+	set		tcl_dir		$vars(PROJECT_DIR)/tcl
+	
+	cd 		$project_dir
+	
+	if { [catch {exec tclsh [file join $tcl_dir "update_version_header.tcl"]} result] } {
+		puts "\nERROR!!!!!!!!!!!!!"
+		puts $result
+		puts "\n"	     
+    	} else {
+		puts "Version header updated successfully!"
+		puts $result
+		}
+	return	
+}
+
+
+
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 #  Main program
@@ -651,7 +683,7 @@ proc xsa_proc {} {
 
 # List of all of the commands we understand
 
-set	cmdList		{"vivado" "vitis" "asm" "new" "new_ws" "rm_links" "links" "clean" "xdc" "gpio" "xsa" "readme" "info" }
+set	cmdList		{"vivado" "vitis" "asm" "new" "new_ws" "rm_links" "links" "clean" "xdc" "gpio" "xsa" "readme" "info" "update_version"}
 
 set	cmdListHelp	 \
 {"\tvivado		--> Launches vivado and opens the project"
@@ -666,7 +698,8 @@ set	cmdListHelp	 \
  "\tgpio    	--> Runs gpio generator on gpio csv file"
  "\txsa    		--> Runs vivado in batch mode and creates xsa file"
  "\treadme 		--> Displays README file which decribes the flow"
- "\tinfo   		--> Displays all of the project related settings" } 
+ "\tinfo   		--> Displays all of the project related settings"
+ "\tupdate_version	--> Updates/generates the version header file for C firmware with latest commit tag"} 
 
 # Make sure we have a single argument
 
