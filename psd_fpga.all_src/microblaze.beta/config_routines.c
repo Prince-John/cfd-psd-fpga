@@ -3,7 +3,7 @@
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 // Configuration routines
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
+//#define DEBUG
 bool	isConfigMode() {
 	if (!uart_byte_ready()) return false ;
 //
@@ -149,15 +149,25 @@ void	configHandler() {
 
 // Configure AMUX Channel
 
-       		case CONFIG_MUX : buff = &uartStr[4] ;			// string past the
+       		case CONFIG_MUX : buff = &uartStr[4] ;			// string past the :
        						  numBytes = str_to_bytes(buff) ;		// number of hex bytes
-       						  if (numBytes == 2) {					// 2 bytes {addr/mode, data}
-       							  	if (useLCD) {
+
+#ifdef DEBUG
+       							  if (useLCD) {
        								  lcd_clear();
-       								  lite_sprintf(LCDstr, "Config MUX command received: %s", buff ) ;
+       								  lite_sprintf(LCDstr, "Config MUX command:") ;
        								  lcd_print_str(LCDstr) ;
+       								  lcd_set_cursor(1,0) ;
+       								  lite_sprintf(LCDstr, "# command bytes: %d", numBytes) ;
+       								  lcd_print_str(LCDstr) ;
+       								  lcd_set_cursor(2,0) ;
+
        								  sleep(2) ;
        							  	  }
+#endif
+       						  if (numBytes == 1) {					// 1 byte really 5 bit config data
+
+       							  	write_mux(buff[0]);
 									uart_send_byte(ACK) ;
 
        						  } else {
@@ -389,3 +399,40 @@ void configure_delay_chips(u8 chip_num, u8 delay_data) {
     return ;
 }
 
+/*
+// **********************************************
+ * 	MUX Configuration low level implementation
+ *
+ * 	This function takes in the bitmask to set the mux configuration
+ *
+ * 	The ADG1206 MUX takes in a 5 bit control signal.
+ * 	The 4 most significant bits are the channel # in binary, and the LSB is the Enable line.
+ * 	if EN is 0 the rest of the control signals are ignored, MUX is disabled.
+ *
+ * 	For example, data=0011 1 -> turn on channel 4
+ * 				 data=0000 1 -> turn on channel 1
+ * 				 data=XXXX 0 -> disable mux
+ *
+ * CAUTION!!!: This function does no data validation and directly writes the data to the mux lines.
+// *********************************************
+*/
+void	write_mux(u8 data) {
+
+
+	write_gpio_port(MUX_PORT, 5, MUX_EN, data) ;
+
+#ifdef DEBUG
+       							  if (useLCD) {
+       								  lcd_clear();
+       								  lcd_set_cursor(0,0) ;
+       								  lite_sprintf(LCDstr, "->Inside write_mux:") ;
+       								  lcd_print_str(LCDstr) ;
+       								  lcd_set_cursor(1,0) ;
+       								  lite_sprintf(LCDstr, "Data: %x", data) ;
+       								  lcd_print_str(LCDstr) ;
+       								  sleep(2) ;
+       							  	  }
+#endif
+
+	return ;
+}

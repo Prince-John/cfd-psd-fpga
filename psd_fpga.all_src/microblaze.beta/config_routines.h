@@ -36,4 +36,6 @@ void	configHandler() ;
 void	configure_psd_chips(u8 *psd_config_data) ;
 void	configure_delay_chips(u8 chip_num, u8 delay_data) ;
 
+void	write_mux(u8 data) ;
+
 #endif /* SRC_CONFIG_ROUTINES_H */

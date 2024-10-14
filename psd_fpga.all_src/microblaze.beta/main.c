@@ -95,7 +95,7 @@ int main() {
     cfd_write(HIGH) ;
 
 	if (useLCD) {
-	    //lcd_clear();
+	    lcd_clear();
 	    lcd_print_str("PSD_FPGA: ") ;
 	    lcd_print_str(PROJECT_VERSION) ;
 	    lcd_set_cursor(1,0) ;

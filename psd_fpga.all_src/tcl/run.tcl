@@ -514,6 +514,9 @@ proc new_proc {} {
 	
 	set		cmd		[list exec vivado -mode batch -source $tcl_dir/$create_project_file]	
 	{*}$cmd
+	
+	
+	
 	return
 }
 
@@ -592,7 +595,7 @@ proc vitis_proc {} {
 	
 #	set result  [exec /usr/local/bin/fix-vitis]
 #	puts $result
-	
+	update_version_proc
 	sleep {1}
 	
 # Now start classic vitis

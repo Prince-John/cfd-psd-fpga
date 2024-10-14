@@ -46,6 +46,24 @@ psd_fpga.all_src/vitis_project/psd_fpga_app/Release/src/*.d
 psd_fpga.all_src/vitis_project/psd_fpga_app/Release/src/*.o
 psd_fpga.all_src/vitis_project/psd_fpga_app/_ide/
 psd_fpga.all_src/vitis_project/psd_fpga_app_system/_ide/
+psd_fpga.all_src/vitis_project/.Xil/
+psd_fpga.all_src/vitis_project/psd_fpga_platform/tempdsa/
+
+
+# Ignore all vitis project folder files, we can regenerate those
+psd_fpga.all_src/vitis_project/
+
+
+*.launch
+*.mmi
+*.log
+*.jou
+*.str
+*.bin
+*.elf
+*.bit
+*.hdf
+*.bda
 
 
 # Don't ignore the two symlinks

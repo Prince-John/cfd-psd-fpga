@@ -6,8 +6,8 @@ Led[1]	Output	R17	LEDS[2]	*****
 sys_clk	Input	P17	sys_clk	*****	
 uart_rx	Input	R11	uart_rx	*****	
 uart_tx	Output	L16	uart_tx	*****	
-I2C_SCL	BiDir	J18	JB1-39	J13-16	
-I2C_SDA	BiDir	A15	JB1-58	J13-17	
+I2C_SCL	BiDir	N16	JB2-23	J5-01	
+I2C_SDA	BiDir	M17	JB2-27	J5-02	
 take_event	Input	B12	JB1-99	J11-05	
 psd_sout	Input	A18	JB1-44	J11-06	
 psd_sin	Output	C14	JB1-87	J11-07	

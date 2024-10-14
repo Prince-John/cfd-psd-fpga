@@ -62,12 +62,43 @@ def sendETX() :
 # Send configuration command
 # -------------------------------------------------------------------
 
-def sendCMD(message, cmdStr) :
+def sendCMD(message, cmdStr, dry_run = False) :
    print("")
    print(message) 
+   
+   if dry_run:
+   	print("dry_run is True, nothing was sent!")
+   	return
+   	 
    byte_array = cmdStr.encode(encoding="ascii") 
    ser.write(byte_array)
    waitACK()
+
+def sendCMD_raw(message, cmdStr, raw_bytes):
+    print("")
+    print(message) 
+    # Convert command string to byte array in ASCII encoding
+    byte_array = bytearray(cmdStr.encode(encoding="ascii"))
+    
+    # If raw_bytes is a single byte, append it; if it's a sequence, extend the byte array
+    if isinstance(raw_bytes, (bytes, bytearray)):
+        byte_array.extend(raw_bytes)
+    else:
+        byte_array.append(raw_bytes)
+    
+    # Append null terminator (null byte)
+    byte_array.append(0)
+    
+    # Pretty print the byte array in hexadecimal and ASCII format
+    print("Byte array (hex):", ' '.join(f'{byte:02X}' for byte in byte_array))
+    print("Byte array (ASCII):", ''.join(chr(byte) if 32 <= byte < 127 else '.' for byte in byte_array))
+    
+    # Send byte array over serial
+    ser.write(byte_array)
+    
+    # Wait for acknowledgment
+    waitACK()
+
 
 # -------------------------------------------------------------------
 # *** MAIN PROGRAM ***
@@ -116,6 +147,32 @@ sendCMD(message, command)
 message = "Sending config PSD command"
 command = "PSD:000102030405000102030405\0"
 sendCMD(message, command)
+
+
+
+
+message = "\n\nSending config MUX commands"
+print(message)
+#command = "MUX:1D\0"
+#print(f"The command string sent is: {command}")
+#sendCMD(message, command)
+
+
+# Test all mux channels
+
+for ch in range(0, 15):
+
+	data = (ch << 1) | 1
+	command = f"MUX:{data:02X}\0"
+	message = f"The command string sent is: {command}"
+	print(f"\n\nChannel {ch} turned on")
+	sendCMD(message, command, False)
+	print(f"\n\nChannel {ch} turned off")
+	data = (ch << 1) & 254
+	command = f"MUX:{data:02X}\0"
+	message = f"The command string sent is: {command}"
+	sendCMD(message, command, False)
+
 
 # Exit from config mode
 
