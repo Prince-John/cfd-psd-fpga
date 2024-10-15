@@ -19,7 +19,7 @@ extern	u8 	uartStr[256] ;
 
 // Define enum for tokens
 
-enum cmd_tokens {CONFIG_DELAY, CONFIG_PSD, GET_BOARD_ID, WRITE_TO_CFD, ERROR, CONFIG_MUX} ;
+enum cmd_tokens {CONFIG_DELAY, CONFIG_PSD, GET_BOARD_ID, WRITE_TO_CFD, ERROR, CONFIG_MUX, CONFIG_DAC} ;
 
 // Functions
 
@@ -37,5 +37,6 @@ void	configure_psd_chips(u8 *psd_config_data) ;
 void	configure_delay_chips(u8 chip_num, u8 delay_data) ;
 
 void	write_mux(u8 data) ;
+void	write_dac(u16 data) ;
 
 #endif /* SRC_CONFIG_ROUTINES_H */

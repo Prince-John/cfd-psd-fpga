@@ -40,6 +40,7 @@
 #define		BOARD_ID_PORT					0
 #define		CFD_PORT						3
 #define		MUX_PORT						2
+#define		DAC_OUT_PORT					2
 
 // &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 // Global variables defined in main

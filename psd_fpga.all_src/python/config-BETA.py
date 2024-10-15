@@ -100,6 +100,27 @@ def sendCMD_raw(message, cmdStr, raw_bytes):
     waitACK()
 
 
+def generate_dac_word(channel: int, voltage: float): 
+
+	max_voltage = 5.0
+	min_voltage = 0.0
+
+	if voltage < min_voltage or voltage > max_voltage:
+		raise ValueError("DAC voltage must be between 5.0 - 0.0V")
+		return
+
+	if channel < 1 or channel > 8:
+		raise ValueError("DAC channel must be between 1 - 8")
+		return	
+		
+	k = (int)((voltage/5.0) * 1024)
+	
+	#print(f'k is {k}, vol/5.0 {voltage/5.0}')
+	data_word = (channel << 12) | (k << 2) | 0x1 # making the dont care bits 0b01. 
+
+	return data_word
+
+
 # -------------------------------------------------------------------
 # *** MAIN PROGRAM ***
 # -------------------------------------------------------------------
@@ -153,25 +174,59 @@ sendCMD(message, command)
 
 message = "\n\nSending config MUX commands"
 print(message)
-#command = "MUX:1D\0"
-#print(f"The command string sent is: {command}")
-#sendCMD(message, command)
+command = "MUX:1D\0"
+message = f"The command string sent is: {command}"
+sendCMD(message, command)
 
 
 # Test all mux channels
+TEST_ALL_MUX = False
 
-for ch in range(0, 15):
+if TEST_ALL_MUX:
+	for ch in range(0, 15):
 
-	data = (ch << 1) | 1
-	command = f"MUX:{data:02X}\0"
-	message = f"The command string sent is: {command}"
-	print(f"\n\nChannel {ch} turned on")
-	sendCMD(message, command, False)
-	print(f"\n\nChannel {ch} turned off")
-	data = (ch << 1) & 254
-	command = f"MUX:{data:02X}\0"
-	message = f"The command string sent is: {command}"
-	sendCMD(message, command, False)
+		data = (ch << 1) | 1
+		command = f"MUX:{data:02X}\0"
+		message = f"The command string sent is: {command}"
+		print(f"\n\nChannel {ch} turned on")
+		sendCMD(message, command, False)
+		print(f"\n\nChannel {ch} turned off")
+		data = (ch << 1) & 254
+		command = f"MUX:{data:02X}\0"
+		message = f"The command string sent is: {command}"
+		sendCMD(message, command, False)
+
+
+
+
+
+#######################################
+#
+#	DAC config
+#
+#######################################
+
+
+data = generate_dac_word(5, 2.5)
+
+command = f"DAC:{data:04X}\0"
+message = f"testing DAC command with command string: {command}, data word is : {data:016b}" 
+sendCMD(message, command, dry_run = False)
+
+# Automate write to all channels and all 10 voltages for the dac
+
+for channel in range(1, 8):
+
+	for k in range(0,10):
+		
+		voltage = ((2**k)/1024)*5.0
+		
+		data = generate_dac_word(channel, voltage)
+
+		command = f"DAC:{data:04X}\0"
+		message = f"testing DAC command with command string: {command}, data word is : {data:016b}" 
+		sendCMD(message, command, dry_run = False)
+
 
 
 # Exit from config mode

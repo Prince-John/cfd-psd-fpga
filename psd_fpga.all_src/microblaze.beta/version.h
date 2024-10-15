@@ -1,5 +1,5 @@
-// Automatically generated version file at Sun Oct 13 20:05:42 CDT 2024, DO NOT MODIFY!!!
+// Automatically generated version file at Mon Oct 14 17:35:07 CDT 2024, DO NOT MODIFY!!!
 #ifndef VERSION_H
 #define VERSION_H
-#define PROJECT_VERSION "v0.0.2"
+#define PROJECT_VERSION "v0.0.3"
 #endif // VERSION_H

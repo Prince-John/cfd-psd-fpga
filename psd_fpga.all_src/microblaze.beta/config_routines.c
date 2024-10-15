@@ -3,7 +3,7 @@
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 // Configuration routines
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//#define DEBUG
+// #define DEBUG
 bool	isConfigMode() {
 	if (!uart_byte_ready()) return false ;
 //
@@ -126,7 +126,8 @@ void	configHandler() {
 // Get board ID
 
        		case GET_BOARD_ID :	if (useLCD) {
-       	    						lcd_clear();
+
+       	    						lcd_set_cursor(1,0) ;
        	    						lite_sprintf(LCDstr, "Board ID: %d", get_board_id() ) ;
        	    						lcd_print_str(LCDstr) ;
        	    						sleep(2) ;
@@ -175,8 +176,33 @@ void	configHandler() {
        						  } // end if-then-else
        						  break ;
 
+       		case CONFIG_DAC : buff = &uartStr[4] ;
+       						  numBytes = str_to_bytes(buff) ;		// number of hex bytes
+       						  u16 data = buff[0]<<8 | buff[1];
 
 
+#ifdef DEBUG
+       							  if (useLCD) {
+       								  lcd_clear();
+       								  lite_sprintf(LCDstr, "Config DAC command:") ;
+       								  lcd_print_str(LCDstr) ;
+       								  lcd_set_cursor(1,0) ;
+       								  lite_sprintf(LCDstr, "# command bytes: %d", numBytes) ;
+       								  lcd_print_str(LCDstr) ;
+       								  lcd_set_cursor(2,0) ;
+
+       								  sleep(2) ;
+       							  	  }
+#endif
+							  if (numBytes == 2) {					// 2 byte config word
+
+									write_dac(data);
+									uart_send_byte(ACK) ;
+
+							  } else {
+									  uart_send_byte(NAK) ;
+							  } // end if-then-else
+								  break ;
 // Couldn't understand or cannot do command
 // Send back negative acknowledge
 
@@ -244,6 +270,7 @@ enum cmd_tokens get_token() {
 	if (isBID == true) return GET_BOARD_ID ;
 	if (isCFD == true) return WRITE_TO_CFD ;
 	if (isMUX == true) return CONFIG_MUX ;
+	if (isDAC == true) return CONFIG_DAC;
 
 	return ERROR ;
 }
@@ -399,9 +426,12 @@ void configure_delay_chips(u8 chip_num, u8 delay_data) {
     return ;
 }
 
+
+
 /*
 // **********************************************
  * 	MUX Configuration low level implementation
+ * **********************************************
  *
  * 	This function takes in the bitmask to set the mux configuration
  *
@@ -426,6 +456,106 @@ void	write_mux(u8 data) {
        								  lcd_clear();
        								  lcd_set_cursor(0,0) ;
        								  lite_sprintf(LCDstr, "->Inside write_mux:") ;
+       								  lcd_print_str(LCDstr) ;
+       								  lcd_set_cursor(1,0) ;
+       								  lite_sprintf(LCDstr, "Data: %x", data) ;
+       								  lcd_print_str(LCDstr) ;
+       								  sleep(2) ;
+       							  	  }
+#endif
+
+	return ;
+}
+
+
+/*
+// **********************************************
+ * 	DAC Configuration low level implementation
+ * **********************************************
+ * 	This function takes in the 2 byte config data and shifts it into the DAC register.
+ *
+ * 	The LTC1660 DAC requires 4 address bits[a3-a0] followed by 10 data bits[d9-d0] representing voltage setting for the DAC channel.
+ * 	+ 2 don't care bits to align the word to its 16 bit shit register.
+ *
+ * 	MSB is shifted first for both address and data. Data is latched by LTC1660 on the rising edge and sifted out on falling edge
+ * 	of the SCK.
+ *
+ * 	Data Word: [a3 a2 a1 a0| d9 d8 d7 d6| d5 d4 d3 d2| d1 d0 x1 x0]
+ *
+ * 	Control Sequence:
+ * 	Initial state: SCK - High, DAC_LD - High
+ * 	-> SCK - pulled low, a3 shifted out
+ * 	-> DAC_LD - pulled low now Load Mode
+ * 	-> SCK - pulled high, a3 latched
+ * 	-> SCK - pulled low,  a2 shifted out
+ * 	 				--
+ * 	 				--
+ * 	-> SCK - pulled high, x1 latched
+ * 	-> SCK - pulled low,  x0 shifted out
+ * 	-> SCK - pulled high, x0 latched
+ * 	-> DAC_LD - pulled high, DAC is now updated
+ *
+ * CAUTION!!!: This function does no data validation and directly writes the data to the DAC lines.
+// *********************************************
+*/
+void	write_dac(u16 data) {
+
+
+//write_gpio_port(MUX_PORT, 5, MUX_EN, data) ;
+
+	int i;
+	u8 value;
+	u8 dac_din;
+	u8 dac_sclk;
+	u8 dac_ld;
+
+	// 3 bit GPIO value mask [dac_din, dac_sclk, dac_ld]
+
+	//start state
+	dac_sclk = LOW;
+	dac_ld = HIGH;
+
+	value = (dac_sclk << 1) | (dac_ld) ;
+
+	write_gpio_port(DAC_OUT_PORT, 2, DAC_LD, value) ;
+
+//	// Push out MSB data a3 and pull sclk low.
+//
+//	dac_din = ( data & (1 << 15) ) >> 15; // select the 16th bit
+//	dac_sclk = LOW;
+//
+//	value = (dac_din << 1) | (dac_sclk) ;
+//	write_gpio_port(DAC_OUT_PORT, 2, DAC_SCLK, value) ;
+
+	//DAC_LD - pulled low
+	dac_ld = LOW;
+	write_gpio_port(DAC_OUT_PORT, 1, DAC_LD, dac_ld) ;
+
+
+	for (i = 15; i >= 0; i--){
+
+
+		dac_din = ( data & (1 << i) ) >> i;
+		dac_sclk = LOW;
+
+		//CLK is set low, data pushed out
+		value = (dac_din << 1) | (dac_sclk) ;
+		write_gpio_port(DAC_OUT_PORT, 2, DAC_SCLK, value) ;
+
+		//CLK is set high, data latched by DAC
+		dac_sclk = HIGH;
+		write_gpio_port(DAC_OUT_PORT, 1, DAC_SCLK, dac_sclk) ;
+
+	}
+	//DAC_LD - pulled high
+	dac_ld = HIGH;
+	write_gpio_port(DAC_OUT_PORT, 1, DAC_LD, dac_ld) ;
+
+#ifdef DEBUG
+       							  if (useLCD) {
+       								  lcd_clear();
+       								  lcd_set_cursor(0,0) ;
+       								  lite_sprintf(LCDstr, "->Inside write_dac:") ;
        								  lcd_print_str(LCDstr) ;
        								  lcd_set_cursor(1,0) ;
        								  lite_sprintf(LCDstr, "Data: %x", data) ;
