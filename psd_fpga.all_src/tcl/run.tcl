@@ -84,6 +84,8 @@ switch	$fpga_board {
 	"trenz"	{
 		set		vars(CSV_FILE)						"psd_fpga_trenz.csv"
 		set		vars(CONSTRAINT_GENERATOR) 			"pin2xdc.tcl"		
+		set		vars(PLATFORM)					"705"
+		set		varsMsg(PLATFORM)				"Chipboard or 705 dev board for trenz, default 705"
 	 }
 	 "cmod-a7" {
 		set 	vars(CSV_FILE) 						"psd_fpga_cmod-a7.csv"
@@ -658,6 +660,30 @@ proc xsa_proc {} {
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 proc update_version_proc {} {
+	global vars
+	
+	set		project_dir	$vars(PROJECT_DIR)
+	set		tcl_dir		$vars(PROJECT_DIR)/tcl
+	
+	cd 		$project_dir
+	
+	if { [catch {exec tclsh [file join $tcl_dir "update_version_header.tcl"]} result] } {
+		puts "\nERROR!!!!!!!!!!!!!"
+		puts $result
+		puts "\n"	     
+    	} else {
+		puts "Version header updated successfully!"
+		puts $result
+		}
+	return	
+}
+
+
+
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# Switch if chipboard or 705 carrier csv for trenz
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+proc switch_version_proc {} {
 	global vars
 	
 	set		project_dir	$vars(PROJECT_DIR)

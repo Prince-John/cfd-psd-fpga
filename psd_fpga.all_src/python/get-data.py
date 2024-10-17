@@ -62,7 +62,7 @@ while True :
    cobs_packet_len = len(cobs_packet) 
    print("Size of COBS packet: %d " % (cobs_packet_len))
    delta = 1000  *  (end - start)
-   print("Elapsed time: %.2f ms " % (delta))
+   print("Elapsed time: %.2f ms " % delta)
    file.write(cobs_packet)
    data =cobs_packet[:-2]
    packet_len = COBS.cobsDecode(cobs_packet, cobs_packet_len, data)
