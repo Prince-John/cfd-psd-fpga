@@ -115,7 +115,7 @@ glob_ena	Input	N5	JB3-32	**NA**
 event_ena	Input	T4	JB3-33	**NA**	
 force_reset	Input	P5	JB3-34	**NA**	
 take_event	Input	V1	JB3-37	**NA**	
-or	Output	K3	JB3-38	**NA**	X
+or_connect	Output	K3	JB3-38	**NA**	
 intx_out	Output	U1	JB3-39	**NA**	
 cfd_out	Output	L3	JB3-40	**NA**	
 mux_sel[0]	Output	K1	JB2-37	**NA**	
