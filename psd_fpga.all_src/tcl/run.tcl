@@ -84,11 +84,14 @@ switch	$fpga_board {
 	"trenz"	{
 		set		vars(CSV_FILE)						"psd_fpga_trenz.csv"
 		set		vars(CONSTRAINT_GENERATOR) 			"pin2xdc.tcl"		
-		set		vars(PLATFORM)					"705"
-		set		varsMsg(PLATFORM)				"Chipboard or 705 dev board for trenz, default 705"
-	 }
+		set		vars(PLATFORM)					"705-CARRIER"
+		set 		current_target 		[file readlink $vars(PROJECT_DIR)/$vars(PROJECT).all_src/xdc/$vars(CSV_FILE)]
+		if {$current_target == "master_csv_for_trenz/psd_fpga_trenz_chipboard.csv"} {
+   			set vars(PLATFORM) "CHIPBOARD"
+		 }
+	}
 	 "cmod-a7" {
-		set 	vars(CSV_FILE) 						"psd_fpga_cmod-a7.csv"
+		set 		vars(CSV_FILE) 					"psd_fpga_cmod-a7.csv"
 		set		vars(CONSTRAINT_GENERATOR) 			"pin2xdc.tcl"
 	} 
 	default {
@@ -96,9 +99,9 @@ switch	$fpga_board {
 		exit
 	}
 }
-	set varsMsg(CSV_FILE)				"Pin location csv file:\t\t$vars(CSV_FILE)"
+	set	varsMsg(CSV_FILE)				"Pin location csv file:\t\t$vars(CSV_FILE)"
 	set	varsMsg(CONSTRAINT_GENERATOR)	"XDC constraint generator:\t$vars(CONSTRAINT_GENERATOR)"	
-
+	set	varsMsg(PLATFORM)				"Trenz CSV target: \t\t$vars(PLATFORM)"
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # Name of assembly file for picoblaze
 # along with the ROM template file we wish to use.
@@ -683,7 +686,7 @@ proc update_version_proc {} {
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # Switch if chipboard or 705 carrier csv for trenz
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-proc switch_version_proc {} {
+proc switch_trenz_proc {} {
 	global vars
 	
 	set		project_dir	$vars(PROJECT_DIR)
@@ -691,13 +694,22 @@ proc switch_version_proc {} {
 	
 	cd 		$project_dir
 	
-	if { [catch {exec tclsh [file join $tcl_dir "update_version_header.tcl"]} result] } {
+	if { [catch {exec tclsh [file join $tcl_dir "switch_trenz_csv.tcl"]} result] } {
 		puts "\nERROR!!!!!!!!!!!!!"
 		puts $result
 		puts "\n"	     
     	} else {
-		puts "Version header updated successfully!"
 		puts $result
+		puts ""
+		puts  -nonewline "Regenerate the XDC files? (y/n) <CR>  "
+		flush stdout
+		set 	answer		[gets stdin]
+		if { $answer != "y" } {
+			puts ""
+			puts "Exiting ... "
+			return
+		} 
+		xdc_proc
 		}
 	return	
 }
@@ -712,7 +724,7 @@ proc switch_version_proc {} {
 
 # List of all of the commands we understand
 
-set	cmdList		{"vivado" "vitis" "asm" "new" "new_ws" "rm_links" "links" "clean" "xdc" "gpio" "xsa" "readme" "info" "update_version"}
+set	cmdList		{"vivado" "vitis" "asm" "new" "new_ws" "rm_links" "links" "clean" "xdc" "gpio" "xsa" "readme" "info" "update_version" "switch_trenz"}
 
 set	cmdListHelp	 \
 {"\tvivado		--> Launches vivado and opens the project"
@@ -728,7 +740,8 @@ set	cmdListHelp	 \
  "\txsa    		--> Runs vivado in batch mode and creates xsa file"
  "\treadme 		--> Displays README file which decribes the flow"
  "\tinfo   		--> Displays all of the project related settings"
- "\tupdate_version	--> Updates/generates the version header file for C firmware with latest commit tag"} 
+ "\tupdate_version	--> Updates/generates the version header file for C firmware with latest commit tag"
+ "\tswitch_trenz	--> Switches the CSV file link for trenz target between chipboard and 705 carrier."} 
 
 # Make sure we have a single argument
 
