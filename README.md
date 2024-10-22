@@ -12,16 +12,16 @@ Current version: `v0.0.0`  # The `run` script will update this line automaticall
 
 Here is a description of links:
 
-c-code		-->	C source code for MicroBlaze
-verilog		-->	Verilog source code
-python		-->	Python code for UART communication
-tcl			-->	All of the various Tcl scripts
-doc			-->	Documentation, for example, data sheets
-config		--> Links to python config program
-asm			-->	Assembly language code for the PicoBlaze
-xdc			-->	XDC file creation
-gpio		-->	Creation of GPIO bit assignments
-workspace 	-->	Vitis project
+- c-code		-->	C source code for MicroBlaze
+- verilog		-->	Verilog source code
+- python		-->	Python code for UART communication
+- tcl			-->	All of the various Tcl scripts
+- doc			-->	Documentation, for example, data sheets
+- config		--> Links to python config program
+- asm			-->	Assembly language code for the PicoBlaze
+- xdc			-->	XDC file creation
+- gpio		-->	Creation of GPIO bit assignments
+- workspace 	-->	Vitis project
 
 ******************************************************************
 
