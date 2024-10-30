@@ -120,7 +120,7 @@ void	configHandler() {
     							psd_token = get_psd_token();
 
     							DEBUG_LCD_PRINT_STR("In PSD ctrl", buff)
-    							DEBUG_LCD_PRINT_CONFIG("token:", psd_token);
+
     							switch  (psd_token){
 
 									case SERIAL_REG :	numBytes = str_to_bytes(buff) ;		// number of hex bytes it should return
