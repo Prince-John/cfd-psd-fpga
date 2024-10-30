@@ -133,6 +133,13 @@ GPIO,Dir,Bit,Nickname,Verilog Signal,Comment
 2,out,20,>,psd_cfd_bypass,Selects cfd-bypass mode for PSDs (output pin)
 2,out,21,>,psd_sin,Serial input  into PSD 0 (output pin)
 2,out,22,>,psd_sclk,Serial clock into PSD 0 and 1 (output pin)
+2,out,23,>,psd_sel_ext_addr_0,PSD chip 0 address direction selection line
+2,out,24,>,psd_sel_ext_addr_1,PSD chip 1 address direction selection line
+2,out,25,>,psd_sc0_0,PSD chip 0 sub channel selct bit 0
+2,out,26,>,psd_sc1_0,PSD chip 0 sub channel selct bit 1
+2,out,27,>,psd_sc0_1,PSD chip 1 sub channel selct bit 0
+2,out,28,>,psd_sc1_1,PSD chip 1 sub channel selct bit 1
+,,,,,
 ,,,,,
 3,in,0,>,cfd_ad_in[0],Bit 0 of cfd_ad_in bus from the cfd_ad tri-state circuits
 3,in,1,>,cfd_ad_in[1],Bit 1 of cfd_ad_in bus from the cfd_ad tri-state circuits

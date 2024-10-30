@@ -7,9 +7,16 @@
 #
 # Version
 # Keep this up to date so we know which version of assign_gpio.tcl was used
-#
+# *********************************************
+# Now automated. Just update a patch tag with git, this script should automatically find the latest global version. 
 
-set		version		"26-SEP-2024"
+
+# Get the latest tag
+set latest_tag [exec git describe --tags --abbrev=0]
+set last_tag_date [exec git log -1 --format=%cd --date=format:%Y-%m-%d\ %H:%M:%S $latest_tag]
+
+set		version		"$latest_tag released at\t$last_tag_date"
+
 
 # Place timestamp in files!!!!!!!!!!!!!
 

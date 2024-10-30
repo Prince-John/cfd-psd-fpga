@@ -11,21 +11,48 @@ set VERSION_TAG [exec git describe --tags]
 set	timestamp	[clock format [clock seconds]]
 
 
-set 705_target "xdc/master_csv_for_trenz/psd_fpga_trenz_705.csv"
-set chipboard_target "xdc/master_csv_for_trenz/psd_fpga_trenz_chipboard.csv"
+set xdc_dir  "xdc"
+set trenz_csv_dir  "master_csv_for_trenz"
 
-set linkName "xdc/psd_fpga_trenz.csv"
+set 705_target "psd_fpga_trenz_705.csv"
+set chipboard_target "psd_fpga_trenz_chipboard.csv"
+
+set current_target_msg "CHIPBOARD"
 
 
+# Default target is 705 board
+set target $705_target
+set target_msg "705 CARRIER"
+
+set link_name "psd_fpga_trenz.csv"
+
+set current_target [file readlink $xdc_dir/$link_name]
 
 
+if {$current_target == "$trenz_csv_dir/$705_target"} {
+	set target $chipboard_target
+	set current_target_msg "705 CARRIER" 
+	set target_msg "CHIPBOARD"
+} 
 
-puts $fileId "// Automatically generated version file at $timestamp, DO NOT MODIFY!!!"
-puts $fileId "#ifndef VERSION_H"
-puts $fileId "#define VERSION_H"
-puts $fileId "#define PROJECT_VERSION \"$VERSION_TAG\""
-puts $fileId "#endif // VERSION_H"
+puts "Time: $timestamp"
+puts ""
+puts "Trenz CSV is set to $current_target_msg ($current_target) "
+#puts ""
+#puts  -nonewline "Switch CSV file to $target_msg ? (y/n) <CR>  "
+#flush stdout
+#set 	answer		[gets stdin]
+#if { $answer != "y" } {
+#	puts ""
+#	puts "Exiting ... "
+#	return
+#} 
+puts ""
+file delete -force "$xdc_dir/$link_name"
+puts "Old symbolic link removed. Creating a new link..."
+puts ""
+file link -symbolic "$xdc_dir/$link_name" "$trenz_csv_dir/$target"
+#puts "$xdc_dir/$trenz_csv_dir/$target"
+puts "CSV file changed to $target_msg ([file readlink $xdc_dir/$link_name]) "
+puts ""
 
-close $fileId
-
-puts "New version.h generated with tag $VERSION_TAG"

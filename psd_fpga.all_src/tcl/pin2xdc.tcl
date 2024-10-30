@@ -24,11 +24,24 @@ set last_tag_date [exec git log -1 --format=%cd --date=format:%Y-%m-%d\ %H:%M:%S
 
 set		version		"$latest_tag released at\t$last_tag_date"
 
+set vars(PROJECT_ROOT) 			$env(VIVADO_PROJECTS)
+set	vars(PROJECT)			$env(VIVADO_PROJECT)
+set	vars(PROJECT_DIR)		"$vars(PROJECT_ROOT)/$vars(PROJECT)"
+
+
+
 #
 # Check to see which development board we are using
 #
-
+set platform ""
 set		fpga_board			$env(FPGA_BOARD)
+if {$fpga_board == "trenz"} {
+		set 	current_target 	[file readlink $vars(PROJECT_DIR)/$vars(PROJECT).all_src/xdc/psd_fpga_trenz.csv]
+		set platform "705 Carrier"
+		if {$current_target == "master_csv_for_trenz/psd_fpga_trenz_chipboard.csv"} {
+   			set platform "CHIPBOARD"
+		}
+}
 
 # Query the environment to find out if tab or comma delimited csv file
 
@@ -259,13 +272,14 @@ proc pin_assign_sdcs { fp } {
 	global	version
 	global	timestamp
 	global	fpga_board
+	global  platform
 
 	puts $fp ""
 	puts $fp {# ************************************}
 	puts $fp {# Pin location constraints!!!!   }
 	puts $fp  "# Timestamp:  $timestamp"	
 	puts $fp  "# Version:  $version"
-	puts $fp  "# FPGA development board: $fpga_board"
+	puts $fp  "# FPGA development board: $fpga_board - $platform"
 	puts $fp {# ************************************}
 	puts $fp ""
        
@@ -319,6 +333,7 @@ proc write_verilog_file { fp } {
 	global	version
 	global	timestamp
 	global	fpga_board
+	global  platform
 
 # Write out file header
 
@@ -326,7 +341,7 @@ proc write_verilog_file { fp } {
 	puts $fp {// Verilog module declaration for top cell      }
 	puts $fp "// Timestamp:  $timestamp"	
 	puts $fp "// Version:  $version"
-	puts $fp  "// FPGA development board: $fpga_board"
+	puts $fp  "// FPGA development board: $fpga_board - $platform" 
 	puts $fp {// *************************************************************}
 	puts $fp ""
 
@@ -422,7 +437,7 @@ puts	$fpw_log		"Timestamp: $timestamp"
 
 puts	"Version: $version"
 puts	$fpw_log	"Version: $version"
-puts	$fpw_log	"FPGA Development Board: $fpga_board"
+puts	$fpw_log	"FPGA Development Board: $fpga_board - $platform"
 
 # Filenames
 

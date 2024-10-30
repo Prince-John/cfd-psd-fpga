@@ -3,7 +3,7 @@
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 // Configuration routines
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-// #define DEBUG
+
 bool	isConfigMode() {
 	if (!uart_byte_ready()) return false ;
 //
@@ -13,10 +13,12 @@ bool	isConfigMode() {
 //
 	if (uart_get_str() == 2 ) {
 		if (uartStr[0] == STX) {
+			DEBUG_LCD_PRINT_LOCATION("CONFIG MODE!")
 			uart_send_byte(ACK) ;
 			return true ;
 		}
 		if (uartStr[0] == ETX) {
+			DEBUG_LCD_PRINT_LOCATION("EXIT !")
 			uart_send_byte(NAK) ;
 			return false ;
 		}
@@ -53,6 +55,7 @@ void	configHandler() {
 // Token representing which command was received
 
 	enum	cmd_tokens token ;
+	enum	psd_tokens psd_token ;
 
 // Use when we configure the delay chips
 
@@ -112,15 +115,66 @@ void	configHandler() {
 
 // Configure PSD serial register
 
-    		case CONFIG_PSD :	buff = &uartStr[4] ;  			// 3 ascii character command plus the :
-								numBytes = str_to_bytes(buff) ;		// number of hex bytes it should return
+    		case CONFIG_PSD :	buff = &uartStr[8] ;  			// 2x 3 ascii character command plus the :
+
+    							psd_token = get_psd_token();
+
+    							DEBUG_LCD_PRINT_STR("In PSD ctrl", buff)
+    							DEBUG_LCD_PRINT_CONFIG("token:", psd_token);
+    							switch  (psd_token){
+
+									case SERIAL_REG :	numBytes = str_to_bytes(buff) ;		// number of hex bytes it should return
+														if (numBytes == 12) {				// Takes 12 bytes to configure both PSD chips
+															configure_psd_chips(buff) ;
+															uart_send_byte(ACK) ;
+															break;
+														} else {
+															uart_send_byte(NAK) ;
+															break;
+														}
+
+									case OFFSET_DAC_0 : numBytes = str_to_bytes(buff) ;		// number of hex bytes it should return
+
+														if (numBytes == 2) {				// Takes 2 bytes to configure offset DAC
+															configure_psd_0_dac(buff[0], buff[1]) ;
+															uart_send_byte(ACK) ;
+															break;
+														} else {
+															uart_send_byte(NAK) ;
+															break;
+														}
+									case OFFSET_DAC_1 : numBytes = str_to_bytes(buff) ;		// number of hex bytes it should return
+														if (numBytes == 2) {				// Takes 2 bytes to configure offset DAC
+															configure_psd_1_dac(buff[0], buff[1]) ;
+															uart_send_byte(ACK) ;
+															break;
+														} else {
+															uart_send_byte(NAK) ;
+															break;
+														}
+									case TRIGGER_MODE : numBytes = str_to_bytes(buff) ;		// number of hex bytes it should return
+														if (numBytes == 1) {				// Takes 1 byte to configure trigger mode
+															configure_psd_trigger_mode(buff[0]);
+															uart_send_byte(ACK) ;
+															break;
+														} else {
+															uart_send_byte(NAK) ;
+															break;
+														}
+
+									default:	uart_send_byte(NAK) ;
+    								    		break ;
+    							}
+
+    							break ;
+    							numBytes = str_to_bytes(buff) ;		// number of hex bytes it should return
 								if (numBytes == 12) {				// Takes 12 bytes to configure both PSD chips
 									configure_psd_chips(buff) ;
 									uart_send_byte(ACK) ;
 									break;
 								} else {
 									uart_send_byte(NAK) ;
-									break ;
+
 								}
 
 // Get board ID
@@ -153,19 +207,7 @@ void	configHandler() {
        		case CONFIG_MUX : buff = &uartStr[4] ;			// string past the :
        						  numBytes = str_to_bytes(buff) ;		// number of hex bytes
 
-#ifdef DEBUG
-       							  if (useLCD) {
-       								  lcd_clear();
-       								  lite_sprintf(LCDstr, "Config MUX command:") ;
-       								  lcd_print_str(LCDstr) ;
-       								  lcd_set_cursor(1,0) ;
-       								  lite_sprintf(LCDstr, "# command bytes: %d", numBytes) ;
-       								  lcd_print_str(LCDstr) ;
-       								  lcd_set_cursor(2,0) ;
-
-       								  sleep(2) ;
-       							  	  }
-#endif
+       						  DEBUG_LCD_PRINT_CONFIG("Config MUX command:", numBytes);
        						  if (numBytes == 1) {					// 1 byte really 5 bit config data
 
        							  	write_mux(buff[0]);
@@ -180,20 +222,8 @@ void	configHandler() {
        						  numBytes = str_to_bytes(buff) ;		// number of hex bytes
        						  u16 data = buff[0]<<8 | buff[1];
 
+							  DEBUG_LCD_PRINT_CONFIG("Config DAC command:", numBytes);
 
-#ifdef DEBUG
-       							  if (useLCD) {
-       								  lcd_clear();
-       								  lite_sprintf(LCDstr, "Config DAC command:") ;
-       								  lcd_print_str(LCDstr) ;
-       								  lcd_set_cursor(1,0) ;
-       								  lite_sprintf(LCDstr, "# command bytes: %d", numBytes) ;
-       								  lcd_print_str(LCDstr) ;
-       								  lcd_set_cursor(2,0) ;
-
-       								  sleep(2) ;
-       							  	  }
-#endif
 							  if (numBytes == 2) {					// 2 byte config word
 
 									write_dac(data);
@@ -203,8 +233,8 @@ void	configHandler() {
 									  uart_send_byte(NAK) ;
 							  } // end if-then-else
 								  break ;
-// Couldn't understand or cannot do command
-// Send back negative acknowledge
+							// Couldn't understand or cannot do command
+							// Send back negative acknowledge
 
     		default :			uart_send_byte(NAK) ;
     							break ;
@@ -275,6 +305,47 @@ enum cmd_tokens get_token() {
 	return ERROR ;
 }
 
+
+enum psd_tokens get_psd_token() {
+	int		i ;
+	int 	j;
+
+// Flag for each command
+
+	bool 	isSER = true ;
+	bool	isOD0 = true ; //OffsetDac0
+	bool	isRST = true ;
+	bool	isTRG = true ;
+	bool	isOD1 = true ; //OffsetDac1
+
+// Our commands
+
+	u8	ser[4]  = {'S', 'E', 'R', ':'} ;
+	u8	od0[4]  = {'O', 'D', '0', ':'} ;
+	u8	od1[4]  = {'O', 'D', '1', ':'} ;
+	u8	rst[4]  = {'R', 'S', 'T', ':'} ;
+	u8	trg[4]  = {'T','R', 'G', ':'} ;
+
+// See if we recognize a commands
+
+	for (i = 0; i < 4; i++) {
+		j = i+4;
+		if (uartStr[j] != ser[i]) isSER = false ;
+		if (uartStr[j] != od0[i]) isOD0 = false ;
+		if (uartStr[j] != od1[i]) isOD1 = false ;
+		if (uartStr[j] != trg[i]) isTRG = false ;
+		if (uartStr[j] != rst[i]) isRST = false ;
+	}
+
+	if (isSER == true) return SERIAL_REG ;
+	if (isOD0 == true) return OFFSET_DAC_0 ;
+	if (isOD1 == true) return OFFSET_DAC_1 ;
+	if (isRST == true) return RESET;
+	if (isTRG == true) return TRIGGER_MODE;
+
+	return ERROR ;
+}
+
 // ******************************************************************************
 // Routine to get the board ID (6 bits) and save to global variable board_id
 // ******************************************************************************
@@ -311,7 +382,7 @@ void	cfd_strobe(u8 value) {
 // ******************************************************************************
 
 void	write_cfd_reg(u8 addr_mode, u8 data) {
-
+	DEBUG_LCD_PRINT_LOCATION("In CFD write")
 // Makse sure strobe is LOW
 
 	cfd_strobe(LOW) ;
@@ -345,6 +416,7 @@ void	write_cfd_reg(u8 addr_mode, u8 data) {
 // *********************************
 
 void  configure_psd_chips(u8 *psd_config_data) {
+	DEBUG_LCD_PRINT_LOCATION("In PSD serial")
     int     i ;
     int     j ;
     u32     byte ;
@@ -372,6 +444,118 @@ void  configure_psd_chips(u8 *psd_config_data) {
 // It would be nice if returned an array of sdo data rather than void!!!
 
 }
+
+
+// ***************************************************
+// Routine to control the PSD DAC strobe line
+// Value should be either LOW or HIGH
+// psd_chip_number must be 0 or 1
+// *****************************************************
+void	psd_strobe(u8 value, u8 psd_chip_number) {
+	if (psd_chip_number){
+		write_gpio_port(PSD_DAC_MISC_PORT, 1, PSD_DAC_STB_1, value) ;
+	}else{
+		write_gpio_port(PSD_DAC_MISC_PORT, 1, PSD_DAC_STB_0, value) ;
+	}
+}
+
+
+
+/*
+// **********************************************
+ * 	PSD 0 Offset DAC config
+ * **********************************************
+ *
+ * 	This function takes in the address [channel(5 bits) | sub channel(2 LSB)] and data words (5 bit sign/mag DAC value) and loads it into
+ * 	the internal channel registers of PSD 0 chip.
+ *
+ * 	Steps:
+ * 		- Ensure sel_ext_addr is high
+ * 		- Ensure dac_stb is low
+ * 		- Set channel address bits on pins a4 - a0, sub channel bits sc1 - sc0
+ * 		- dac_stb high
+ * 		- Set dac value on pins a4 - a0
+ * 		- dac_stb low
+ * 		- Reset sel_ext_addr low
+ *
+// *********************************************
+*/
+void  configure_psd_0_dac(u8 data, u8 addr) {
+	DEBUG_LCD_PRINT_LOCATION("In PSD DAC 0")
+	u8 subchannel;
+
+	subchannel = addr & 0x3;
+	addr = addr >> 2;
+
+	write_gpio_port(PSD_DAC_MISC_PORT, 1, PSD_SEL_EXT_ADDR_0, HIGH) ;
+
+	psd_strobe(LOW, 0);
+
+
+	write_gpio_port(PSD_DAC_ADDR_PORT, 5, PSD0_CHAN_ADDR_OUT_0, addr);
+	write_gpio_port(PSD_DAC_MISC_PORT, 2, PSD_SC0_0, subchannel);
+
+	// address data valid
+	psd_strobe(HIGH, 0);
+
+	write_gpio_port(PSD_DAC_ADDR_PORT, 5, PSD0_CHAN_ADDR_OUT_0, data);
+
+	// dac data valid
+	psd_strobe(LOW, 0);
+
+	write_gpio_port(PSD_DAC_MISC_PORT, 1, PSD_SEL_EXT_ADDR_0, LOW) ;
+    return ;
+}
+
+/*
+// **********************************************
+ * 	PSD 1 Offset DAC config
+ * **********************************************
+ * Identical to `configure_psd_1_dac` with changed pin names. Refer to that for documentation
+ */
+void  configure_psd_1_dac(u8 addr, u8 data) {
+	DEBUG_LCD_PRINT_LOCATION("In PSD DAC 1")
+	u8 subchannel;
+
+	subchannel = addr & 0x3;
+	addr = addr >> 2;
+
+	write_gpio_port(PSD_DAC_MISC_PORT, 1, PSD_SEL_EXT_ADDR_1, HIGH) ;
+
+	psd_strobe(LOW, 1);
+
+
+	write_gpio_port(PSD_DAC_ADDR_PORT, 5, PSD1_CHAN_ADDR_OUT_0, addr);
+	write_gpio_port(PSD_DAC_MISC_PORT, 2, PSD_SC0_1, subchannel);
+
+	// address data valid
+	psd_strobe(HIGH, 1);
+
+	write_gpio_port(PSD_DAC_ADDR_PORT, 5, PSD1_CHAN_ADDR_OUT_0, data);
+
+	// dac data valid
+	psd_strobe(LOW, 1);
+
+	write_gpio_port(PSD_DAC_MISC_PORT, 1, PSD_SEL_EXT_ADDR_1, LOW) ;
+    return ;
+}
+
+
+/*
+// **********************************************
+ * 	PSD Trigger Mode Config
+ * **********************************************
+ *  Both chips will be set to the same trigger mode,
+ *  Only two bits are valid in the data.
+ *  2 bit mode data word [Bypass(LSB), Ack_All]
+ */
+void configure_psd_trigger_mode(u8 data){
+	DEBUG_LCD_PRINT_LOCATION("In PSD trig Mode")
+	write_gpio_port(PSD_DAC_MISC_PORT, 2, PSD_ACQ_ALL, data);
+
+}
+
+
 
 // *****************************************************************S
 // Configure the delay chips
@@ -454,10 +638,10 @@ void	write_mux(u8 data) {
 #ifdef DEBUG
        							  if (useLCD) {
        								  lcd_clear();
-       								  lcd_set_cursor(0,0) ;
+       								  lcd_set_cursor(2,0) ;
        								  lite_sprintf(LCDstr, "->Inside write_mux:") ;
        								  lcd_print_str(LCDstr) ;
-       								  lcd_set_cursor(1,0) ;
+       								  lcd_set_cursor(3,0) ;
        								  lite_sprintf(LCDstr, "Data: %x", data) ;
        								  lcd_print_str(LCDstr) ;
        								  sleep(2) ;
@@ -551,18 +735,7 @@ void	write_dac(u16 data) {
 	dac_ld = HIGH;
 	write_gpio_port(DAC_OUT_PORT, 1, DAC_LD, dac_ld) ;
 
-#ifdef DEBUG
-       							  if (useLCD) {
-       								  lcd_clear();
-       								  lcd_set_cursor(0,0) ;
-       								  lite_sprintf(LCDstr, "->Inside write_dac:") ;
-       								  lcd_print_str(LCDstr) ;
-       								  lcd_set_cursor(1,0) ;
-       								  lite_sprintf(LCDstr, "Data: %x", data) ;
-       								  lcd_print_str(LCDstr) ;
-       								  sleep(2) ;
-       							  	  }
-#endif
+	DEBUG_LCD_PRINT_LOCATION("In write_dac")
 
 	return ;
 }

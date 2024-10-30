@@ -159,5 +159,9 @@ module psd_fpga_top(
    
     assign  cfd_ad[7:0] = cfd_write ? cfd_ad_out[7:0] : 8'bzzzz_zzzz ;
     assign  cfd_ad_in[7:0] = cfd_ad[7:0] ;
+    
+    
+   // assign or_connect = cfd_or_connect;
+    //assign cfd_or_connect = cfd_or ;
 
 endmodule

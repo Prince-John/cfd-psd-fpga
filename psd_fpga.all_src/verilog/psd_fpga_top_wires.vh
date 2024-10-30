@@ -81,6 +81,9 @@
     wire    [7:0] cfd_ad_in ;
     wire    [7:0] cfd_ad_out ;
 
+// ((((********************************************
+// CFD OR 
 
+    wire cfd_or_connect ;
 
 	
