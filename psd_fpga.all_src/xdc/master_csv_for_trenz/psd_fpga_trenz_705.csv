@@ -1,82 +1,120 @@
-Signal Name	Direction	Pin	b2b_conn	carrier_conn	NO_USE
+Signal Name	Direction	Pin	b2b conn	carrier conn	$$$$$$$
 					
+sys_clk	Input	P17	sys_clk	sys_clk	
 dummy_reset	Input	D9	dummy_reset	*****	
-Led[0]	Output	L15	LEDS[1]	*****	
-Led[1]	Output	R17	LEDS[2]	*****	
-sys_clk	Input	P17	sys_clk	*****	
-uart_rx	Input	R11	uart_rx	*****	
-uart_tx	Output	L16	uart_tx	*****	
-I2C_SCL	BiDir	N16	JB2-23	J5-01	
-I2C_SDA	BiDir	M17	JB2-27	J5-02	
-take_event	Input	B12	JB1-99	J11-05	
-psd_sout	Input	A18	JB1-44	J11-06	
-psd_sin	Output	C14	JB1-87	J11-07	
-psd_sclk	Output	C16	JB1-81	J11-08	
-delay_data	Output	G17	JB1-71	J11-09	
-delay_clk	Output	H17	JB1-69	J11-10	
-delay_en_l[0]	Output	J13	JB1-57	J11-11	
-delay_en_l[1]	Output	K13	JB1-55	J11-12	
-delay_en_l[2]	Output	F18	JB1-47	J11-13	
-delay_en_l[3]	Output	G18	JB1-45	J11-14	
-delay_en_l[4]	Output	D18	JB1-37	J11-15	
-delay_en_l[5]	Output	E18	JB1-35	J11-16	
-board_id[0]	Input	B17	JB1-46	J11-17	
-board_id[1]	Input	B18	JB1-42	J11-18	
-board_id[2]	Input	V12	JB2-14	J11-19	
-board_id[3]	Input	N14	JB2-16	J11-20	
-board_id[4]	Input	T11	JB2-32	J11-21	
-board_id[5]	Input	T10	JB2-36	J11-22	
-common_stop	Input	H4	JB2-48	J11-23	
-glob_ena	Input	E2	JB2-52	J11-24	
-event_ena	Input	G2	JB2-64	J11-25	
-force_reset	Input	G6	JB2-66	J11-26	
-busy_out	Output	H2	JB2-62	J11-27	
-mux_en	Output	D7	JB2-74	J11-28	
-mux_sel[0]	Output	J4	JB2-46	J11-29	
-mux_sel[1]	Output	D2	JB2-54	J11-30	
-mux_sel[2]	Output	J5	JB2-99	J11-31	
-mux_sel[3]	Output	B6	JB2-95	J11-32	
-dac_ld	Output	A4	JB2-87	J11-33	
-dac_sclk	Output	A3	JB2-85	J11-34	
-dac_din	Output	B2	JB2-81	J11-35	
-cfd_stb	Output	A1	JB2-77	J11-36	
-cfd_write	Output	E1	JB2-67	J11-37	
-cfd_neg_pol	Output	C1	JB2-71	J11-38	
-cfd_reset	Output	H1	JB2-61	J11-39	
-cfd_global_ena	Output	G1	JB2-63	J11-40	
-cfd_ad[0]	Output	B14	JB1-93	J13-05	
-cfd_ad[1]	Output	B13	JB1-95	J13-06	
-cfd_ad[2]	Output	A14	JB1-70	J13-07	
-cfd_ad[3]	Output	C17	JB1-79	J13-08	
-cfd_ad[4]	Output	D17	JB1-77	J13-09	
-cfd_ad[5]	Output	E17	JB1-75	J13-10	
-cfd_ad[6]	Output	J15	JB1-61	J13-11	
-cfd_ad[7]	Output	K15	JB1-59	J13-12	
-Conv_0	Output	H15	JB1-51	J13-13	
-sdo_t_0	Input	J14	JB1-49	J13-14	
-adc_sclk_0	Output	J17	JB1-41	J13-15	
-?	?				X
-?	?				X
-?	?	A16	JB1-56	J13-18	X
-?	?	D13	JB1-52	J13-19	X
-?	?	D12	JB1-50	J13-20	X
-?	?	B16	JB1-48	J13-21	X
-?	?	U12	JB2-12	J13-22	X
-?	?	P14	JB2-18	J13-23	X
-?	?	H5	JB2-44	J13-24	X
-?	?	F6	JB2-68	J13-25	X
-?	?	G4	JB2-56	J13-26	X
-?	?	G3	JB2-58	J13-27	X
-?	?	E7	JB2-72	J13-28	X
-?	?	T9	JB2-38	J13-29	X
-?	?	H6	JB2-42	J13-30	X
-?	?	K2	JB2-35	J13-31	X
-?	?	B7	JB2-97	J13-32	X
-?	?	U11	JB2-34	J13-33	X
-?	?	A5	JB2-91	J13-34	X
-?	?	B3	JB2-83	J13-35	X
-?	?	B1	JB2-75	J13-36	X
-?	?	C2	JB2-73	J13-37	X
-?	?	F1	JB2-65	J13-38	X
-?	?	E3	JB2-55	J13-39	X
-?	?	D3	JB2-57	J13-40	X
+reset_button	Input	A18	???	????	X
+Led[0]	Output	A8	Led[0]	Led[0]	
+Led[1]	Output	L15	Led[1]	Led[1]	
+uart_rx	Input	R11	????	????	
+uart_tx	Output	L16	????	????	
+SDO_B_0	Input	B12	JB1-99	J11-5	X
+SDO_C_0	Input	A18	JB1-44	J11-6	X
+SDO_T_0	Input	C14	JB1-87	J11-7	
+SDO_A_1	Input	C16	JB1-81	J11-8	X
+SDO_B_1	Input	G17	JB1-71	J11-9	X
+SDO_C_1	Input	H17	JB1-69	J11-10	X
+SDO_T_1	Input	J13	JB1-57	J11-11	X
+ADC_SCLK_0	Output	K13	JB1-55	J11-12	
+ADC_SCLK_1	Output	F18	JB1-47	J11-13	X
+CONV_0	Output	G18	JB1-45	J11-14	
+CONV_1	Output	D18	JB1-37	J11-15	X
+DAC_LD	Output	E18	JB1-35	J11-16	X
+DAC_SCLK	Output	B17	JB1-46	J11-17	X
+DAC_DIN	Output	B18	JB1-42	J11-18	X
+cfd_AD[7]	BiDir	F3	JB2-47	J6-1	
+cfd_AD[6]	BiDir	D5	JB2-51	J6-2	
+cfd_AD[5]	BiDir	F4	JB2-45	J6-3	
+cfd_AD[4]	BiDir	D4	JB2-53	J6-4	
+cfd_AD[3]	BiDir	J3	JB2-43	J6-5	
+cfd_AD[2]	BiDir	E5	JB2-33	J6-6	
+cfd_AD[1]	BiDir	J2	JB2-41	J6-7	
+cfd_AD[0]	BiDir	E6	JB2-31	J6-8	
+cfd_stb	Output	V12	JB2-14	J11-19	
+cfd_write	Output	N14	JB2-16	J11-20	
+cfd_neg_pol	Output	T11	JB2-32	J11-21	
+cfd_or	Input	T10	JB2-36	J11-22	
+cfd_reset	Output	H4	JB2-48	J11-23	
+cfd_global_ena	Output	E2	JB2-52	J11-24	
+psd_sin	Output	G2	JB2-64	J11-25	
+psd_sclk	Output	G6	JB2-66	J11-26	
+psd_sout	Input	H2	JB2-62	J11-27	
+psd_acq_ack_0	Input	D7	JB2-74	J11-28	
+psd_acq_clk_0	Output	J4	JB2-46	J11-29	
+psd_cfd_out_0	Input	D2	JB2-54	J11-30	
+psd_chan_addr_0[0]	BiDir	J5	JB2-99	J11-31	
+psd_chan_addr_0[1]	BiDir	B6	JB2-95	J11-32	
+psd_chan_addr_0[2]	BiDir	A4	JB2-87	J11-33	
+psd_chan_addr_0[3]	BiDir	A3	JB2-85	J11-34	
+psd_chan_addr_0[4]	BiDir	B2	JB2-81	J11-35	
+psd_dac_stb_0	Output	A1	JB2-77	J11-36	
+psd_intx_out_0	Input	E1	JB2-67	J11-37	
+psd_or_out_0	Input	C1	JB2-71	J11-38	
+psd_sc0_0	Output	H1	JB2-61	J11-39	
+psd_sc1_0	Output	G1	JB2-63	J11-40	
+psd_sel_ext_addr_0	Output	B14	JB1-93	J13-5	
+psd_test_mode_int_0	Output	B13	JB1-95	J13-6	X
+psd_token_in_0	Output	A14	JB1-70	J13-7	X
+psd_token_out_0	Input	C17	JB1-79	J13-8	X
+psd_acq_ack_1	Input	D17	JB1-77	J13-9	
+psd_acq_clk_1	Output	E17	JB1-75	J13-10	
+psd_cfd_out_1	Input	J15	JB1-61	J13-11	
+psd_chan_addr_1[0]	BiDir	K15	JB1-59	J13-12	
+psd_chan_addr_1[1]	BiDir	H15	JB1-51	J13-13	
+psd_chan_addr_1[2]	BiDir	J14	JB1-49	J13-14	
+psd_chan_addr_1[3]	BiDir	J17	JB1-41	J13-15	
+psd_chan_addr_1[4]	BiDir	J18	JB1-39	J13-16	
+psd_dac_stb_1	Output	A15	JB1-58	J13-17	
+psd_intx_out_1	Input	A16	JB1-56	J13-18	
+psd_or_out_1	Input	D13	JB1-52	J13-19	
+psd_sc0_1	Output	D12	JB1-50	J13-20	
+psd_sc1_1	Output	B16	JB1-48	J13-21	
+psd_sel_ext_addr_1	Output	U12	JB2-12	J13-22	
+psd_test_mode_int_1	Output	P14	JB2-18	J13-23	
+psd_token_in_1	Output	H5	JB2-44	J13-24	
+psd_token_out_1	Input	F6	JB2-68	J13-25	
+psd_acq_all	Output	G4	JB2-56	J13-26	
+psd_cfd_bypass	Output	G3	JB2-58	J13-27	
+psd_force_rst	Output	E7	JB2-72	J13-28	
+psd_global_ena	Output	T9	JB2-38	J13-29	
+psd_reset	Output	H6	JB2-42	J13-30	
+psd_veto_reset	Output	K2	JB2-35	J13-31	
+DELAY_CLK	Output	P4	JB3-57	J2-5	
+DELAY_DATA	Output	P3	JB3-59	J2-6	
+DELAY_EN_L[0]	Output	N2	JB3-51	J2-7	
+DELAY_EN_L[1]	Output	N1	JB3-53	J2-8	
+DELAY_EN_L[2]	Output	M3	JB3-47	J2-9	
+DELAY_EN_L[3]	Output	M2	JB3-49	J2-10	
+DELAY_EN_L[4]	Output	T1	JB3-41	J2-11	
+DELAY_EN_L[5]	Output	R1	JB3-43	J2-12	
+BOARD_ID[0]	Input	L4	JB1-3	J14-2	
+BOARD_ID[1]	Input	K5	JB1-5	J14-3	
+BOARD_ID[2]	Input	N6	JB1-9	J14-4	
+BOARD_ID[3]	Input	M6	JB1-11	J14-5	
+BOARD_ID[4]	Input	T8	JB1-15	J14-6	
+BOARD_ID[5]	Input	R8	JB1-17	J14-7	
+I2C_SCL	BiDir	N16	JB2-23	J5-1	
+I2C_SDA	BiDir	M17	JB2-27	J5-2	
+TDC_SCLK	Output	B7	JB2-97	J13-32	X
+TDC_DOUT	Input	U11	JB2-34	J13-33	X
+TDC_DIN	Output	A5	JB2-91	J13-34	X
+TDC_ENABLE	Output	B3	JB2-83	J13-35	X
+TDC_CSB	Output	B1	JB2-75	J13-36	X
+TDC_INTB	Input	C2	JB2-73	J13-37	X
+TDC_START	Output	F1	JB2-65	J13-38	X
+TDC_STOP	Output	E3	JB2-55	J13-39	X
+BUSY_OUT_L	Output	D3	JB2-57	J13-40	
+TSTAMP_CLK	Input	R10	JB1-86	J1-5	
+TSTAMP_RST	Input	N17	JB1-91	J1-7	
+COMMON_STOP	Input	L18	JB1-94	J1-8	
+GLOB_ENA	Input	R12	JB1-92	J1-9	
+EVENT_ENA	Input	M13	JB1-96	J1-10	
+FORCE_RESET	Input	R13	JB1-88	J1-11	
+TAKE_EVENT	Input	M18	JB1-98	J1-12	
+OR	Output	L6	JB1-21	J14-8	        X
+INTX_OUT	Output	L5	JB1-23	J14-9	
+CFD_OUT	Output	N15	JB2-21	J5-3	
+MUX_SEL[0]	Output	M16	JB2-25	J5-4	
+MUX_SEL[1]	Output	T14	JB2-22	J5-5	
+MUX_SEL[2]	Output	P15	JB2-26	J5-6	
+MUX_SEL[3]	Output	T15	JB2-24	J5-7	
+MUX_EN	Output	R15	JB2-28	J5-8	

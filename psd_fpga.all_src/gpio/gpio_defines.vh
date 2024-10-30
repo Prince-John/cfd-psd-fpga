@@ -2,8 +2,8 @@
 // *************************************************
 // localparams definitions for the gpio bits   
 // The file is AUTO-GENERATED, DO NOT MODIFY!!!   
-// Timestamp:           Sat Sep 28 15:11:59 CDT 2024
-// TCL Code Version:    26-SEP-2024
+// Timestamp:           Mon Oct 28 16:30:50 CDT 2024
+// TCL Code Version:    v0.0.4 released at	2024-10-15 18:50:38
 // *************************************************
 
 // GPIO INPUT Port 0 -> Board ID bit 0 (input pin)
@@ -170,6 +170,24 @@ localparam	PSD_SIN = 21 ;
 
 // GPIO OUTPUT Port 2 -> Serial clock into PSD 0 and 1 (output pin)
 localparam	PSD_SCLK = 22 ;
+
+// GPIO OUTPUT Port 2 -> PSD chip 0 address direction selection line
+localparam	PSD_SEL_EXT_ADDR_0 = 23 ;
+
+// GPIO OUTPUT Port 2 -> PSD chip 1 address direction selection line
+localparam	PSD_SEL_EXT_ADDR_1 = 24 ;
+
+// GPIO OUTPUT Port 2 -> PSD chip 0 sub channel selct bit 0
+localparam	PSD_SC0_0 = 25 ;
+
+// GPIO OUTPUT Port 2 -> PSD chip 0 sub channel selct bit 1
+localparam	PSD_SC1_0 = 26 ;
+
+// GPIO OUTPUT Port 2 -> PSD chip 1 sub channel selct bit 0
+localparam	PSD_SC0_1 = 27 ;
+
+// GPIO OUTPUT Port 2 -> PSD chip 1 sub channel selct bit 1
+localparam	PSD_SC1_1 = 28 ;
 
 // GPIO INPUT Port 3 -> Bit 0 of cfd_ad_in bus from the cfd_ad tri-state circuits
 localparam	CFD_AD_IN_0 = 0 ;

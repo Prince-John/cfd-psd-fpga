@@ -41,6 +41,10 @@
 #define		CFD_PORT						3
 #define		MUX_PORT						2
 #define		DAC_OUT_PORT					2
+#define 	PSD_DAC_ADDR_PORT				1
+#define		PSD_DAC_MISC_PORT				2
+
+
 
 // &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 // Global variables defined in main
