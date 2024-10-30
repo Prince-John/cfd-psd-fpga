@@ -36,6 +36,12 @@ mkdir ./psd_fpga.all_src/vitis_project
 # Moving to workspace directory
 #
 
+if (-d $FHOME/workspace) then
+	echo "Deleting vitis workspace link"
+	rm $FHOME/workspace
+	
+ls -s $FHOME/psd_fpga.all_src/vitis_project $FHOME/workspace
+
 echo "Moving to vitis workspace directory"
 cd 	$FHOME/workspace
 pwd
