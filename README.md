@@ -103,9 +103,9 @@ Only the `psd_fpga.all_src` folder is tracked with some exclusions put in for vi
 
 Semantic versioning uses the format MAJOR.MINOR.PATCH:
 
-MAJOR: Increment for incompatible API changes, would require a project rebuild.
-MINOR: Increment for new features that are backward-compatible, require the xsa to be updated in vitis.
-PATCH: Increment for backward-compatible bug fixes, no hardware changes just firmware bugfixes.
+- MAJOR: Increment for incompatible API changes, would require a project rebuild. - Changes to FPGA chipboard - will result in breaking the configration commands.
+- MINOR: Increment for new features that are backward-compatible, require the xsa to be updated in vitis. - changes to the microblaze design or configuration
+- PATCH: Increment for backward-compatible bug fixes, no hardware changes just firmware bugfixes. - changes to firmware - microblaze C code - provided it does not require a change of verilog code. 
 
 The `git tag` command is used to tag every version on the master branch which we want to increment into new release versions. 
  
