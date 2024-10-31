@@ -7,9 +7,14 @@
 
 #include 	"gpio.h"
 #include    "i2c.h"
-#define DEBUG
-// DEBUG LCD MACRO
-#ifdef DEBUG
+
+// GLE: 31-Oct-2024
+// Changed to LCD_DEBUG from DEBUG
+// to avoid warning
+
+#define 	LCD_DEBUG
+// FPGA_DEBUG LCD MACRO
+#ifdef LCD_DEBUG
 	#define DEBUG_LCD_PRINT_CONFIG(message, numBytes) \
 		if (useLCD) { \
 			lcd_clear(); \
@@ -40,15 +45,10 @@
 			sleep(1); \
 		}
 #else
-#define DEBUG_LCD_PRINT_CONFIG(message, numBytes)  // Empty when DEBUG is not defined
+#define DEBUG_LCD_PRINT_CONFIG(message, numBytes)  // Empty when FPGA_DEBUG is not defined
 #define DEBUG_LCD_PRINT_LOCATION(message)
 #define DEBUG_LCD_PRINT_STR(message, data)
 #endif
-
-
-
-
-
 
 
 // Global
@@ -65,6 +65,7 @@ extern	u8 	uartStr[256] ;
 enum cmd_tokens {CONFIG_DELAY, CONFIG_PSD, GET_BOARD_ID, WRITE_TO_CFD, ERROR, CONFIG_MUX, CONFIG_DAC} ;
 
 // Define enum for PSD specific tokens
+
 enum psd_tokens {RESET, OFFSET_DAC_0, OFFSET_DAC_1, TRIGGER_MODE, SERIAL_REG};
 
 // Functions
@@ -83,7 +84,12 @@ void	configHandler() ;
 void	configure_psd_chips(u8 *psd_config_data) ;
 void  	configure_psd_0_dac(u8 data, u8 addr);
 void  	configure_psd_1_dac(u8 data, u8 addr);
-void 	configure_trigger_mode(u8 data);
+
+// GLE: 31-Oct-2024
+// Changed to configure_psd_trigger_mode from configure_trigger_mode
+// to avoid warning
+
+void 	configure_psd_trigger_mode(u8 data);
 
 void	configure_delay_chips(u8 chip_num, u8 delay_data) ;
 

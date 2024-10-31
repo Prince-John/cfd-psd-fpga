@@ -99,7 +99,7 @@ int main() {
 	    lcd_print_str("PSD_FPGA: ") ;
 	    lcd_print_str(PROJECT_VERSION) ;
 	    lcd_set_cursor(1,0) ;
-	    lcd_print_str("--> Main loop!") ;
+	    lcd_print_str("--> Main loop!!!") ;
 	}
 
 // $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
