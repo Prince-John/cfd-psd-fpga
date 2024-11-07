@@ -1,0 +1,68 @@
+#!/usr/bin/python3
+#
+# Program to monitor wam-seatbelt and distance sensor
+# Use python3
+#
+
+# Import matplotlib
+
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+from matplotlib import style
+import time
+
+# Import python numerical library
+
+import numpy as np
+
+# Import library to handle serial communication
+
+import serial
+
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# Initialize serial port
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+ser = serial.Serial()
+ser.port = '/dev/ttyACM0' #Arduino serial port
+ser.baudrate = 9600
+ser.timeout = 20  #specify timeout when using readline()
+
+
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# Create figure for plotting
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+fig = plt.figure()
+ax = fig.add_subplot(1, 1, 1)
+ts = [] #time variable
+ys = [] #output variable
+
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# Open the serial port
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+ser.open()
+if ser.is_open==True:
+	print("\nSerial port now open. Configuration:\n")
+	print(ser, "\n") #print serial parameters
+	
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# Open a file for reading
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+timestr = time.strftime("%Y%m%d-%H%M%S")
+filename = "ble_mon_" + timestr + ".txt"
+fid = open(filename, mode="wt")
+
+# Uncomment the print statement to send transcript to screen
+
+while True:
+	line = ser.readline().decode('utf-8')
+#	print(line, end =" ")
+	line_as_list = line.split(',')
+	if (line_as_list[0] == 'D') | (line_as_list[0] == 'C'):
+		fid.write(line)
+		fid.flush() 
+		
+

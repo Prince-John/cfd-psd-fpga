@@ -1,0 +1,330 @@
+#!/usr/bin/octave -qf
+
+% ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+% This Octave script will analyze a file containing the results of a 
+% monte carlo (MC) analysis.
+%
+% This script should be called with single argument.
+%
+% The script will produce a series of walk plots, one for each MC run
+%
+% example usage (where the single argument is the PID)
+%
+% walk 11313
+% +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+% ################################
+% Read in data from veriloga file
+% Store in data matrix
+% ################################
+graphics_toolkit("gnuplot")
+
+arg_list = argv () ;
+pid_num = arg_list{1} ;
+%num_pulses = str2num(arg_list{2});
+
+%min_index = 1;
+%max_index = num_pulses;
+
+%if(length(arg_list) > 2)
+%	disp("Using max and min indicies")
+%	min_index = str2num(arg_list{3})
+%	max_index = str2num(arg_list{4})
+%end
+
+filename = ['./results/walk_'  pid_num  '.dat'] ;
+fid = fopen(filename, 'rt') ; 
+
+% Read the file into the data matrix
+
+data = dlmread(filename, '\t') ;
+
+% Close the file up .. we are done with it
+
+fclose(fid) ;
+
+% Save the configuration settings for each event
+idx = floor(data(:,1)) == 0;
+config = data(idx,:);
+data(idx,:) = [];
+
+% Remove all lines that have a 0 in the first column
+
+indices = find(data(:,1) == 0) ;
+data(indices,:) = [] ;
+
+% Go through and remove any lines that have same
+% value in column 0 as the line before
+
+% Determine the length of the first column
+
+n = length(data(:,1)) ;
+
+% Go through and find duplicate lines
+
+previous = data(1,1) ;
+tagged_for_removal = [] ;
+
+for i = 2:n
+   current = data(i,1) ;
+   if (current == previous) 
+       tagged_for_removal = [tagged_for_removal, i] ;
+   end
+   previous = current ;
+end
+
+
+% Remove the duplicate lines
+
+data(tagged_for_removal,:) = [] ;
+% Find the number of 1's in the first column
+% That will be the number of MC runds which we ran
+
+start_indices = find(data(:,1) == 1) ;
+runs = length(start_indices) ;
+end_indices = start_indices(2:end) - 1;
+end_indices = [end_indices; data(data(end,1))];
+num_hits = data(end_indices) - data(start_indices) + 1;
+
+% *******************************************************
+%
+%  For loop on the number of MC runs that we need to analyze
+%
+% ********************************************************
+walk_vector = [] ;
+runs_vector = [] ;
+%energy_min = ones(1,num_pulses).*1e9 ;
+%energy_max = ones(1,num_pulses).*(-1e9);
+%amplitudes = zeros(num_pulses, 3);
+%last_zero = length(amplitudes);
+
+tau_r = config(1)*1e12;
+
+for run_num = 1:runs
+
+   runs_vector = [runs_vector, run_num] ;
+
+	run_num;
+	min_index = 1;
+	max_index = num_hits(run_num);
+
+% We need to extract the submatrix that corresponds to 
+% current MC run
+
+   first = start_indices(run_num) ;
+   if (run_num != runs) 
+        last = start_indices(run_num + 1) - 1 ;
+   else
+        last = length(data(:,1)) ;
+   end
+
+	submatrix = data(first:last, 1:7);
+%   
+% Second column contains the amplitude of the input signal
+% Convert to mv
+
+    amp = 1000.0 .* submatrix(:,2);
+	while(abs(amp(min_index)) < 15)
+		min_index = min_index + 1;
+	end
+
+% Append to amplitdues array if the unique amplitude is not already in the array.
+% Increment hit counter for any CFD triggers at each amplitude.
+%	if(run_num == 1)
+%		amplitudes(:,1) = amp;
+%	end
+
+%	cfd_le = submatrix(:,7);
+
+%	for idx=1:length(amp)
+%		for idx2=1:length(amplitudes)
+%			if(amp(idx) == amplitudes(idx2,1))
+%				amplitudes(idx2,2) = amplitudes(idx2,2) + 1;
+%				amplitudes(idx2,3) = cfd_le(idx);
+%				break;
+%			end
+%		end
+%	end
+%
+% Fifth column contains the propagation delay
+% Convert to ns
+%
+
+	tpd = 1e9.*submatrix(:,5);
+
+%	for idx = 1:length(tpd);
+%		for idx2=1:length(amplitudes)
+%			if(amplitudes(idx2,1) == amp(idx))
+%				if energy_min(idx2) > tpd(idx) && tpd(idx) < 1000
+%					energy_min(idx2) = tpd(idx);
+%					break;
+%				end
+%				if energy_max(idx2) < tpd(idx) && tpd(idx) < 1000
+%					energy_max(idx2) = tpd(idx);
+%					break;
+%				end
+%			end
+%		end
+%	end
+
+% Find the minimuim and maximum propgation delays
+% The difference is what we refer to as "walk"
+% Convert to ps
+	
+	%for idx=1:length(tpd)
+	%	if abs(amp(idx)) < 15
+	%		tpd(idx) = [];
+	%	end
+	%end
+	tpd_no_retriggers = tpd;
+	tpd_no_retriggers( tpd_no_retriggers > 1000) = [];
+	tpd_no_retriggers( tpd_no_retriggers < -1000) = [];
+	amp(tpd > 1000) = [];
+	amp(tpd < -1000) = [];
+    maximum = max(abs(tpd_no_retriggers(min_index:max_index))) ;
+    minimum = min(abs(tpd_no_retriggers(min_index:max_index))) ;
+    walk = maximum - minimum ;
+    walk = 1000.0 .* walk ;
+    tave = mean(tpd_no_retriggers(min_index:max_index)) ;
+
+% Take out the mean and comvert to ps
+
+    tpd = tpd .- tave ;
+    tpd = 1e3 .* tpd ;
+	tpd_no_retriggers = tpd_no_retriggers .- tave;
+	tpd_no_retriggers = tpd_no_retriggers .* 1e3;
+
+    walk_vector = [walk_vector, walk] ;
+
+	if run_num == runs-1
+
+    h_summary = figure('name', 'Summary Walk Plot', 'numbertitle', 'off', 'visible', 'off') ;
+
+    plot(runs_vector, walk_vector, 'r.', 'MarkerSize', 25) ;
+	set(gca, "fontsize", 18);
+    axis([0 length(runs_vector) 0 max(walk_vector)*1.25]) ;
+    hold on ;
+    grid on ;
+    xlabel('Monte Carlo Run Number', "fontsize", 16) ;
+    ylabel('Walke (ps)', "fontsize", 16) ;
+    title("Walk Summary Plot for Constant Fraction Discriminator", "fontsize", 16) ;
+
+% Save the plot as a PDF 
+
+    warning("off") ;
+    str = ["./pdf/walk_" pid_num "_summary.pdf"] ;
+	disp(["Creating pdf file: " str]);
+    print(h_summary, '-dpdf', '-color', str) ;
+	end
+    
+% Create the walk plot
+    h_walk = figure('name', 'Walk Plot', 'numbertitle', 'off', 'visible', 'off') ;
+
+    %h_semi = semilogx(abs(amp(abs(amp) >= 15)), tpd, 'r.', 'MarkerSize', 25) ;
+	h_semi = semilogx(abs(amp(min_index:max_index)), tpd_no_retriggers(min_index:max_index), 'r.', 'MarkerSize', 25) ;
+	set(gca, "fontsize", 18);
+    hold on ;
+    grid on ;
+    xlabel('Input Pulse Amplitude (mV)', "fontsize", 18) ;
+    ylabel('Delay Relative to Average (ps)', "fontsize", 18) ;
+    title("Walk Characteristics for CFD Tau_r=3ns", "fontsize", 16) ;
+% Annotate the plot with useful information
+
+	yloc = ylim;
+	yloc = yloc(2)-50;
+
+    str = ["Monte Carlo Run #" num2str(run_num, '%d') ] ;
+    text(300, yloc, str, "fontsize", 16) ;
+
+	yloc = yloc-50;
+    str = ["Walk is " num2str(walk, '%5.1f') " ps"] ;
+    text(300, yloc, str, "fontsize", 16) ;
+
+	yloc = yloc-50;
+    str = ["Average delay is " num2str(tave, '%5.1f') " ns"] ;
+    text(300, yloc, str, "fontsize", 16) ;
+
+    hold off ;
+    grid off ;
+
+	%LE to CFD delay
+ %   h_cfd_le = figure('name', 'CFD-LE delay', 'numbertitle', 'off', 'visible', 'off') ;
+%	grid on;
+
+%    h_semi = semilogx(abs(amplitudes(:,1)), amplitudes(:,3), 'r.', 'MarkerSize', 25) ;
+%	set(gca, "fontsize", 18);
+ %   hold on ;
+%    grid on ;
+%    xlabel('Input Pulse Amplitude (mV)', "fontsize", 18) ;
+%    ylabel('Time between CFD and LE', "fontsize", 18) ;
+%    title("CFD-LE Time", "fontsize", 16) ;
+
+% Save the plot as a PDF 
+
+    warning("off") ;
+    str = ["./pdf/walk_" pid_num "_" num2str(run_num, '%d')  ".pdf"] ;	
+	disp(["Creating pdf file: " str]);
+	print(h_walk, '-dpdf', '-color', str) ;
+
+%    warning("off") ;
+%    str = ["./pdf/cfd_le_" pid_num "_" num2str(run_num, '%d')  ".pdf"] ;	%
+%	disp(["Creating pdf file: " str]);
+%	print(h_cfd_le, '-dpdf', '-color', str) ;
+
+%    hold off ;
+%    grid off ;
+
+end
+
+% ******************************************************
+
+
+% $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+%
+% Create a plot which summarizes performance
+%
+% $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+% Create the summary walk plot
+
+    h_summary = figure('name', 'Summary Walk Plot', 'numbertitle', 'off', 'visible', 'off') ;
+
+    plot(runs_vector, walk_vector, 'r.', 'MarkerSize', 25) ;
+	set(gca, "fontsize", 18);
+    axis([0 length(runs_vector) 0 max(walk_vector)*1.25]) ;
+    hold on ;
+    grid on ;
+    xlabel('Monte Carlo Run Number', "fontsize", 16) ;
+    ylabel('Walke (ps)', "fontsize", 16) ;
+    title("Walk Summary Plot for Constant Fraction Discriminator", "fontsize", 16) ;
+
+% Save the plot as a PDF 
+
+    warning("off") ;
+    str = ["./pdf/walk_" pid_num "_summary.pdf"] ;
+	disp(["Creating pdf file: " str]);
+    print(h_summary, '-dpdf', '-color', str) ;
+
+	%h_walk_per_energy = figure('name', 'Walk for each energy', 'numbertitle', 'off', 'visible', 'off');
+	%hold on;
+
+	%energy_avg = (energy_min + energy_max)./2.0;
+
+	%amplitudes = sortrows(abs(amplitudes))
+    %errorbar(amplitudes(:,1)', energy_avg, -energy_min.-energy_avg, energy_max.-energy_avg, '~') ;
+	%plot(abs(amplitudes(:,1))', energy_avg, 'r.', 'MarkerSize', 25);
+	%plot(abs(amplitudes(:,1))', energy_min, 'rv', 'MarkerSize', 10, "MarkerFaceColor", 'r');
+	%plot(abs(amplitudes(:,1))', energy_max, 'r^', 'MarkerSize', 10, "MarkerFaceColor", 'r');
+	%set(gca, "fontsize", 18);
+    %axis([-50 max(abs(amplitudes(:,1)))*1.15  min(abs(energy_min))*0.85 max(abs(energy_max))*1.15]) ;
+    %hold on ;
+    %grid on ;
+    %xlabel('Voltage (mV)', "fontsize", 16) ;
+    %ylabel('Propagation Delay (ns)', "fontsize", 16) ;
+    %title("Walk with energy", "fontsize", 16) ;
+	%hold off;
+    %warning("off") ;
+    %str = ["./pdf/walk_" pid_num "_energy.pdf"] ;
+	%disp(["Creating pdf file: " str]);
+    %print(h_walk_per_energy, '-dpdf', '-color', str) ;
+exit 

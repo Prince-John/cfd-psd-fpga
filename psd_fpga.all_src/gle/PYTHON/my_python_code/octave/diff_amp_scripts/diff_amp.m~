@@ -1,0 +1,149 @@
+#!/usr/bin/octave -qf
+
+% ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+% This Octave script will analyze a file containing the results of a 
+% monte carlo (MC) analysis.
+%
+% This script should be called with single argument.
+%
+% The script will produce a series of walk plots, one for each MC run
+%
+% example usage (where the single argument is the PID)
+%
+% walk 11313
+% +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+% ################################
+% Read in data from veriloga file
+% Store in data matrix
+% ################################
+graphics_toolkit("gnuplot")
+
+arg_list = argv () ;
+pid_num = arg_list{1} ;
+
+filename = ['./results/diff_amps_'  pid_num  '.dat'] ;
+fid = fopen(filename, 'rt') ; 
+
+% Read the file into the data matrix
+
+data = dlmread(filename, '\t') ;
+
+% Close the file up .. we are done with it
+
+fclose(fid) ;
+
+% Remove all lines that have a column heading
+
+data(1:2:end,:) = [] ;
+
+% Go through and remove any lines that have same
+% value in column 0 as the line before
+
+% Determine the length of the first column
+
+n = length(data(:,1)) ;
+
+% Plot each of the diff amp stage outputs
+h1 = figure('name', 'Diff Amp Stage 1', 'numbertitle', 'off', 'visible', 'off') ;
+
+plot(1:1:n, data(:,1)-data(:,2), 'r.', 'MarkerSize', 25) ;
+set(gca, "fontsize", 18);
+axis([0 n+1 min(data(:,1)-data(:,1))*0.85 max(data(:,1)-data(:,2))*1.15]);
+hold on ;
+grid on ;
+xlabel('Monte Carlo Run Number', "fontsize", 16) ;
+ylabel('Voltage (V)', "fontsize", 16) ;
+title("Diff Amp Stage 1 Differntial Output", "fontsize", 16) ;
+
+% Save the plot as a PDF 
+
+warning("off") ;
+str = ["./pdf/stage1_" pid_num ".pdf"] ;
+disp(["Creating pdf file: " str]);
+print(h1, '-dpdf', '-color', str) ;
+
+h2 = figure('name', 'Diff Amp Stage 2', 'numbertitle', 'off', 'visible', 'off') ;
+
+plot(1:1:n, data(:,3)-data(:,4), 'r.', 'MarkerSize', 25) ;
+set(gca, "fontsize", 18);
+%axis([0 n+1 min(data(:,3)-data(:,4))*0.85 max(data(:,3)-data(:,4))*1.15]);
+hold on ;
+grid on ;
+xlabel('Monte Carlo Run Number', "fontsize", 16) ;
+ylabel('Voltage (V)', "fontsize", 16) ;
+title("Diff Amp Stage 2 Differntial Output", "fontsize", 16) ;
+
+% Save the plot as a PDF 
+
+warning("off") ;
+str = ["./pdf/stage2_" pid_num ".pdf"] ;
+disp(["Creating pdf file: " str]);
+print(h2, '-dpdf', '-color', str) ;
+
+h3 = figure('name', 'Diff Amp Stage 3', 'numbertitle', 'off', 'visible', 'off') ;
+
+plot(1:1:n, data(:,5)-data(:,6), 'r.', 'MarkerSize', 25) ;
+set(gca, "fontsize", 18);
+%axis([0 n+1 min(data(:,5)-data(:,6))*0.85 max(data(:,5)-data(:,6))*1.15]);
+hold on ;
+grid on ;
+xlabel('Monte Carlo Run Number', "fontsize", 16) ;
+ylabel('Voltage (V)', "fontsize", 16) ;
+title("Diff Amp Stage 3 Differntial Output", "fontsize", 16) ;
+
+% Save the plot as a PDF 
+
+warning("off") ;
+str = ["./pdf/stage3_" pid_num ".pdf"] ;
+disp(["Creating pdf file: " str]);
+print(h3, '-dpdf', '-color', str) ;
+
+h4 = figure('name', 'Switcher Output Differential Voltage', 'numbertitle', 'off', 'visible', 'off') ;
+
+plot(1:1:n, data(:,7)-data(:,8), 'r.', 'MarkerSize', 25) ;
+set(gca, "fontsize", 18);
+%axis([0 n+1 min(data(:,7)-data(:,8))*0.85 max(data(:,7)-data(:,8))*1.15]);
+hold on ;
+grid on ;
+xlabel('Monte Carlo Run Number', "fontsize", 16) ;
+ylabel('Voltage (V)', "fontsize", 16) ;
+title("Switcher Differntial Output", "fontsize", 16) ;
+
+% Save the plot as a PDF 
+
+warning("off") ;
+str = ["./pdf/switcher_" pid_num ".pdf"] ;
+disp(["Creating pdf file: " str]);
+print(h4, '-dpdf', '-color', str) ;
+
+h5 = figure('name', 'Comparator Differential Voltage', 'numbertitle', 'off', 'visible', 'off') ;
+
+plot(1:1:n, data(:,9)-data(:,10), 'r.', 'MarkerSize', 25) ;
+set(gca, "fontsize", 18);
+%axis([0 n+1 min(data(:,9)-data(:,10))*0.85 max(data(:,9)-data(:,10))*1.15]);
+hold on ;
+grid on ;
+xlabel('Monte Carlo Run Number', "fontsize", 16) ;
+ylabel('Voltage (V)', "fontsize", 16) ;
+title("Comparator Differntial Input", "fontsize", 16) ;
+
+% Save the plot as a PDF 
+
+warning("off") ;
+str = ["./pdf/comparator_" pid_num ".pdf"] ;
+disp(["Creating pdf file: " str]);
+print(h5, '-dpdf', '-color', str) ;
+
+%h6 = figure('name', 'Comparator Differential Voltage', 'numbertitle', 'off', 'visible', 'off') ;
+
+%plot(1:1:n, data(:,11)-data(:,12), 'r.', 'MarkerSize', 25) ;
+%set(gca, "fontsize", 18);
+%axis([0 n+1 min(data(:,11)-data(:,12))*0.85 max(data(:,11)-data(:,12))*1.15]);
+%hold on ;
+%grid on ;
+%xlabel('Monte Carlo Run Number', "fontsize", 16) ;
+%ylabel('Voltage (V)', "fontsize", 16) ;
+%title("Zero Cross Preamp Diffential Output", "fontsize", 16) ;
+
+exit 

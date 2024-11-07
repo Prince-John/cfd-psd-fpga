@@ -1,0 +1,56 @@
+#!/usr/bin/python3
+
+# Want create plot from data coming in over serial port
+# Format of data
+
+import time
+import serial
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+import numpy as np
+
+def data_gen():
+
+	ser = serial.Serial()
+	ser.port = '/dev/ttyACM0' #Arduino serial port
+	ser.baudrate = 9600
+	ser.timeout = 10  #specify timeout when using readline()
+	ser.open()
+	if ser.is_open==True:
+		print("\nSerial port now open. Configuration:\n")
+		print(ser, "\n") #print serial parameters
+#	ser.reset_input_buffer()  # Flush input buffer, discarding all its contents.
+    
+	while True:
+		line = ser.readline().decode('utf-8')
+		line_as_list = line.split(',')
+		if (line[0] == 'D') | (line[0] == 'C'):
+			x = int(line_as_list[1])
+			y = int(line_as_list[2])
+			yield x, y       # Yield back x and y values for plot
+
+# Provides the line data
+
+def run(data):
+	x, y = data
+	xdata.append(x)  # Adding data to list for x-values
+	ydata.append(y)  # Adding data to list for y-values
+	line.set_data(xdata, ydata)  # Creating a data set for hand-over to plot
+	return line,
+
+
+if __name__ == '__main__':
+	fig, ax = plt.subplots()  # Setup figure and axis
+	line, = ax.plot([], [], lw=2)  # Setup line
+
+	ax.set_ylim(0, 255)  # Set limitation in y
+	ax.set_xlim(0, 1000) # Set limitation in x
+	ax.grid()  # Create grid
+
+	xdata, ydata = [], []  # Create empty lists
+
+    # Frames: Receives the generated data from the serial connection
+    # Run: Provides the line data
+
+	ani = animation.FuncAnimation(fig, run, frames=data_gen, blit=True, interval=10)
+	plt.show()
