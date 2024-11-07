@@ -86,43 +86,6 @@
 
     wire cfd_or_connect ;
   
-// Doesn't hurt to put inputs and outputs  here
-// This allows me to easily swap out what gets connected to pins
-  
-	input	[5:0] board_id ;
-	input	common_stop ;
-	input	dummy_reset ;
-	input	event_ena ;
-	input	force_reset ;
-	input	glob_ena ;
-	input	psd_sout ;
-	input	sdo_t_0 ;
-	input	sys_clk ;
-	input	take_event ;
-	input	uart_rx ;
-	output	adc_sclk_0 ;
-	output	busy_out ;
-	output	[7:0] cfd_ad ;
-	output	cfd_global_ena ;
-	output	cfd_neg_pol ;
-	output	cfd_reset ;
-	output	cfd_stb ;
-	output	cfd_write ;
-	output	conv_0 ;
-	output	dac_din ;
-	output	dac_ld ;
-	output	dac_sclk ;
-	output	delay_clk ;
-	output	delay_data ;
-	output	[5:0] delay_en_l ;
-	output	[1:0] led ;
-	output	mux_en ;
-	output	[3:0] mux_sel ;
-	output	psd_sclk ;
-	output	psd_sin ;
-	output	uart_tx ;
-	inout	i2c_scl ;
-	inout	i2c_sda ;
 
 
 	
