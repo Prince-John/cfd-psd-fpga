@@ -1,4 +1,8 @@
-config_stable.py is old version .... uses single byte command
+GLE: 7-Nov-2024
 
-config_BETA.py is what I am using now and it looks good
+config is simple version of python configuration program
 
+eventHandler is python program to get adc data from the ADC eval board!
+
+For both the environment variable PSD_UART_0 should be set
+For example setenv PSD_UART_0 /dev/ttyUSB1
