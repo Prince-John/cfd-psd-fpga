@@ -84,8 +84,5 @@
 // ********************************************
 // CFD OR 
 
-    wire cfd_or_connect ;
+    wire    cfd_or_connect ;
   
-
-
-	
