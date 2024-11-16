@@ -1,0 +1,23 @@
+#!/usr/bin/tclsh
+#
+# Tcl script to produce a collection of pdf files
+#
+
+set     walk_combined    "walk_combined.pdf"
+#set		cfd_combined	 "cfd_le_combined.pdf"
+
+set    home    $env(HOME)
+cd     $home/cds/CFDv2/octave/walk_scripts/pdf
+
+# Combine the pdf documents into one file
+# Put the document in current working directory
+
+set walk_list  [glob walk_*.pdf]
+set walk_list  [lsort ${walk_list}]
+
+
+#set cfd_list  [glob cfd_le_*.pdf]
+#set cfd_list  [lsort ${cfd_list}]
+
+eval exec gs -dBATCH -dNOPAUSE -sDEVICE=pdfwrite -sOutputFile=${walk_combined} ${walk_list}
+#eval exec gs -dBATCH -dNOPAUSE -sDEVICE=pdfwrite -sOutputFile=${cfd_combined} ${cfd_list}

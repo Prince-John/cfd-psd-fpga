@@ -1,0 +1,18 @@
+#!/usr/bin/tclsh
+#
+# Tcl script to produce a collection of pdf files
+#
+
+set     diff_amp_combined    "diff_amp_combined.pdf"
+
+set    home    $env(HOME)
+cd     $home/cds/CFDv2/octave/diff_amp_scripts/pdf
+
+# Combine the pdf documents into one file
+# Put the document in current working directory
+
+set diff_amp_list  [glob *.pdf]
+set diff_amp_list  [lsort ${diff_amp_list}]
+
+
+eval exec gs -dBATCH -dNOPAUSE -sDEVICE=pdfwrite -sOutputFile=${diff_amp_combined} ${diff_amp_list}

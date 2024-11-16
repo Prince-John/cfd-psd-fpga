@@ -1,0 +1,217 @@
+#!/usr/bin/octave -qf
+
+% ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+% This Octave script will analyze a file containing the results of a 
+% monte carlo (MC) analysis.
+%
+% This script should be called with single argument.
+%
+% The script will produce a series of walk plots, one for each MC run
+%
+% example usage (where the single argument is the PID)
+%
+% jitter.m 11313
+% +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+% ################################
+% Read in data from veriloga file
+% Store in data matrix
+% ################################
+%graphics_toolkit("gnuplot")
+
+arg_list = argv () ;
+pid_num = arg_list{1} ;
+tau_r = arg_list{2};
+tau_r = str2num(tau_r)
+
+filename = ['./results/jitter_'  pid_num  '.dat'] ;
+fid = fopen(filename, 'rt') ; 
+
+% Read the file into the data matrix
+
+data = dlmread(filename, '\t') ;
+
+% Close the file up .. we are done with it
+
+fclose(fid) ;
+
+% Save the configuration settings for each event
+idx = floor(data(:,1)) == 0;
+%config = data(idx,:);
+data(idx,:) = [];
+
+% Remove all lines that have a 0 in the first column
+
+indices = find(data(:,1) == 0) ;
+data(indices,:) = [] ;
+
+% Go through and remove any lines that have same
+% value in column 0 as the line before
+
+% Determine the length of the first column
+
+n = length(data(:,1)) ;
+
+% Go through and find duplicate lines
+
+%previous = data(1,1) ;
+%tagged_for_removal = [] ;
+
+%for i = 2:n
+%   current = data(i,1) ;
+%   if (current == previous) 
+%       tagged_for_removal = [tagged_for_removal, i] ;
+%   end
+%   previous = current ;
+%end
+
+
+% Remove the duplicate lines
+
+%data(tagged_for_removal,:) = [] ;
+
+% Find the number of 1's in the first column
+% That will be the number of MC runds which we ran
+
+start_indices = find(data(:,1) == 1) ;
+runs = length(start_indices) 
+
+% *******************************************************
+%
+%  For loop on the number of MC runs that we need to analyze
+%
+% ********************************************************
+cfd_jitter_vector = [];
+runs_vector = [] ;
+
+%get rise time consant in picoseconds
+%tau_r = config(1)*1e12;
+
+for run_num = 1:runs
+
+   runs_vector = [runs_vector, run_num] ;
+
+% We need to extract the submatrix that corresponds to 
+% current MC run
+
+   first = start_indices(run_num) ;
+   if (run_num != runs) 
+        last = start_indices(run_num + 1) - 1 ;
+   else
+        last = length(data(:,1)) ;
+   end
+
+	submatrix = data(first:last, 1:7);
+%   
+% Second column contains the amplitude of the input signal
+% Convert to mv
+
+    amp = 1000.0 .* submatrix(:,2) ;
+
+%
+% Fifth column contains the propagation delay
+% Convert to ps
+%
+
+    cfd_tpd = 1e12 .* submatrix(:,5)  ;
+
+	%jitter_cfd = max(cfd_tpd) - min(cfd_tpd);
+
+    cfd_jitter_vector = [cfd_jitter_vector, cfd_tpd] ;
+
+end
+
+% ******************************************************
+
+
+% $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+%
+% Create a plot which summarizes performance
+%
+% $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+% Create the summary walk plot
+
+    h_summary = figure('name', 'Summary Jitter Plot', 'numbertitle', 'off', 'visible', 'off') ;
+	hold on;
+	grid on;
+	box on;
+
+	cfd_jitter_vector = cfd_jitter_vector .- mean(cfd_jitter_vector);
+	jitter = max(cfd_jitter_vector) - min(cfd_jitter_vector);
+	str1 = ["Jitter is " num2str(jitter, '%5.1f') " ps"] ;
+
+	xloc = xlim;
+	xloc = xloc(1)+0.25*xloc(2);
+
+	yloc = max(cfd_jitter_vector)*1.2;
+			
+	text(xloc, yloc, str1, "fontsize", 16);
+
+    plot(runs_vector, cfd_jitter_vector, 'r.', 'MarkerSize', 25) ;
+	set(gca, "fontsize", 18);
+    axis([-1 length(runs_vector)+1 min(cfd_jitter_vector)*1.25 max(cfd_jitter_vector)*1.25]) ;
+	%xlim([-1 length(runs_vector)+1]);
+    hold on ;
+    grid on ;
+    xlabel('Monte Carlo Run Number', "fontsize", 16) ;
+    ylabel('Delay relative to average (ps)', "fontsize", 16) ;
+    title("Jitter Summary Plot for Constant Fraction Discriminator", "fontsize", 16) ;
+
+% Save the plot as a PDF 
+
+    warning("off") ;
+    str = ["./pdf/jitter_" pid_num "_summary.pdf"] ;
+	disp(["Creating pdf file: " str]);
+    print(h_summary, '-dpdf', '-color', str) ;
+
+%Create histogram
+
+    h_hist = figure('name', 'Histogram Jitter Plot', 'numbertitle', 'off', 'visible', 'off') ;
+	hold on;
+	grid on;
+	box on;
+
+	nbins = 10;
+	if(length(cfd_jitter_vector > 100))
+		nbins = floor(length(cfd_jitter_vector)/13);
+	end
+
+	risetime = tau_r*2.2e12
+	cfd_jitter_vector = 100.*(cfd_jitter_vector./risetime);
+
+    [hc, centers] = hist(cfd_jitter_vector, nbins);
+	hist(cfd_jitter_vector, nbins);
+	colormap(prism());
+
+	max_count = max(hc)
+	leftbin = centers(find(hc > max_count/2, 1, 'first'))
+	rightbin = centers(find(hc > max_count/2, 1, 'last'))
+	fwhm = rightbin-leftbin
+
+
+	str1 = ["FWHM is " num2str(fwhm, '%5.1f') " % of the 10-90 risetime"] ;
+
+	xloc = xlim;
+	xloc = xloc(1) + 0.1*xloc(2);
+
+	yloc = max_count;
+	text(xloc, yloc, str1, "fontsize", 16);
+
+
+	set(gca, "fontsize", 18);
+    %axis([-1 length(runs_vector)+1 min(cfd_jitter_vector)*1.25 max(cfd_jitter_vector)*1.25]) ;
+	%xlim([-1 length(runs_vector)+1]);
+    hold on ;
+    grid on ;
+    xlabel('Delay relative to average (ps)', "fontsize", 16) ;
+    ylabel('Counts', "fontsize", 16) ;
+    title("Jitter Histogram Plot for Constant Fraction Discriminator", "fontsize", 16) ;
+
+% Save the plot as a PDF 
+
+    warning("off") ;
+    str = ["./pdf/jitter_" pid_num "_hist.pdf"] ;
+	disp(["Creating pdf file: " str]);
+    print(h_hist, '-dpdf', '-color', str) ;
+exit 

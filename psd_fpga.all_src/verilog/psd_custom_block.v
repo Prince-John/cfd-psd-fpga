@@ -73,12 +73,13 @@ module psd_custom_block(
     wire    [7:0] p7_in ; 
 
     assign  p0_in[0] = tready ;
-    assign  p0_in[7:1] = 7'd0 ;
+    assign  p0_in[1] = gpio0_in[TAKE_EVENT] ;
+    assign  p0_in[7:2] = 6'd0 ;
     
     assign  p1_in[5:0] = gpio0_in[BOARD_ID_5 : BOARD_ID_0] ;
     assign  p1_in[7:6] = 2'd0 ;
     
-    assign  p2_in[7:0] = 8'd0 ;        
+    assign  p2_in[6:0] = 8'd0 ;       
     assign  p3_in[7:0] = 8'd0 ;  
     assign  p4_in[7:0] = 8'd0 ;     
     assign  p5_in[7:0] = 8'd0 ;     
@@ -184,7 +185,7 @@ module psd_custom_block(
 // **************************************************************
 // Insert a bank of 4 ADC registers for PSD chip 0
 // They perform serial-to-parallel conversion
-// Asynchronous reset that picoblaze can use to clear register
+// Has asynchronous reset that picoblaze can use to clear register
 // ************************************************************
 
     reg     [15:0] adc_0_reg_a ;
@@ -239,20 +240,20 @@ module psd_custom_block(
     reg    [31:0] adc_reg ;
     always @(*) begin   
         case (adc_mux_sel)
-            3'd0:   adc_reg = {data_id, 8'd0, adc_0_reg_a} ;
-            3'd1:   adc_reg = {data_id, 8'd0, adc_0_reg_b} ;       
-            3'd2:   adc_reg = {data_id, 8'd0, adc_0_reg_c} ;        
-            3'd3:   adc_reg = {data_id, 8'd0, adc_0_reg_t} ;
-            3'd4:   adc_reg = {data_id, 8'd0, adc_1_reg_a} ;
-            3'd5:   adc_reg = {data_id, 8'd0, adc_1_reg_b} ;       
-            3'd6:   adc_reg = {data_id, 8'd0, adc_1_reg_c} ;        
-            3'd7:   adc_reg = {data_id, 8'd0, adc_1_reg_t} ;
+            3'd0:   adc_reg = {data_id, 8'hf0, adc_0_reg_a} ;
+            3'd1:   adc_reg = {data_id, 8'hf1, adc_0_reg_b} ;       
+            3'd2:   adc_reg = {data_id, 8'hf2, adc_0_reg_c} ;        
+            3'd3:   adc_reg = {data_id, 8'hf3, adc_0_reg_t} ;
+            3'd4:   adc_reg = {data_id, 8'hf4, adc_1_reg_a} ;
+            3'd5:   adc_reg = {data_id, 8'hf5, adc_1_reg_b} ;       
+            3'd6:   adc_reg = {data_id, 8'hf6, adc_1_reg_c} ;        
+            3'd7:   adc_reg = {data_id, 8'hf7, adc_1_reg_t} ;
         endcase
     end   
     
-
 // ************************************************
-
+// Output of the adc_mux will drive the fifo
+// ************************************************
     assign  fifo_data = adc_reg ;
     
 endmodule

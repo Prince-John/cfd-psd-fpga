@@ -1,0 +1,106 @@
+#!/usr/bin/python3
+#
+# Program to take serial data from arduino and create a strip chart plot
+# Use python3
+# Using matplotlib for plotting
+#
+
+# Import matplotlib
+
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+from matplotlib import style
+
+# Import python numerical and random libraries
+
+import numpy as np
+
+# Import library to handle serial communication
+
+import serial
+
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# Initialize serial port
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+ser = serial.Serial()
+ser.port = '/dev/ttyACM0' #Arduino serial port
+ser.baudrate = 9600
+ser.timeout = 10 #specify timeout when using readline()
+
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# Open the serial port
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+ser.open()
+if ser.is_open==True:
+	print("\nSerial port now open. Configuration:\n")
+	print(ser, "\n") #print serial parameters
+
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# Create figure for plotting
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+fig = plt.figure()
+ax = fig.add_subplot(1, 1, 1)
+ts = [] #time variable
+ys = [] #output variable
+
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# Open file to archive data
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+timestr = time.strftime("%Y%m%d-%H%M%S")
+filename = "ble_mon_" + timestr + ".txt"
+fid = open(filename, mode="wt")
+
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# This function is called periodically from FuncAnimation
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+def animate(t, ts, ys):
+
+# Aquire and parse data from serial port
+
+	line = ser.readline().decode('utf-8')
+	print(line, end =" ")	
+	line_as_list = line.split(',')
+	
+# Lines which begin with 'C' or 'D' contain data to plot
+
+	if ((line_as_list[0] == 'C') | (line_as_list[0] == 'D)):
+		fid.write(line)
+		fid.flush() 
+		t = int (line_as_list[1])
+    y = int (line_as_list[2])
+	
+# Add t and y to lists
+
+    ts.append(t)
+    ys.append(y)
+
+# Draw x and y lists
+
+    ax.clear()
+    ax.plot(ts, ys, label="Distance")
+
+# Format plot
+    
+    plt.xticks(rotation=45, ha='right')
+    plt.subplots_adjust(bottom=0.30)
+    plt.title('Distance Versus Time')
+    plt.ylabel('Distance (mm)')
+    plt.legend()
+    plt.axis([0, None, 0, 255]) #Use for arbitrary number of trials
+
+# Set up plot to call animate() function periodically
+
+ani = animation.FuncAnimation(plt.gcf(), animate, fargs=(ts, ys), interval=1000, frames =500, repeat=false)
+
+# Show the plot!!!
+
+plt.show()
+
+
+

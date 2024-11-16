@@ -3,14 +3,14 @@
 # We will store our variables in an assoiciative array
 # We can then access them easily from within a procedure 
 
-
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # Project related stuff
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-# Get the latest version tag for this project from git  
-set vars(VERSION_TAG) [exec git describe --tags]
-set varsMsg(VERSION_TAG) "Current project version:\t$vars(VERSION_TAG)"
+# Get the latest version tag for this project from 
+  
+set vars(VERSION_TAG) 		[exec git describe --tags]
+set varsMsg(VERSION_TAG) 	"Current project version:\t$vars(VERSION_TAG)"
 
 set vars(PROJECT_ROOT) 		$env(VIVADO_PROJECTS)
 set varsMsg(PROJECT_ROOT) 	"Root directory for projects:\t$vars(PROJECT_ROOT)"	
@@ -25,9 +25,9 @@ set	varsMsg(PROJECT_DIR)	"Project directory:\t\t$vars(PROJECT_DIR)"
 # You choose which create file you want
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-set	vars(CREATE_PROJECT_FILE)		"create_project.tcl"
+set	vars(CREATE_PROJECT_FILE)				"create_project.tcl"
 #set	vars(CREATE_PROJECT_FILE)			"create_project_up_to_implementation.tcl"
-set		varsMsg(CREATE_PROJECT_FILE)	"Create project file:\t\t$vars(CREATE_PROJECT_FILE)"
+set		varsMsg(CREATE_PROJECT_FILE)		"Create project file:\t\t$vars(CREATE_PROJECT_FILE)"
 
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # Create a list of soft links which you would like to install
@@ -92,7 +92,8 @@ switch	$fpga_board {
 	}
 	 "cmod-a7" {
 		set 		vars(CSV_FILE) 					"psd_fpga_cmod-a7.csv"
-		set		vars(CONSTRAINT_GENERATOR) 			"pin2xdc.tcl"
+		set			vars(CONSTRAINT_GENERATOR) 		"pin2xdc.tcl"
+		set			vars(PLATFORM)					""	
 	} 
 	default {
 		puts "Unknown csv file or constraint generator ... aborting\n"	
@@ -102,6 +103,7 @@ switch	$fpga_board {
 	set	varsMsg(CSV_FILE)				"Pin location csv file:\t\t$vars(CSV_FILE)"
 	set	varsMsg(CONSTRAINT_GENERATOR)	"XDC constraint generator:\t$vars(CONSTRAINT_GENERATOR)"	
 	set	varsMsg(PLATFORM)				"Trenz CSV target: \t\t$vars(PLATFORM)"
+	
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # Name of assembly file for picoblaze
 # along with the ROM template file we wish to use.

@@ -1,53 +1,179 @@
 ;
-; Quick little test program for our picoblaze
+; Test program for our picoblaze
 ; For starters just blink led connected to bit 0
 ; of output port #0
 ;
-
-; Output ports
-
-			constant MISC, 00 
-
-			constant ADC_CTL, 01 
-
-			constant DAT_TAG, 02 
-
-			constant TDC_DAT, 03 
-
-			constant TDC_CTL, 04 
-
-			constant OP5, 05 
-
-			constant OP6, 06 
-
-			constant OP7, 07 
-
+; Keep adding until is does everything we need!
 ;
+; 31-Oct-2024
+;
+
+; ********************************************
+; Output ports (we have 8 real output ports)
+; There are also two pseudo ports used to
+; generate FIFO tvalid and tlast signals
+; ********************************************
+
+		constant LED_PORT, 00 
+
+; --------------------------------
+; PORT 0 (LED stuff)
+; -------------------------------
+; 0		LED0
+; 1		LED1 (also the busy bit!)
+
+		constant ADC_CTL_PORT, 01 
+
+; --------------------------------
+; PORT 1 (ADC control)
+; --------------------------------
+; 0		ADC sclk for PSD 0
+; 1		ADC sclk for PSD 1
+; 2		ADC conv for PSD 0
+; 3		ADC conv for PSD 1
+; 4		adc_mux_sel bit 0
+; 5		adc_mux_sel bit 1
+; 6		adc_mux_sel bit 2
+; 7		adc_reg_reset
+
+		constant DATA_TAG_PORT, 02 
+
+; --------------------------------
+; PORT 2 (Data identifier or tag)
+; --------------------------------
+; 0		psd addr bit 0
+; 1		psd addr bit 1
+; 2		psd addr bit 2
+; 3		psd addr bit 3 n(0 = PSD 0, 1 = PSD 1)
+; 4		bit 0 of sc
+; 5		bit 1 of sc
+; 6		bit 0 of type
+; 7		bit 1 of type
+
+; type = 00 ---> ADC data
+; type = 01 ---> Board id
+; type = 10 ---> TDC data (lower 24 bits)
+; type = 11 ---> TDC data (upper 24 bits)
+
+; sc = 00 -----> integrator A
+; sc = 01 -----> integrator B
+; sc = 10 -----> integrator C
+; sc = 11 -----> time
+
+		constant TDC_DATA_PORT, 03 
+
+; --------------------------------
+; PORT 3 (TDC byte)
+; --------------------------------
+; 0		d0
+; 1		d1
+; 2		d2
+; 3		d3
+; 4		d4
+; 5		d5
+; 6		d6
+; 7		d7
+
+		constant TDC_CTL_PORT, 04 
+
+; --------------------------------
+; PORT 4 (TDC register control)
+; --------------------------------
+; 0		tdc_reg_ld_0
+; 1		tdc_reg_ld_1
+; 2		tdc_reg_ld_2
+; 3		tdc_reg_rst
+; 4		tdc_reg_shift
+; 5		tdc_reg_sclk
+
+		constant PSD0_OPORT, 05 
+
+; --------------------------------
+; PORT 5 (Outputs going to psd chip 0 )
+; --------------------------------
+; 0		psd0_addr_in_0
+; 1		psd0_addr_in_1
+; 2		psd0_addr_in_2
+; 3		psd0_acq_clk
+; 4		psd0_sc0
+; 5		psd0_sc1
+; 6		psd0_token_in
+; 7 	psd0_sel_ext_addr
+
+		constant PSD1_OPORT, 06 
+
+; --------------------------------
+; PORT 6 (Outputs going to psd chip 1)
+; --------------------------------
+; 0		psd1_addr_in_0
+; 1		psd1_addr_in_1
+; 2		psd1_addr_in_2
+; 3		psd1_acq_clk
+; 4		psd1_sc0
+; 5		psd1_sc1
+; 6 	psd1_token_in
+; 7 	psd1_sel_ext_addr
+
+; -------------------------------------------------------------
 ; A write to "VALID" port asserts FIFO tvalid signal
 ; A write to "LAST" port asserts FIFO tvalid and tlast signals
 ; The value we write to port makes NO DIFFERENCE
+; -------------------------------------------------------------
 
-			constant VALID, fe 
+			constant VALID_PORT, fe 
 
-			constant LAST, ff 
-
-
-; Input ports
-
-			constant IP0, 00 
-
-			constant IP1, 01 
-
-			constant IP2, 02 
-
-			constant IP3, 03 
+			constant LAST_PORT, ff 
 
 
-; For our LEDs
+; **********************************
+; Input ports (We have 8 of them)
+; **********************************
 
-			constant LED_ON, 01 
+			constant STATUS_IPORT, 00 
 
-			constant LED_OFF, 00 
+; --------------------------------------------
+; PORT 0 (Status info)
+; --------------------------------------------
+; 0		tready signal from AXI Stream FIFO
+; 1		take_event signal from host
+
+			constant BOARD_ID_PORT, 01 
+
+; --------------------------------
+; PORT 1 (board id)
+; --------------------------------
+; 0		board_id[0]
+; 1		board_id[1]
+; 2		board_id[2]
+; 3		board_id[3]
+; 4		board_id[4]
+; 5		board_id[5]
+
+			constant PSD0_IPORT, 02 
+
+; --------------------------------
+; PORT 2 (inputs coming from psd chip 0)
+; --------------------------------
+; 0		psd0_or
+; 1		psd0_token_out
+; 2		psd0_acq_ack
+; 3		psd0_addr_out0
+; 4		psd0_addr_out1
+; 5		psd0_addr_out2
+; 6     0 (psd chip 0)
+
+			constant PSD1_IPORT, 03 
+
+; --------------------------------
+; PORT 3 (inputs coming from psd chip 1)
+; --------------------------------
+; 0		psd1_or
+; 1		psd1_token_out
+; 2		psd1_acq_ack
+; 3		psd1_addr_out0
+; 4		psd1_addr_out1
+; 5		psd1_addr_out2
+; 6		1 (psd chip 1)
 
 ;
 ; Picoblaze has 16 general purpose registers
@@ -58,38 +184,47 @@
 			namereg		s2, scr0       	; Scratchpad register 0
 			namereg		s3, scr1 		; Scratchpad register 1
 			namereg		s4, scr2 		; Scratchpad register 2
-			namereg		s5, cnt     	; Used in counters
+			namereg		s5, cnt     	; Used for counting "things"
 			namereg		s6, dreg		; Used in delay_1us routine
-			namereg		s7, adc_reg		; Used by adc routine
-			namereg		s8, adc_mask	; Used by adc routine
-			namereg		s9, pkt_size	; Size of packet
-			namereg		sA, status		; Global variable with status info
-;
+			namereg		s7, adc_reg		; Used by adc routine (global)
+			namereg		s8, adc_mask	; Used by adc routine (global)
+			namereg		s9, word_cntr	; Keeps track of word count (global)
+			namereg		sA, led_reg		; Global variable that constains state of LEDs (global)
+
+; ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 ; We’ll make sF special and use it for the stack pointer!
 ; Start stack at end of 64-byte scratchpad (using macro!)
 ; Stack grows down
-
+; ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 			namereg		sf, SP
-;
+
+; ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 ; We will use macros but only sparingly!
 ; A 16-bit register with scr1 (upper) and scr0 (lower)
-
+; ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 			
 
+; ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+; Scratchpad memory locations
+; ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+			constant BOARD_ID, 00 
+
+
+; @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 ;********************************************
-; Our vector to main is stored at address 000
+; Our vector which points to main routineis stored at address 000
 ;********************************************
-;
+; @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
       		address      000
 
-origin:  	jump      	 main
+origin:  	jump      	 adc_test
+; origin:  	jump      	 nuclear
 
 ; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ; Subroutine Name: init
 ; Initialize the stack pointer, SP
-; Set all output port bits low
-; Uses scr1 BUT restores it!!!!
-; Demos out to work with stack!
 ; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 init:
@@ -98,42 +233,52 @@ init:
 
 			load SP, 3f 
 
-;  Push scr1 onto the stack
+; Read the board id and save it to scratchpad memory location 0
 
-			 store scr1, (SP)  ; Push
-sub SP, 01
- 
+			load		scr0, BOARD_ID_PORT
+			store		scr0, BOARD_ID
 
-; Clear the 8 output port registers
+; Clear the output port registers
 
-			load		scr1, 00
-			output		scr1, MISC
-			output		scr1, ADC_CTL
-			output		scr1, DAT_TAG
-			output		scr1, TDC_DAT
-			output		scr1, TDC_CTL
-			output		scr1, OP5
-			output		scr1, OP6
-			output		scr1, OP7
+			load		scr0, 00
+			output		scr0, LED_PORT
+			output		scr0, DATA_TAG_PORT
+			output		scr0, TDC_DATA_PORT
+			output		scr0, TDC_CTL_PORT
 
-; Restore scr1 register
+; Clear some registers
 
-			 add SP, 01  ; Pop
-fetch scr1, (SP)
- 
-			return
+			load		op, 00
+			load		ip, 00
+			load		cnt, 00
+			load		dreg, 00
+			load		adc_reg, 00
+			load		adc_mask, 00
+			load		word_cntr, 00
+			load		led_reg, 00
 
-; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-; Subroutine Name: dly_100ns
-;
-; Delay of 100 ns
-;
-; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+; Reset the ADC shift registers
+; Bring reset bit high in adc_reg and then back low
+; Bit 7 of adc_reg is the reset adc registers bit
+; Clock and conv signals low
+; Mux selects (3’b000) choosing adc reg for PSD0 A integrator
+; Pulse the adc reg reset line
 
-dly_100ns:
-			load sE, sE  ; NOP
-			load sE, sE  ; NOP
-			load sE, sE  ; NOP
+			or adc_reg, 80  ; Set bit 7
+			output		adc_reg, ADC_CTL_PORT
+			and adc_reg,  7f  ; Clear bit 7
+			output		adc_reg, ADC_CTL_PORT
+
+; Make sure that tokens into the PSD chips are HIGH
+; token_in for the PSD ports is bit 6
+
+			load		scr0, 00
+			or scr0, 40  ; Set bit 6
+			output		scr0, PSD0_OPORT
+			output		scr0, PSD1_OPORT
+
+; Done so return
+
 			return
 
 ; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -154,68 +299,16 @@ dly_us:
 			jump		NZ, .wait_us
 			return
 
-; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-; Subroutine Name: dly_100ms
-;
-; Delay for "about" 100ms by repeatly calling
-; delay_1us subroutine
-; Note: 100,000 is $0186A0
-;
-; Uses scr0, scr1, scr2 and does not restore them
-; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-dly_100ms:
-			load		scr2, 01
-			load		scr1, 86
-			load		scr0, A0
-.loop:		call		dly_us
-			sub			scr0, 01
-			subcy		scr1, 00
-			subcy		scr2, 00
-			jump		NC, .loop
-			return
-
-; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-; Subroutine Name: dly_sec
-; Delays for about 1 second
-; Uses cnt but saves it on stack and then
-; pops it off the stack before returning
-; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-dly_sec:
-			 store cnt, (SP)  ; Push
-sub SP, 01
- 
-			load		cnt, 10'd
-.loop:		call		dly_100ms
-			sub			cnt, 01
-			jump		NZ, .loop
-			 add SP, 01  ; Pop
-fetch cnt, (SP)
- 
-			return
-
 ; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-; Subroutine Name: adc_convert
+; Subroutine Name: adc_conv_0
 ;
-; Output port 1 (ADC_PORT) constrols the ADC
-; adc_reg bit assignments
-;
-; 0		ADC sclk for PSD 0
-; 1		ADC sclk for PSD 1
-; 2		ADC conv for PSD 0
-; 3		ADC conv for PSD 1
-; 4		adc_mux_sel bit 0
-; 5		adc_mux_sel bit 1
-; 6		adc_mux_sel bit 2
-; 7		adc_reg_reset
-;
-; For time being only control the PSD 0 ADC bank
-;
-; Uses the cnt register but restores it
+; Uses the cnt register to count clock pulses
+; but restores cnt register before returning
+; Uses adc_reg bot does not restores it
+; Uses scr0 but does not restore it
 ; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-adc_conv:
+adc_conv_0:
 
 ; Save cnt register
 
@@ -223,57 +316,38 @@ adc_conv:
 sub SP, 01
  
 
-; Reset the ADC shift registers
-
-			load		adc_reg, 00
-			load		adc_mask, 01
-			or adc_reg, 80  ; Set bit 7
-			output		adc_reg, ADC_CTL
-			and adc_reg,  7f  ; Clear bit 7
-			output		adc_reg, ADC_CTL
-
-; Bring conv high for about 2 us
+; Bring conv high
+; Bit 2 is conv_0 signal
 
 			or adc_reg, 04  ; Set bit 2
-			output		adc_reg, ADC_CTL
+			output		adc_reg, ADC_CTL_PORT
+
+; Wait for 2 usec
+
 			call		dly_us
 			call		dly_us
 
 ; Bring conv low
+; Bit 2 is conv_0 signal
 
 			and adc_reg,  fb  ; Clear bit 2
-			output		adc_reg, ADC_CTL
+			output		adc_reg, ADC_CTL_PORT
+
+; Bit 0 of ADC_CTL_PORT is adc_sclk for psd0
+
+			load		adc_mask, 00000001'b
 
 ; Apply 16 clock pulses (takes about 2 usec)
 
 			load		cnt, 16'd
 .clk_loop:	xor			adc_reg, adc_mask
-			output		adc_reg, ADC_CTL
+			output		adc_reg, ADC_CTL_PORT
 			xor			adc_reg, adc_mask
 			load sE, sE  ; NOP
 			load sE, sE  ; NOP
-			output		adc_reg, ADC_CTL
+			output		adc_reg, ADC_CTL_PORT
 			sub			cnt, 01
 			jump		NZ, .clk_loop
-
-; Either assert just "tvalid" or
-; assert "tvalid" and "tlast" to send to FIFO.
-; Check bit 0 of status register to see which
-; port we need to write to!
-; What we write to VALID and LAST ports
-; makes no difference
-
-			test		status, 01
-			jump		Z, .loc0
-
-; Last write in packet so assert "tlast" and "tvalid"
-
-			output		scr0, LAST
-			jump		.loc1
-
-; Not last value in packet so assert just "tvalid"
-
-.loc0:		output		scr0, VALID
 
 ; Restore cnt register
 
@@ -283,44 +357,295 @@ fetch cnt, (SP)
 
 			return
 
-; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-; Name: get_packet
-; Routine to get a packet
-; Packet size is specified in psize register
-; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+; Name: adc_to_fifo
+;
+; Each time this routine is called, it sends the A, B, C, T
+; adc values to the microblaze FIFO
+; The values are 16-bits (byte0, byte1) but the FIFO transfer is 32 bits
+; byte 2 will containt board id and byte3 will contain a tag
+;
+; Tag format:
+;
+; 0		psd addr bit 0
+; 1		psd addr bit 1
+; 2		psd addr bit 2
+; 3		psd addr bit 3 n(0 = PSD 0, 1 = PSD 1)
+; 4		bit 0 of sc
+; 5		bit 1 of sc
+; 6		bit 0 of type
+; 7		bit 1 of type
 
-get_packet:
-.loop:		call		adc_conv
-			sub			pkt_size, 01
-			jump		NZ, .loop
+; type = 00 ---> ADC data
+; type = 01 ---> Board id
+; type = 10 ---> TDC data (lower 24 bits)
+; type = 11 ---> TDC data (upper 24 bits)
+
+; sc = 00 -----> integrator A
+; sc = 01 -----> integrator B
+; sc = 10 -----> integrator C
+; sc = 11 -----> time
+; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+adc_to_fifo:
+;
+; When we enter the routine, scr0 should contain the psd_address
+; Since we just read the psd port
+; Write out data tag
+;
+; 0		psd0_or
+; 1		psd0_token_out
+; 2		psd0_acq_ack
+; 3		psd0_addr_out0
+; 4		psd0_addr_out1
+; 5		psd0_addr_out2
+; 6     0 (psd chip 0)
+
+; Shift left 3 places so we will have lower nybble
+; Then we can twiddle bits 4 and 5
+
+			sl0 scr0
+sl0 scr0
+sl0 scr0
+
+
+; Send A integrator
+; adc_mux_sel is bits 4, 5, 6 of the ADC_CTL_PORT
+
+			load		adc_reg, 00
+			or			adc_reg, 00  ; 0 << 4
+			output		adc_reg, ADC_CTL_PORT
+
+; We have complete 8-bit data tag in scr0 at this point
+
+			output		op, DATA_TAG_PORT
+
+; Wait for ’tready’ signal to be active
+;
+.wait_trdy:	input		ip, STATUS_IPORT
+
+; Test bit 0 of STATUS_PORT (i.e. tready) ... if zero we should wait
+
+			test ip, 01  ; Test bit 0
+			jump		Z,	.wait_trdy
+
+; When FIFO is ready, send data (what we send to vaild port makes no diff)
+
+			output		scr0, VALID_PORT
+
 			return
 
-;^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-; ******* MAIN ROUTINE *********
-;^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+; Name: get_event_0
+;
+; For time being only support single psd chip (psd 0)
+; Routine to get a nuclear physics event
+; Aquires data from the 4 ADCS (A, B, C, T)
+;
+; Uses op and ip and does not restore it
+;
+; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-main:
+get_event_0:
+
+; Set the busy bit (also LED1!)
+; Bit 1 of LED_PORT is LED1 and also the busy bit
+
+			or led_reg, 02  ; Set bit 1
+			output		led_reg, LED_PORT
+
+; Check the OR out of PSD 0 (bit 0)
+
+			input		ip, PSD0_IPORT
+			test ip, 01  ; Test bit 0
+			jump		Z, .done
+
+; Bring token_in (bit 6 of PSD0_PORT) low i.e. active!!!!
+
+.loop:		load		op, 00
+			output		op, PSD0_OPORT
+
+; Bring acq_clk high (acq_clk is bit 3 of PSD0_PORT)
+
+			or op, 08  ; Set bit 3
+			output		op, PSD0_OPORT
+
+; Perform ADC conversion
+
+			call		adc_conv_0
+
+; Read PSD addresses (use scr0 which adc_to_fifo will read)
+
+			input		scr0, PSD0_IPORT
+
+; We need to send the ADC registers off to the FIFO
+
+			call		adc_to_fifo
+
+; Bring acq_clk low (acq_clk is bit 3)
+
+			and op,  f7  ; Clear bit 3
+			output		op, PSD0_OPORT
+
+; Check token_out from PSD (token_out is bit 1)
+; If token_out high then continue else we are done
+
+			input		ip, PSD0_IPORT
+			test ip, 02  ; Test bit 1
+			jump		NZ, .loop
+.done:
+
+; Bring token_in high
+
+			or op, 40  ; Set bit 6
+			output		op, PSD0_OPORT
+
+; Unset the busy flag (busy flag is same as LED1)
+
+			and led_reg,  fd  ; Clear bit 1
+			output		led_reg, LED_PORT
+
+			return
+
+; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+; Name: data_acq
+;
+; Routine to get a data_acq event
+; word_cntr keeps track of where we are in the packet
+; For testing we are just getting 50 ADC samples
+; NOTE: ip and op are  not restored
+; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+data_acq:
+
+; Select adc T subchannel of PSD0 to drive FIFO
+; Mux sel for ADC T for chan 0 is 2’b011
+; adc_mux_sel is bits 4, 5, 6 of the ADC_CTL_PORT
+
+			load		adc_reg, 00
+			or			adc_reg, 30  ; 3 << 4
+			output		adc_reg, ADC_CTL_PORT
+;
+; Write out the data identifier
+; 00 11 0111  (adc T chan7)
+
+			load		op, 00110111'b
+			output		op, DATA_TAG_PORT
+
+; Wait for 20 usec i.e. our sampling period
+
+.delay0:	load		cnt, 20'd
+.delay1:	call		dly_us
+			sub			cnt, 01
+			jump		NZ, .delay1
+
+; Perform a conversion
+
+			call		adc_conv_0
+
+; Wait for ’tready’ signal to be active
+;
+.wait_trdy:	input		ip, STATUS_IPORT
+
+; Test bit 0 of STATUS_PORT (i.e. tready) ... if zero we should wait
+
+			test ip, 01  ; Test bit 0
+			jump		Z,	.wait_trdy
+;
+; Either assert just ’tvalid’ or both ’tvalid’ and ’tlast’
+; What we actually write to the VALID or LAST port is irrelevant.
+; When we write to LAST port, both ’tvalid’ and ’tlast’ asserted.
+; When packet_cntr contains $01 the write to LAST port
+
+			compare		word_cntr, 01
+			jump		NZ, .loc0
+			output		scr0, LAST_PORT
+			jump 		.loc1
+.loc0:		output		scr0, VALID_PORT
+.loc1:		sub			word_cntr, 01
+			jump		NZ, .delay0
+
+			return
+
+;^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+; ******* ADC TEST PROGRAM *********
+;
+; Let’s grab a packet whenever we see take_event go high
+; When take_event goes high, turn LED0 on
+; When take event goes low, turn LED0 off
+; LED0 is bit 0 of LED_PORT
+; LED1 is bit 1 of LED_PORT
+;^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+adc_test:	call		init
+
+; Wait for take_event to go low
+
+adc_test0:	input	ip, STATUS_IPORT
+			test ip, 02  ; Test bit 1
+			jump	NZ, adc_test0
+
+; Take event is low so turn LED0 off
+
+			and led_reg,  fe  ; Clear bit 0
+			output	led_reg, LED_PORT
+
+; Wait for take_event to go high
+
+adc_test1:	input	ip, STATUS_IPORT
+			test ip, 02  ; Test bit 1
+			jump	Z, 	adc_test1
+
+; Take event is high so turn LED0 on
+
+			or led_reg, 01  ; Set bit 0
+			output		led_reg, LED_PORT
+
+; word_cntr keeps track of where we are in the packet creation process
+; load word_cntr with how many words we want in our packet
+
+			load		word_cntr, 50'd
+
+; Don’t return until we have captured a complete packet and sent
+; the packet to the uBlaze using streaming FIFO
+
+			call		data_acq
+
+; Go back to top of loop and do it all over again!
+
+			jump		adc_test0
+
+;^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+; ******* Nuclear Physics Program *********
+;
+;^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+nuclear:
 			call		init
 
-.main_loop:	load		op, LED_ON
-			output		op, MISC
-			load scr1, 03  ; 1000
-load scr0, e8
-.loop0:		load		pkt_size, 100'd
-			call		get_packet
-			add scr0, ff  ; -1
-addcy scr1, ff
-			jump		NZ, .loop0
-			load		op, LED_OFF
-			output		op, MISC
-			load scr1, 03  ; 1000
-load scr0, e8
-.loop1:		load		pkt_size, 150'd
-			call		get_packet
-			add scr0, ff  ; -1
-addcy scr1, ff
-			jump		NZ, .loop1
-			jump		.main_loop
+; Wait for take_event to go HIGH (Turn LED0 ON)
+; Take event is bit 1 of the STATUS_IPORT
+
+nuclear0:	input		ip, STATUS_IPORT
+			test ip, 02  ; Test bit 1
+			jump		Z, 	nuclear0
+			or led_reg, 01  ; Set bit 0
+			output		led_reg, LED_PORT
+
+; Call the get_event routine
+
+			call		get_event_0
+
+; Wait for take_event to go LOW (Turn LED0 OFF)
+
+nuclear1:	input		ip, STATUS_IPORT
+			test ip, 02  ; Test bit 1
+			jump		NZ, nuclear1
+			and led_reg,  fe  ; Clear bit 0
+			output		led_reg, LED_PORT
+
+; Go back and wait for the next event
+
+			jump		nuclear0
 
 ; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ; Interrupt service routine
@@ -329,7 +654,6 @@ addcy scr1, ff
 ; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 			address     380
-
 my_isr:
 			returni    	disable
 ;
