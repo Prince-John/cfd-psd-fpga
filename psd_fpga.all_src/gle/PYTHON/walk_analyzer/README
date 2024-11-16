@@ -1,0 +1,34 @@
+Create a project directory; for example
+
+mkdir ~/walk_analyzer
+
+The project directory will contain both the python virtual environment
+and the project python files
+
+Create the virtual environment sub-directory
+
+cd ~/walk_analyzer
+
+python3 -m venv walk-venv
+
+Then use pip install to install the modules you need
+
+You must activate the virtual environment.  For example
+
+source ~/walk_analyzer/walk-venv/bin/activate.csh
+
+You will see the user prompt change
+
+Save the configuration by using freeze command
+
+pip freeze > requirements.txt
+
+You can then reinstall modules just be typing
+
+pip install -r requirements.txt
+
+When done you can type
+
+deactivate
+
+

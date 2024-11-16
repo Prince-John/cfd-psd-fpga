@@ -1,0 +1,69 @@
+#  A sensor upgraded coupling in a power transmission system provides data per bluetooth.
+#  Data: Torque, force, temperature and acceleration (x-y-z-axis).
+#  A hardware gateway receives the data with an antenna.
+#  The purpose of this code is to read and plot out serial data from that hardware gateway
+#  which is linked via USB-C to the laptop. A USB-C to UART software bride,
+#  makes the data as serial port on MacOS or Windows available.
+
+import time
+import serial
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+import itertools
+
+
+def data_gen():
+    i = 0
+    counter = itertools.count()  # Create counter
+
+    ser = serial.Serial('/dev/tty.SLAB_USBtoUART', 1000000, timeout=1)  # Open port and read data.
+    ser.reset_input_buffer()  # Flush input buffer, discarding all its contents.
+    
+
+    while True:
+        # Read serial data line by line.
+        # Incoming lines in Format -> b'$ 32079 32079 32079 32079 32079 32079 32079 32079;\r\n'
+        # Each value represents a data channel which can measure torque, temperatur, ...
+        # Right now all values are set to torque which is why they have the same values.
+        # 8 data channels are available
+        ser_bytes = ser.readline()
+
+        decoded_bytes = ser_bytes.decode('utf-8')
+
+        # Re-format to list ['32274', '32274', '32274', '32274', '32274', '32274', '32274', '32274;']
+        decoded_bytes = decoded_bytes.lstrip('$').rstrip().split()
+
+        # Skip first read-out because the first transmitted line is empty. Don't know the reason.
+        if i == 0:
+            i += 1
+            continue
+
+        t = next(counter)  # Create values for x-axis
+        y = decoded_bytes[0]  # Read channel 1 values for y-axis
+        yield t, float(y)  # Yield back x and y values for plot
+
+
+def run(data):
+    x, y = data
+    y_cal = round(y * 0.00166, 1)  #
+    xdata.append(x)  # Adding data to list for x-values
+    ydata.append(y_cal)  # Adding data to list for y-values
+    line.set_data(xdata, ydata)  # Creating a data set for hand-over to plot
+    return line,
+
+
+if __name__ == '__main__':
+    fig, ax = plt.subplots()  # Setup figure and axis
+    line, = ax.plot([], [], lw=2)  # Setup line
+
+    ax.set_ylim(40, 80)  # Set limitation in y
+    ax.set_xlim(0, 1000) # Set limitation in x
+    ax.grid()  # Create grid
+
+    xdata, ydata = [], []  # Create empty lists
+
+    # Frames: Receives the generated data from the serial connection
+    # Run: Provides the line data
+
+    ani = animation.FuncAnimation(fig, run, frames=data_gen, blit=True, interval=10)
+    plt.show()

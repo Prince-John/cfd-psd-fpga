@@ -1,0 +1,354 @@
+// VerilogA for cfdLibTest, walk_evaluator, veriloga
+
+`include "constants.vams"
+`include "disciplines.vams"
+
+
+// VerilogA pattern generator and data recorder
+//
+// Gathers data needed to evaluate walk performance of the CFD
+//
+
+module walk_evaluator(
+	zcp,
+	zcm,
+	le,
+	neg,
+	dac_data,
+ 	chan_addr,
+	mode ,
+	stb,
+	IB_ZTC,
+	IB_SINK,
+	AGND,
+	AVDD,
+	cfd,
+	chan_ena	,
+	exp_gen,
+	le_in
+) ;
+
+// Outputs and inputs
+
+	output	zcp ;
+	output	zcm ;
+	output	le ;
+	output	neg ;
+	output	[6:0] dac_data ;
+	output	[3:0] chan_addr ;
+	output	[3:0] mode ;
+	output	stb ;
+	output	IB_ZTC ;
+	output	IB_SINK ;
+	output	AGND ;
+	output	AVDD ;
+	output 	exp_gen ;
+
+	input	cfd ;
+	input	chan_ena ;	
+	input	le_in ;
+
+// Electrical nodes
+
+	electrical	zcp ;
+	electrical	zcm ;
+	electrical	le ;
+	electrical	neg ;
+	electrical	[6:0] dac_data ;
+	electrical	[3:0] chan_addr ;
+	electrical	[3:0] mode ;
+	electrical	stb ;
+	electrical	IB_ZTC ;
+	electrical	IB_SINK ;
+	electrical	AGND ;
+	electrical	AVDD ;
+	electrical	cfd ;
+	electrical	chan_ena ;	
+	electrical	le_in; 
+
+// Define ground
+
+	electrical	gnd ;
+	ground		gnd ;
+
+// Exponential pulse generator
+
+    electrical  exp_gen ;
+
+// Parameters
+
+	parameter	real	VDD = 3.3 ;
+	parameter   real 	AGND_VOLTAGE = 1.65;
+    parameter   real    TIME_TOL = 10p ;
+    parameter   real    PERIOD = 1m ;
+    parameter   real    TAU_R = 3n ;
+    parameter   real    TAU_F = 300n ;
+    parameter   real    FUDGE = 1.07 ;
+	parameter	real 	max_amplitude = 1.5 ;
+	parameter	integer	num_pulses = 10;
+	parameter	integer	POLARITY = 0 ;
+	parameter	real	min_amplitude = 15e-3;
+	parameter integer	dac_val = 0 from[0:31];
+	parameter integer	dac_sign = 0 from[0:1];
+
+// Nowlin paramters for a pulse with 3 ns risetime
+
+    parameter   real    C0 = 20p ;
+    parameter   real    R1 = 2k ;
+    parameter   real    R2 = 4k ;
+    parameter   real    R3 = 1k ;
+    parameter   real    C1 = 3p ;
+
+// Variables
+
+    real        logic_threshold ;
+    real        t0, t1, t, tpd ;
+    real        t_zc ;
+    real        exp_pulse ;
+    real        amp ;
+	real		le_time;
+	real		zc_delay;
+	real		step;
+	real 	   	op1, om1, op2, om2, op3, om3, swp, swm, comp, comm;
+	real		zcop, zcom, voffset_amp;
+	real		vstb;
+	real		pulse_amp[15:0];
+	real		vdd_voltage;
+
+	integer		run_num ;
+	integer		index;
+	integer		fid, fid3 ;
+	integer		pulse_flag, le_flag;
+	genvar		j;
+	integer		dac_setting;
+	integer		bit_mask;
+	integer		bit;
+// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//
+// Begin behavorial model
+//
+// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+	analog begin
+
+// Initial step things
+
+        @(initial_step) begin
+			/*if (POLARITY == 1) begin
+            	amp = -1*min_amplitude;
+			step = -1*(max_amplitude-min_amplitude)/num_pulses;
+			amp = amp - step;
+			end
+			else begin
+            	amp = min_amplitude;
+			step = (max_amplitude-min_amplitude)/num_pulses;
+			amp = amp - step;
+			end*/
+            t0 = 999.0 ;
+            t1 = 9999.0 ;
+            logic_threshold = VDD / 2.0 ;
+			index = 0;
+			fid = $fopen("/home/HINP/cds/CFDv2/walk_data/walk_%P.dat", "a") ;
+			//fid2 = $fopen("/home/HINP/cds/CFDv2/walk_data/diff_amps_%P.dat", "a") ;
+			fid3 = $fopen("/home/HINP/cds/CFDv2/walk_data/le_thresh_%P.dat", "a") ;
+			//fid = $fopen("/home/HINP/cds/CFDv2/walk_data/test.dat", "a") ;
+			dac_setting = (dac_sign == 1) ? -1*dac_val:dac_val;
+			$fstrobe(fid, "%g\t%g\t%g\t%g\t%g\t%g\t%d", TAU_R, TAU_F, R1, R2, R3, C1, dac_setting) ;
+			//$fstrobe(fid2, "op1\tom1\top2\tom2\top3\tom3\tswp\tswm\tzc op\tzc om") ;
+			run_num = 0 ;	
+			pulse_flag = 0;	
+			bit = 1;
+			vstb = 0;
+			le_flag = 0;
+			pulse_amp[0] = 0;
+			pulse_amp[1] = 0;
+			pulse_amp[2] = 0;
+			pulse_amp[3] = 15m;
+			pulse_amp[4] = 20m;
+			pulse_amp[5] = 30m;
+			pulse_amp[6] = 50m;
+			pulse_amp[7] = 100m;
+			pulse_amp[8] = 200m;
+			pulse_amp[9] = 500m;
+			pulse_amp[10] = 1;
+			pulse_amp[11] = 1.1;
+			pulse_amp[12] = 1.2;
+			pulse_amp[13] = 1.3;
+			pulse_amp[14] = 1.4;
+			pulse_amp[15] = 1.5;
+
+			vdd_voltage = 0;
+        end
+
+		@(final_step) begin
+			$fclose(fid) ;
+			//$fclose(fid2) ;
+			$fclose(fid3);
+		end
+
+// 
+// Look for rising transition on the cfd signal line
+// Save the time of the crossing
+//
+        @(cross(V(cfd) - logic_threshold, 1, TIME_TOL)) begin
+			if(pulse_flag) begin
+            		t_zc = $abstime ;
+				tpd = t_zc - t0 ;
+				zc_delay = t_zc - le_time;
+				run_num = run_num + 1 ;
+				$fstrobe(fid, "%d\t%.6f\t%.15f\t%.15f\t%.15f\t%.15f\t%.15f", run_num, amp, t0, t_zc, tpd, le_time, zc_delay) ;
+				$fflush(fid);
+			end
+        end
+//
+        @(cross(V(cfd) - logic_threshold, -1, TIME_TOL)) begin
+           pulse_flag = 0;
+        end
+
+
+       @(cross(V(le_in) - logic_threshold, 1, TIME_TOL)) begin
+			if(pulse_flag) begin
+				if(le_flag == 0) begin
+					$fstrobe(fid3, "%.15f", amp);
+					$fflush(fid3);
+					le_flag = 1;
+				end
+       	   		le_time = $abstime ;
+			end
+       end
+// Emit an exponential pulse of increasing amplitude 
+// Each time the timer goes off, we double the amplitude of the pulse
+// Period of pulse train is 1 ms
+
+        @(timer(PERIOD, PERIOD, TIME_TOL)) begin
+            t0 = $abstime ;
+            t1 = t0 + 15.0 * TAU_R ;
+			pulse_flag = 1;
+			/*if (amp < (VDD / 2.0)) begin
+            	amp = step + amp ;
+			end
+			else begin
+				amp = 0.0 ;
+			end*/
+			if(POLARITY) begin
+				amp = pulse_amp[index] * -1;
+			end
+			else begin
+				amp = pulse_amp[index];
+			end
+			index = index + 1;
+        end
+
+/*	@(timer(PERIOD-100u)) begin
+		op1 = V(I0.I0.I0.op1);
+		om1 = V(I0.I0.I0.om1);
+		op2 = V(I0.I0.I0.op2);
+		om2 = V(I0.I0.I0.om2);
+		op3 = V(I0.I0.I0.outp);
+		om3 = V(I0.I0.I0.outm);
+		swp = V(I0.I0.switcher_outp);
+		swm = V(I0.I0.switcher_outm);
+		comp = V(I0.I0.I_DAC);
+		comm = V(I0.I0.I1.inm);
+		zcop = V(I0.I1.zc_outp);
+		zcom = V(I0.I1.zc_outm);
+		voffset_amp = V(I0.I0.I0.offset_amp_out);
+		$fstrobe(fid2, "%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g", op1, om1, op2, om2, op3, om3, swp, swm, comp, comm, zcop, zcom, voffset_amp-VDD/2.0);
+		$fflush(fid2);
+	end*/
+
+	@(timer(20u)) begin
+		vstb = VDD;
+	end
+
+
+	@(timer(21u)) begin
+		vstb = 0;
+	end
+
+// Exponential pulse creation
+
+		t = $abstime ;
+        if (t >= 0) begin
+            exp_pulse = exp(-(t - t0) / TAU_F) - exp(-(t - t0) / TAU_R) ;
+            exp_pulse = FUDGE * amp * exp_pulse;
+        end
+        else begin
+            exp_pulse = 0.0 ;
+        end
+
+// Use $bound_step to force the simulator to take small steps on rising edge of pulse
+
+        if ((t >= t0) && (t <= t1)) begin
+            $bound_step(TAU_R / 100.0) ;
+        end
+
+// Emit pulse
+
+        V(exp_gen) <+ exp_pulse ;
+
+// Implement the nowlin circut
+
+        I(exp_gen, le) <+ C0 * ddt(V(exp_gen, le)) ;
+        V(le, zcm) <+ I(le, zcm) * R1 ;
+        V(zcm, AGND) <+ I(zcm, AGND) * R2 ;
+        V(le, zcp) <+ I(le, zcp) * R3 ;
+        I(zcp, AGND) <+ C1 * ddt(V(zcp, AGND)) ;  
+// Set AVDD
+
+		@(timer(100n)) begin
+			vdd_voltage =  VDD;
+		end
+
+        V(AVDD, gnd) <+ transition(vdd_voltage, 0, 1n, 1n) ;
+
+// Set AGND to half the supply voltage
+
+        V(AGND, gnd) <+ AGND_VOLTAGE;
+
+// Set the polarity bit (positive input pulses)
+
+        V(neg) <+ (POLARITY) ? transition(3.3, 1n, 1n, 2n):0 ;
+    
+// Create the bias currents
+
+        I(IB_SINK, gnd) <+ 11.5u ;
+        I(AVDD, IB_ZTC) <+ 12.0u ;
+
+// Set the broadcast channel address to 0
+
+        V(chan_addr[3]) <+ 0 ;
+        V(chan_addr[2]) <+ 0;
+        V(chan_addr[1]) <+ 0 ;
+        V(chan_addr[0]) <+ 0 ;
+
+// Set the mode bits
+// Most significant bit high says all channels get loaded
+// DAC register is mode[2:0] equal 6
+
+        V(mode[3]) <+ VDD ;
+        V(mode[2]) <+ VDD ;
+        V(mode[1]) <+ VDD ;
+        V(mode[0]) <+ 0 ;
+
+// Set the dac data
+
+        V(dac_data[6]) <+ VDD ;  
+        V(dac_data[5]) <+ VDD*dac_sign ;  
+
+		for(j = 0; j < 5; j = j + 1) begin
+			bit_mask = (bit << j) & dac_val;
+			if( bit_mask > 0) begin
+        			V(dac_data[j]) <+ VDD ; 
+			end 
+			else begin
+				V(dac_data[j]) <+ 0;
+			end
+
+		end
+
+//Emit STB
+	V(stb) <+ transition(vstb, 0, 1n, 1n);
+end
+
+endmodule
