@@ -10,6 +10,7 @@
 #include <stdarg.h>
 #include <string.h> 
 #include <stdint.h>
+#include <stdbool.h>
 
 // 
 // Xilinx related 
@@ -18,6 +19,12 @@
 #include <sleep.h>
 #include <xil_types.h>
 #include <xil_printf.h>
+
+
+
+// Lightweight string comparison for command parsing
+
+bool compare_strings(const char *a, const char *b, int length);
 
 // Gets length of str array (include \0)
 

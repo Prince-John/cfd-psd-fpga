@@ -60,7 +60,7 @@ int main() {
 // Init 16550 uart
 
     init_uart() ;
-//   xil_printf("PSD_FPGA %s \r\n", PROJECT_VERSION) ;
+   xil_printf("PSD_FPGA %s \r\n", PROJECT_VERSION) ;
 
 // Init timer/counter
 
@@ -86,6 +86,8 @@ int main() {
     cfd_strobe(LOW) ;
     usleep(1) ;
     cfd_write(HIGH) ;
+    usleep(1);
+    cfd_reset();
 
 // Print version information
 
@@ -110,7 +112,7 @@ int main() {
     	if ( isConfigMode() ) configHandler() ;
     	if ( isEventMode() ) {
     		if (useLCD) {
-    		    lcd_clear();
+    			lcd_set_cursor(2,0) ;
     		    lite_sprintf(LCDstr, "Event # -> %d", event_cntr) ;
     		    lcd_print_str(LCDstr) ;
     		}

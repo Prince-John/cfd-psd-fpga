@@ -4,6 +4,60 @@
 // Configuration routines
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+
+/*
+ * *******************************************************************
+ * 	 Command Tables that define commands supported by our ChipBoard
+ * *******************************************************************
+ * -The commands should be entered in each table in order of most frequently used to least frequently used.
+ *  Not required but will allow for early exits.
+ */
+
+/* **************************
+ *  Top level Command  table
+ * **************************
+ */
+static const Command cmd_command_table[] = {
+	{"DEL:", CONFIG_DELAY},
+	{"PSD:", CONFIG_PSD},
+	{"BID:", GET_BOARD_ID},
+	{"CFD:", CFD},
+	{"MUX:", CONFIG_MUX},
+	{"DAC:", CONFIG_DAC},
+	{"RST:", RESET},
+};
+
+/* **************************
+ *  CFD Sub command  table
+ * **************************
+ */
+static const CFDCommand cfd_command_table[] = {
+    {"WRT:", WRITE_REG},
+    {"RST:", RESET},
+	{"GEN:", CFD_GLOBAL_ENABLE},
+};
+
+
+/* **************************
+ * PSD Sub command  table
+ * **************************
+ */
+static const PSDCommand psd_command_table[] = {
+    {"SER:", SERIAL_REG},
+    {"OD0:", OFFSET_DAC_0},
+    {"OD1:", OFFSET_DAC_1},
+    {"RST:", RESET_PSD},
+    {"TRG:", TRIGGER_MODE},
+	{"TST:", TEST_MODE},
+	{"SEL:", CHANNEL_SELECT},
+};
+
+const int num_cmd_commands = sizeof(cmd_command_table) / sizeof(Command);
+const int num_cfd_commands = sizeof(cfd_command_table) / sizeof(CFDCommand);
+const int num_psd_commands = sizeof(psd_command_table) / sizeof(PSDCommand);
+const int command_length = 4; // Commands are 4 characters long
+
+
 bool	isConfigMode() {
 	if (!uart_byte_ready()) return false ;
 //
@@ -56,6 +110,7 @@ void	configHandler() {
 
 	enum	cmd_tokens token ;
 	enum	psd_tokens psd_token ;
+	enum	cfd_tokens cfd_token ;
 
 // Use when we configure the delay chips
 
@@ -77,6 +132,7 @@ void	configHandler() {
     			case ETX :  uart_send_byte(ACK) ;  // Leave config mode
     						return ;
     			default :	uart_send_byte(NAK) ;  // ???? so send NAK
+    						DEBUG_LCD_PRINT_LOCATION("Invalid Command")
     						break ;
     		} // end switch
     	} // end if
@@ -152,7 +208,18 @@ void	configHandler() {
 															uart_send_byte(NAK) ;
 															break;
 														}
+									case TEST_MODE : numBytes = str_to_bytes(buff) ;		// number of hex bytes it should return
+									DEBUG_LCD_PRINT_LOCATION("In Test Mode");
+														if (numBytes == 2) {				// Takes 2 byte to configure test mode
+															configure_psd_0_test_mode(buff[0], buff[1]);
+															uart_send_byte(ACK) ;
+															break;
+														} else {
+															uart_send_byte(NAK) ;
+															break;
+														}
 									case TRIGGER_MODE : numBytes = str_to_bytes(buff) ;		// number of hex bytes it should return
+
 														if (numBytes == 1) {				// Takes 1 byte to configure trigger mode
 															configure_psd_trigger_mode(buff[0]);
 															uart_send_byte(ACK) ;
@@ -165,42 +232,65 @@ void	configHandler() {
 									default:	uart_send_byte(NAK) ;
     								    		break ;
     							}
-
     							break ;
-    							numBytes = str_to_bytes(buff) ;		// number of hex bytes it should return
-								if (numBytes == 12) {				// Takes 12 bytes to configure both PSD chips
-									configure_psd_chips(buff) ;
-									uart_send_byte(ACK) ;
-									break;
-								} else {
-									uart_send_byte(NAK) ;
 
-								}
-
-// Get board ID
+			// Get board ID
 
        		case GET_BOARD_ID :	if (useLCD) {
 
-       	    						lcd_set_cursor(1,0) ;
+       	    						lcd_set_cursor(0,0) ;
        	    						lite_sprintf(LCDstr, "Board ID: %d", get_board_id() ) ;
        	    						lcd_print_str(LCDstr) ;
-       	    						sleep(2) ;
+       	    						sleep(5) ;
        	    					}
     							uart_send_byte(ACK) ;
     							break ;
 
 // Write to CFD register
 
-       		case WRITE_TO_CFD :	buff = &uartStr[4] ;  					// 3 ascii character command plus the :
-								numBytes = str_to_bytes(buff) ;			// number of hex bytes it should return
-    			    			if (numBytes == 2) {					// 2 bytes {addr/mode, data}
-           							write_cfd_reg(buff[0], buff[1]) ;
-    	    						uart_send_byte(ACK) ;
-    			    			} else {
-    			    				uart_send_byte(NAK) ;
-    			    			} // end if-then-else
-    							break ;
+       		case CFD :	buff = &uartStr[8] ;  			// 2x 3 ascii character command plus the :
 
+						cfd_token = get_cfd_token();
+
+						DEBUG_LCD_PRINT_STR("In CFD ctrl", buff)
+
+						switch  (cfd_token){
+
+							case WRITE_REG :  	numBytes = str_to_bytes(buff) ;			// number of hex bytes it should return
+												DEBUG_LCD_PRINT_CONFIG("In WRT REG, ", numBytes)
+												if (numBytes == 2) {					// 2 bytes {addr/mode, data}
+													write_cfd_reg(buff[0], buff[1]) ;
+													uart_send_byte(ACK) ;
+												} else {
+													uart_send_byte(NAK) ;
+												} // end if-then-else
+												break ;
+
+							case RESET_CFD :  	numBytes = str_to_bytes(buff) ;			// number of hex bytes it should return
+												DEBUG_LCD_PRINT_STR("In RESET CFD", buff)
+												if (numBytes == 0) {					// 2 bytes {addr/mode, data}
+												cfd_reset();
+												DEBUG_LCD_PRINT_STR("CFD RESET", buff)
+												uart_send_byte(ACK) ;
+												} else {
+												uart_send_byte(NAK) ;
+												} // end if-then-else
+												break ;
+
+							case CFD_GLOBAL_ENABLE :  	numBytes = str_to_bytes(buff) ;			// number of hex bytes it should return
+												DEBUG_LCD_PRINT_STR("In GLOBAL_EN CFD", buff)
+												if (numBytes == 1) {					// 1 bit in 1 byte high or low
+												cfd_global_enable(buff[0]);
+												uart_send_byte(ACK) ;
+												} else {
+												uart_send_byte(NAK) ;
+												} // end if-then-else
+												break ;
+
+							default:	uart_send_byte(NAK) ;
+										break ;
+						}
+						break ;
 
 // Configure AMUX Channel
 
@@ -254,97 +344,59 @@ void	configHandler() {
 // uartStr is a global
 // ***************************************************
 
+
+
 // *****************************************************************
 // get_token() takes the global string, uartStr, and returns a token
 // ******************************************************************
-
 enum cmd_tokens get_token() {
 	int		i ;
 
-// Flag for each command
-
-	bool 	isDEL = true ;
-	bool	isPSD = true ;
-	bool	isBID = true ;
-	bool	isCFD = true ;
-	bool	isRST = true ;
-	bool	isDEB = true ;
-	bool	isMUX = true ;
-	bool	isDAC = true ;
-
-
-// Our commands
-
-	u8	del[4]  = {'D', 'L', 'Y', ':'} ;
-	u8	psd[4]  = {'P', 'S', 'D', ':'} ;
-	u8	bid[4]  = {'B', 'I', 'D', ':'} ;
-	u8	cfd[4]  = {'C', 'F', 'D', ':'} ;
-	u8	mux[4]  = {'M', 'U', 'X', ':'} ;
-	u8	dac[4]  = {'D', 'A', 'C', ':'} ;
-	u8	rst[4]  = {'R', 'S', 'T', ':'} ;
-
-// See if we recognize a command
-
-	for (i = 0; i < 4; i++) {
-		if (uartStr[i] != del[i]) isDEL = false ;
-		if (uartStr[i] != psd[i]) isPSD = false ;
-		if (uartStr[i] != bid[i]) isBID = false ;
-		if (uartStr[i] != cfd[i]) isCFD = false ;
-		if (uartStr[i] != mux[i]) isMUX = false ;
-		if (uartStr[i] != dac[i]) isDAC = false ;
-		if (uartStr[i] != rst[i]) isRST = false ;
+	for (i = 0; i < num_cmd_commands; i++) {
+		// Compare the command string with the corresponding section of uartStr
+		if (compare_strings((const char *)&uartStr[0], cmd_command_table[i].command, command_length)) {
+			return cmd_command_table[i].token;
+		}
 	}
 
-	if (isDEL == true) return CONFIG_DELAY ;
-	if (isPSD == true) return CONFIG_PSD ;
-	if (isBID == true) return GET_BOARD_ID ;
-	if (isCFD == true) return WRITE_TO_CFD ;
-	if (isMUX == true) return CONFIG_MUX ;
-	if (isDAC == true) return CONFIG_DAC;
-
-	return ERROR ;
+	return ERROR;
 }
 
 
+/*
+ * Processes the next three characters to return the PSD config sub type
+ */
 enum psd_tokens get_psd_token() {
 	int		i ;
-	int 	j;
 
-// Flag for each command
-
-	bool 	isSER = true ;
-	bool	isOD0 = true ; //OffsetDac0
-	bool	isRST = true ;
-	bool	isTRG = true ;
-	bool	isOD1 = true ; //OffsetDac1
-
-// Our commands
-
-	u8	ser[4]  = {'S', 'E', 'R', ':'} ;
-	u8	od0[4]  = {'O', 'D', '0', ':'} ;
-	u8	od1[4]  = {'O', 'D', '1', ':'} ;
-	u8	rst[4]  = {'R', 'S', 'T', ':'} ;
-	u8	trg[4]  = {'T','R', 'G', ':'} ;
-
-// See if we recognize a commands
-
-	for (i = 0; i < 4; i++) {
-		j = i+4;
-		if (uartStr[j] != ser[i]) isSER = false ;
-		if (uartStr[j] != od0[i]) isOD0 = false ;
-		if (uartStr[j] != od1[i]) isOD1 = false ;
-		if (uartStr[j] != trg[i]) isTRG = false ;
-		if (uartStr[j] != rst[i]) isRST = false ;
+	for (i = 0; i < num_psd_commands; i++) {
+		// Compare the command string with the corresponding section of uartStr
+		if (compare_strings((const char *)&uartStr[4], psd_command_table[i].command, command_length)) {
+			return psd_command_table[i].token;
+		}
 	}
-
-	if (isSER == true) return SERIAL_REG ;
-	if (isOD0 == true) return OFFSET_DAC_0 ;
-	if (isOD1 == true) return OFFSET_DAC_1 ;
-	if (isRST == true) return RESET;
-	if (isTRG == true) return TRIGGER_MODE;
-
-	return ERROR ;
+	return ERROR_PSD;
 }
+
+
+/*
+ * Processes the next three characters to return the CFD config sub type
+ */
+enum cfd_tokens get_cfd_token() {
+
+	int		i ;
+
+	for (i = 0; i < num_cfd_commands; i++) {
+		// Compare the command string with the corresponding section of uartStr
+		if (compare_strings((const char *)&uartStr[4], cfd_command_table[i].command, command_length)) {
+			return cfd_command_table[i].token;
+		}
+	}
+	return ERROR_CFD;
+
+}
+
+
 
 // ******************************************************************************
 // Routine to get the board ID (6 bits) and save to global variable board_id
@@ -369,21 +421,47 @@ void  	cfd_write(u8 value) {
 }
 
 // ***************************************************
+// Routine to control the global_enable line
+// Value should be either LOW or HIGH
+// *****************************************************
+void	cfd_global_enable(u8 value) {
+	write_gpio_port(CFD_PORT, 1, CFD_GLOBAL_ENA, value) ;
+}
+
+// ***************************************************
 // Routine to control the cfd strobe line
 // Value should be either LOW or HIGH
 // *****************************************************
-
 void	cfd_strobe(u8 value) {
 	write_gpio_port(CFD_PORT, 1, CFD_STB, value) ;
 }
 
+// ***************************************************
+// Routine to reset and hold the cfd reset in correct state.
+// CFD_rese is low active reset
+// *****************************************************
+void 	cfd_reset(){
+	write_gpio_port(CFD_PORT, 1, CFD_RESET, HIGH) ;
+	usleep(1) ;
+	write_gpio_port(CFD_PORT, 1, CFD_RESET, LOW) ;
+	usleep(100) ;
+	write_gpio_port(CFD_PORT, 1, CFD_RESET, HIGH) ;
+	return;
+}
+
+
+
+
+
+
+
+
 // ******************************************************************************
 // Write to CFD chip internal registers
 // ******************************************************************************
-
 void	write_cfd_reg(u8 addr_mode, u8 data) {
 	DEBUG_LCD_PRINT_LOCATION("In CFD write")
-// Makse sure strobe is LOW
+// Make sure strobe is LOW
 
 	cfd_strobe(LOW) ;
 
@@ -453,9 +531,9 @@ void  configure_psd_chips(u8 *psd_config_data) {
 // *****************************************************
 void	psd_strobe(u8 value, u8 psd_chip_number) {
 	if (psd_chip_number){
-		write_gpio_port(PSD_DAC_MISC_PORT, 1, PSD_DAC_STB_1, value) ;
+		write_gpio_port(PSD_MISC_PORT, 1, PSD_DAC_STB_1, value) ;
 	}else{
-		write_gpio_port(PSD_DAC_MISC_PORT, 1, PSD_DAC_STB_0, value) ;
+		write_gpio_port(PSD_MISC_PORT, 1, PSD_DAC_STB_0, value) ;
 	}
 }
 
@@ -487,23 +565,23 @@ void  configure_psd_0_dac(u8 data, u8 addr) {
 	subchannel = addr & 0x3;
 	addr = addr >> 2;
 
-	write_gpio_port(PSD_DAC_MISC_PORT, 1, PSD_SEL_EXT_ADDR_0, HIGH) ;
+	write_gpio_port(PSD_MISC_PORT, 1, PSD_SEL_EXT_ADDR_0, HIGH) ;
 
 	psd_strobe(LOW, 0);
 
 
-	write_gpio_port(PSD_DAC_ADDR_PORT, 5, PSD0_CHAN_ADDR_OUT_0, addr);
-	write_gpio_port(PSD_DAC_MISC_PORT, 2, PSD_SC0_0, subchannel);
+	write_gpio_port(PSD_ADDR_PORT, 5, PSD0_CHAN_ADDR_OUT_0, addr);
+	write_gpio_port(PSD_MISC_PORT, 2, PSD_SC0_0, subchannel);
 
 	// address data valid
 	psd_strobe(HIGH, 0);
 
-	write_gpio_port(PSD_DAC_ADDR_PORT, 5, PSD0_CHAN_ADDR_OUT_0, data);
+	write_gpio_port(PSD_ADDR_PORT, 5, PSD0_CHAN_ADDR_OUT_0, data);
 
 	// dac data valid
 	psd_strobe(LOW, 0);
 
-	write_gpio_port(PSD_DAC_MISC_PORT, 1, PSD_SEL_EXT_ADDR_0, LOW) ;
+	write_gpio_port(PSD_MISC_PORT, 1, PSD_SEL_EXT_ADDR_0, LOW) ;
     return ;
 }
 
@@ -520,23 +598,23 @@ void  configure_psd_1_dac(u8 addr, u8 data) {
 	subchannel = addr & 0x3;
 	addr = addr >> 2;
 
-	write_gpio_port(PSD_DAC_MISC_PORT, 1, PSD_SEL_EXT_ADDR_1, HIGH) ;
+	write_gpio_port(PSD_MISC_PORT, 1, PSD_SEL_EXT_ADDR_1, HIGH) ;
 
 	psd_strobe(LOW, 1);
 
 
-	write_gpio_port(PSD_DAC_ADDR_PORT, 5, PSD1_CHAN_ADDR_OUT_0, addr);
-	write_gpio_port(PSD_DAC_MISC_PORT, 2, PSD_SC0_1, subchannel);
+	write_gpio_port(PSD_ADDR_PORT, 5, PSD1_CHAN_ADDR_OUT_0, addr);
+	write_gpio_port(PSD_MISC_PORT, 2, PSD_SC0_1, subchannel);
 
 	// address data valid
 	psd_strobe(HIGH, 1);
 
-	write_gpio_port(PSD_DAC_ADDR_PORT, 5, PSD1_CHAN_ADDR_OUT_0, data);
+	write_gpio_port(PSD_ADDR_PORT, 5, PSD1_CHAN_ADDR_OUT_0, data);
 
 	// dac data valid
 	psd_strobe(LOW, 1);
 
-	write_gpio_port(PSD_DAC_MISC_PORT, 1, PSD_SEL_EXT_ADDR_1, LOW) ;
+	write_gpio_port(PSD_MISC_PORT, 1, PSD_SEL_EXT_ADDR_1, LOW) ;
     return ;
 }
 
@@ -551,9 +629,49 @@ void  configure_psd_1_dac(u8 addr, u8 data) {
  */
 void configure_psd_trigger_mode(u8 data){
 	DEBUG_LCD_PRINT_LOCATION("In PSD trig Mode")
-	write_gpio_port(PSD_DAC_MISC_PORT, 2, PSD_ACQ_ALL, data);
+	write_gpio_port(PSD_MISC_PORT, 2, PSD_ACQ_ALL, data);
 
 }
+
+
+/*
+// **********************************************
+ * 	PSD Test Mode Config
+ * **********************************************
+ * Configures the PSD0 chip test mode.
+ * This function takes in the address [channel(5 bits) | sub channel(2 LSB)] and enable [1 bit].
+ *
+ * Sets the PSD0 in test mode if enable is High.
+ * Leaves the External Address selection line high to allow the PSD0 to remain in test mode.
+ *
+ * Note: A subsequent disable call or any dac config will set the ext addr sel line low.
+ *
+ *
+ *
+ * TODO: enforce that only PSD 0 or PSD 1 can have test mode active at once.
+ *
+ */
+void configure_psd_0_test_mode(u8 addr, u8 enable){
+	DEBUG_LCD_PRINT_LOCATION("In PSD 0 TEST Mode")
+	u8 subchannel;
+
+	if (enable == 1){
+
+		subchannel = addr & 0x3;
+		addr = addr >> 2;
+
+		write_gpio_port(PSD_MISC_PORT, 1, PSD_SEL_EXT_ADDR_0, HIGH) ;
+		write_gpio_port(PSD_ADDR_PORT, 5, PSD1_CHAN_ADDR_OUT_0, addr);
+		write_gpio_port(PSD_MISC_PORT, 2, PSD_SC0_1, subchannel);
+	}
+
+
+	write_gpio_port(PSD_MISC_PORT, 1, PSD_TEST_MODE_INT_0, enable);
+	write_gpio_port(PSD_MISC_PORT, 1, PSD_SEL_EXT_ADDR_0, enable) ;
+
+}
+
+
 
 
 
@@ -635,18 +753,6 @@ void	write_mux(u8 data) {
 
 	write_gpio_port(MUX_PORT, 5, MUX_EN, data) ;
 
-#ifdef DEBUG
-       							  if (useLCD) {
-       								  lcd_clear();
-       								  lcd_set_cursor(2,0) ;
-       								  lite_sprintf(LCDstr, "->Inside write_mux:") ;
-       								  lcd_print_str(LCDstr) ;
-       								  lcd_set_cursor(3,0) ;
-       								  lite_sprintf(LCDstr, "Data: %x", data) ;
-       								  lcd_print_str(LCDstr) ;
-       								  sleep(2) ;
-       							  	  }
-#endif
 
 	return ;
 }

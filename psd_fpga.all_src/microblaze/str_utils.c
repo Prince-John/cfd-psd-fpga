@@ -1,5 +1,19 @@
-#include	<stdbool.h>
 #include    "str_utils.h"
+
+
+// ************************************************
+// Lightweight string comparison for command parsing
+// ************************************************
+bool compare_strings(const char *a, const char *b, int length) {
+    for (int i = 0; i < length; i++) {
+        if (a[i] != b[i]) {
+            return false;
+        }
+    }
+    return true;
+}
+
+
 
 // ************************************************
 // get_str_len() (includes the \0
