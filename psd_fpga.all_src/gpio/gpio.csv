@@ -139,6 +139,8 @@ GPIO,Dir,Bit,Nickname,Verilog Signal,Comment
 2,out,26,>,psd_sc1_0,PSD chip 0 sub channel selct bit 1
 2,out,27,>,psd_sc0_1,PSD chip 1 sub channel selct bit 0
 2,out,28,>,psd_sc1_1,PSD chip 1 sub channel selct bit 1
+2,out,29,>,psd_test_mode_int_0,PSD chip 0 test int enable is Active High
+2,out,30,>,psd_test_mode_int_1,PSD chip 1 test int enable is Active High
 ,,,,,
 ,,,,,
 3,in,0,>,cfd_ad_in[0],Bit 0 of cfd_ad_in bus from the cfd_ad tri-state circuits

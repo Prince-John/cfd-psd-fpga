@@ -2,7 +2,7 @@
 // *************************************************
 // localparams definitions for the gpio bits   
 // The file is AUTO-GENERATED, DO NOT MODIFY!!!   
-// Timestamp:           Wed Oct 30 18:50:17 CDT 2024
+// Timestamp:           Mon Dec 16 13:07:39 CST 2024
 // TCL Code Version:    v0.0.5 released at	2024-10-30 11:29:11
 // *************************************************
 
@@ -188,6 +188,12 @@ localparam	PSD_SC0_1 = 27 ;
 
 // GPIO OUTPUT Port 2 -> PSD chip 1 sub channel selct bit 1
 localparam	PSD_SC1_1 = 28 ;
+
+// GPIO OUTPUT Port 2 -> PSD chip 0 test int enable is Active High
+localparam	PSD_TEST_MODE_INT_0 = 29 ;
+
+// GPIO OUTPUT Port 2 -> PSD chip 1 test int enable is Active High
+localparam	PSD_TEST_MODE_INT_1 = 30 ;
 
 // GPIO INPUT Port 3 -> Bit 0 of cfd_ad_in bus from the cfd_ad tri-state circuits
 localparam	CFD_AD_IN_0 = 0 ;

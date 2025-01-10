@@ -160,6 +160,14 @@ module psd_fpga_top(
     assign  cfd_ad[7:0] = cfd_write ? cfd_ad_out[7:0] : 8'bzzzz_zzzz ;
     assign  cfd_ad_in[7:0] = cfd_ad[7:0] ;
     
+// *****************************************************
+// TEMP:   Create PSD0 test intx output to be routed out to backboard.
+// TODO: Implement a mux for this in custom block. 
+// *****************************************************  
+    
+ assign intx_out =  psd_intx_out_0; 
+    
+    
 // assign or_connect = cfd_or_connect;
 //assign cfd_or_connect = cfd_or ;
 
