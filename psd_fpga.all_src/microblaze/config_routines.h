@@ -45,10 +45,21 @@
 			lite_sprintf(LCDstr, "%s ", data); \
 			lcd_print_str(LCDstr); \
 		}
+	#define DEBUG_LCD_PRINT_NUMBER(message, data0) \
+		if (useLCD) { \
+			lcd_clear(); \
+			lcd_set_cursor(1, 0); \
+			lite_sprintf(LCDstr, "%s ", message); \
+			lcd_print_str(LCDstr); \
+			lcd_set_cursor(2, 0); \
+			lite_sprintf(LCDstr, "%d", data0); \
+			lcd_print_str(LCDstr); \
+		}
 #else
 #define DEBUG_LCD_PRINT_CONFIG(message, numBytes)  // Empty when FPGA_DEBUG is not defined
 #define DEBUG_LCD_PRINT_LOCATION(message)
 #define DEBUG_LCD_PRINT_STR(message, data)
+#define DEBUG_LCD_PRINT_NUMBER(message, data)
 #endif
 
 // Global

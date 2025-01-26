@@ -18,7 +18,7 @@
  * **************************
  */
 static const Command cmd_command_table[] = {
-	{"DEL:", CONFIG_DELAY},
+	{"DLY:", CONFIG_DELAY},
 	{"PSD:", CONFIG_PSD},
 	{"BID:", GET_BOARD_ID},
 	{"CFD:", CFD},
@@ -33,7 +33,7 @@ static const Command cmd_command_table[] = {
  */
 static const CFDCommand cfd_command_table[] = {
     {"WRT:", WRITE_REG},
-    {"RST:", RESET},
+    {"RST:", RESET_CFD},
 	{"GEN:", CFD_GLOBAL_ENABLE},
 };
 
@@ -241,7 +241,6 @@ void	configHandler() {
        	    						lcd_set_cursor(0,0) ;
        	    						lite_sprintf(LCDstr, "Board ID: %d", get_board_id() ) ;
        	    						lcd_print_str(LCDstr) ;
-       	    						sleep(5) ;
        	    					}
     							uart_send_byte(ACK) ;
     							break ;
@@ -318,7 +317,7 @@ void	configHandler() {
 
 									write_dac(data);
 									uart_send_byte(ACK) ;
-
+									 break ;
 							  } else {
 									  uart_send_byte(NAK) ;
 							  } // end if-then-else
@@ -544,7 +543,7 @@ void	psd_strobe(u8 value, u8 psd_chip_number) {
  * 	PSD 0 Offset DAC config
  * **********************************************
  *
- * 	This function takes in the address [channel(5 bits) | sub channel(2 LSB)] and data words (5 bit sign/mag DAC value) and loads it into
+ * 	This function takes in the data words (5 bit sign/mag DAC value) and address [channel(5 bits) | sub channel(2 LSB)] and loads it into
  * 	the internal channel registers of PSD 0 chip.
  *
  * 	Steps:
@@ -591,7 +590,7 @@ void  configure_psd_0_dac(u8 data, u8 addr) {
  * **********************************************
  * Identical to `configure_psd_1_dac` with changed pin names. Refer to that for documentation
  */
-void  configure_psd_1_dac(u8 addr, u8 data) {
+void  configure_psd_1_dac( u8 data, u8 addr) {
 	DEBUG_LCD_PRINT_LOCATION("In PSD DAC 1")
 	u8 subchannel;
 
@@ -653,16 +652,17 @@ void configure_psd_trigger_mode(u8 data){
  */
 void configure_psd_0_test_mode(u8 addr, u8 enable){
 	DEBUG_LCD_PRINT_LOCATION("In PSD 0 TEST Mode")
+
 	u8 subchannel;
 
 	if (enable == 1){
 
 		subchannel = addr & 0x3;
 		addr = addr >> 2;
-
+		DEBUG_LCD_PRINT_NUMBER("sub-ch: ", subchannel)
 		write_gpio_port(PSD_MISC_PORT, 1, PSD_SEL_EXT_ADDR_0, HIGH) ;
-		write_gpio_port(PSD_ADDR_PORT, 5, PSD1_CHAN_ADDR_OUT_0, addr);
-		write_gpio_port(PSD_MISC_PORT, 2, PSD_SC0_1, subchannel);
+		write_gpio_port(PSD_ADDR_PORT, 5, PSD0_CHAN_ADDR_OUT_0, addr);
+		write_gpio_port(PSD_MISC_PORT, 2, PSD_SC0_0, subchannel);
 	}
 
 
