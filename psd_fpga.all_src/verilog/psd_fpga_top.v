@@ -159,6 +159,14 @@ module psd_fpga_top(
    
     assign  cfd_ad[7:0] = cfd_write ? cfd_ad_out[7:0] : 8'bzzzz_zzzz ;
     assign  cfd_ad_in[7:0] = cfd_ad[7:0] ;
+ 
+ 
+// *****************************************************
+// Create bi-directional psd_ad bus
+// ***************************************************** 
+    
+    assign psd_chan_addr_0[4:0] = psd_sel_ext_addr_0 ? psd0_chan_addr_out[4:0] : 5'bzzzzz;
+    assign psd_chan_addr_1[4:0] = psd_sel_ext_addr_1 ? psd1_chan_addr_out[4:0] : 5'bzzzzz;
     
 // *****************************************************
 // TEMP:   Create PSD0 test intx output to be routed out to backboard.

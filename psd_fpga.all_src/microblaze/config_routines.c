@@ -48,7 +48,8 @@ static const PSDCommand psd_command_table[] = {
     {"OD1:", OFFSET_DAC_1},
     {"RST:", RESET_PSD},
     {"TRG:", TRIGGER_MODE},
-	{"TST:", TEST_MODE},
+	{"TS0:", TEST_MODE_0},
+	{"TS1:", TEST_MODE_1},
 	{"SEL:", CHANNEL_SELECT},
 };
 
@@ -208,10 +209,20 @@ void	configHandler() {
 															uart_send_byte(NAK) ;
 															break;
 														}
-									case TEST_MODE : numBytes = str_to_bytes(buff) ;		// number of hex bytes it should return
-									DEBUG_LCD_PRINT_LOCATION("In Test Mode");
+									case TEST_MODE_0 : numBytes = str_to_bytes(buff) ;		// number of hex bytes it should return
+									DEBUG_LCD_PRINT_LOCATION("In Test Mode PSD 0");
 														if (numBytes == 2) {				// Takes 2 byte to configure test mode
 															configure_psd_0_test_mode(buff[0], buff[1]);
+															uart_send_byte(ACK) ;
+															break;
+														} else {
+															uart_send_byte(NAK) ;
+															break;
+														}
+									case TEST_MODE_1 : numBytes = str_to_bytes(buff) ;		// number of hex bytes it should return
+									DEBUG_LCD_PRINT_LOCATION("In Test Mode PSD 1");
+														if (numBytes == 2) {				// Takes 2 byte to configure test mode
+															configure_psd_1_test_mode(buff[0], buff[1]);
 															uart_send_byte(ACK) ;
 															break;
 														} else {
@@ -667,10 +678,49 @@ void configure_psd_0_test_mode(u8 addr, u8 enable){
 
 
 	write_gpio_port(PSD_MISC_PORT, 1, PSD_TEST_MODE_INT_0, enable);
-	write_gpio_port(PSD_MISC_PORT, 1, PSD_SEL_EXT_ADDR_0, enable) ;
+	//write_gpio_port(PSD_MISC_PORT, 1, PSD_SEL_EXT_ADDR_0, enable) ;
 
 }
 
+
+
+/*
+// **********************************************
+ * 	PSD Test Mode Config
+ * **********************************************
+ * Configures the PSD1 chip test mode.
+ * This function takes in the address [channel(5 bits) | sub channel(2 LSB)] and enable [1 bit].
+ *
+ * Sets the PSD1 in test mode if enable is High.
+ * Leaves the External Address selection line high to allow the PSD1 to remain in test mode.
+ *
+ * Note: A subsequent disable call or any dac config will set the ext addr sel line low.
+ *
+ *
+ *
+ * TODO: enforce that only PSD 0 or PSD 1 can have test mode active at once.
+ *
+ */
+void configure_psd_1_test_mode(u8 addr, u8 enable){
+	DEBUG_LCD_PRINT_LOCATION("In PSD 1 TEST Mode")
+
+	u8 subchannel;
+
+	if (enable == 1){
+
+		subchannel = addr & 0x3;
+		addr = addr >> 2;
+		DEBUG_LCD_PRINT_NUMBER("address: ", addr)
+		write_gpio_port(PSD_MISC_PORT, 1, PSD_SEL_EXT_ADDR_1, HIGH) ;
+		write_gpio_port(PSD_ADDR_PORT, 5, PSD1_CHAN_ADDR_OUT_0, addr);
+		write_gpio_port(PSD_MISC_PORT, 2, PSD_SC0_1, subchannel);
+	}
+
+
+	write_gpio_port(PSD_MISC_PORT, 1, PSD_TEST_MODE_INT_1, enable);
+	write_gpio_port(PSD_MISC_PORT, 1, PSD_SEL_EXT_ADDR_1, enable) ;
+
+}
 
 
 
