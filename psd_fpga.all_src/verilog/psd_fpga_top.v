@@ -168,12 +168,24 @@ module psd_fpga_top(
     assign psd_chan_addr_0[4:0] = psd_sel_ext_addr_0 ? psd0_chan_addr_out[4:0] : 5'bzzzzz;
     assign psd_chan_addr_1[4:0] = psd_sel_ext_addr_1 ? psd1_chan_addr_out[4:0] : 5'bzzzzz;
     
+
+// *****************************************************
+// !!!!!!!!!!!!!!!!!!!! Overtaking the PSD Global enable !!!!!!!!!!!!!!!!!!!!!!!
+// This is the bodge for PCB Rev2 where the PSD_GLBL_ENBL Signal has been routed directly to 
+// PSD0 and PSD1 global enable lines but still is routed to the FPGA psd_global_enable_in line. 
+// This connects that lines as the output so that we can control the PSD global enable without external input.
+//  Will create a conflict if the backplane tries to drive this pin. 
+// ***************************************************** 
+    
+    assign psd_global_enbl_in = psd_global_enable_override ? psd_global_enable_override : 1'bz; 
+    
+    
 // *****************************************************
 // TEMP:   Create PSD0 test intx output to be routed out to backboard.
 // TODO: Implement a mux for this in custom block. 
 // *****************************************************  
     
- assign intx_out =  psd_intx_out_0; 
+     assign intx_out =  psd_intx_out_0; 
     
     
 // assign or_connect = cfd_or_connect;

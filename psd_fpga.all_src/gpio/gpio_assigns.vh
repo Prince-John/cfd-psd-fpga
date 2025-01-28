@@ -2,8 +2,8 @@
 // ********************************************************
 // This header file creates wires and assigns for gpio bits
 // The file is AUTO-GENERATED, DO NOT MODIFY!!!   
-// Timestamp:  		  Mon Dec 16 13:07:39 CST 2024
-// TCL Code Version:    v0.0.5 released at	2024-10-30 11:29:11
+// Timestamp:  		  Tue Jan 28 16:25:08 CST 2025
+// TCL Code Version:    v0.0.7 released at	2025-01-27 20:45:56
 // ********************************************************
 
 	assign	gpio0_in[BOARD_ID_0] = board_id[0] ;
@@ -13,7 +13,7 @@
 	assign	gpio0_in[BOARD_ID_4] = board_id[4] ;
 	assign	gpio0_in[BOARD_ID_5] = board_id[5] ;
 	assign	gpio0_in[COMMON_STOP] = common_stop ;
-	assign	gpio0_in[GLOB_ENA] = glob_ena ;
+	assign	gpio0_in[GLOB_ENA] = 0 ;
 	assign	gpio0_in[EVENT_ENA] = event_ena ;
 	assign	gpio0_in[FORCE_RESET] = force_reset ;
 	assign	gpio0_in[TAKE_EVENT] = take_event ;
@@ -80,6 +80,7 @@
 	assign	psd1_chan_addr_out[2] = gpio1_out[PSD1_CHAN_ADDR_OUT_2] ;
 	assign	psd1_chan_addr_out[3] = gpio1_out[PSD1_CHAN_ADDR_OUT_3] ;
 	assign	psd1_chan_addr_out[4] = gpio1_out[PSD1_CHAN_ADDR_OUT_4] ;
+	assign	psd_global_enable_override = gpio1_out[PSD_GLOBAL_ENABLE_OVERRIDE] ;
 	assign	gpio2_in[PSD_SOUT] = psd_sout ;
 	assign	gpio2_in[1] = 0 ;
 	assign	gpio2_in[2] = 0 ;

@@ -111,7 +111,7 @@ unused	--	V5	JB3-26	**NA**	X
 tstamp_clk	Input	U3	JB3-27	**NA**	
 tstamp_rst	Input	V4	JB3-28	**NA**	
 common_stop	Input	T5	JB3-31	**NA**	
-glob_ena	Input	N5	JB3-32	**NA**	
+psd_global_enbl_in	BiDir	N5	JB3-32	**NA**	
 event_ena	Input	T4	JB3-33	**NA**	
 force_reset	Input	P5	JB3-34	**NA**	
 take_event	Input	V1	JB3-37	**NA**	

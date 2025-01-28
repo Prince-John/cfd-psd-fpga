@@ -2,8 +2,8 @@
 // *******************************************************
 // This header files creates defines for the gpio bits   
 // The file is AUTO-GENERATED, DO NOT MODIFY!!!   
-// Timestamp:  			Mon Dec 16 13:07:39 CST 2024
-// TCL Code Version:    	v0.0.5 released at	2024-10-30 11:29:11
+// Timestamp:  			Tue Jan 28 16:25:08 CST 2025
+// TCL Code Version:    	v0.0.7 released at	2025-01-27 20:45:56
 // *******************************************************
 
 // GPIO INPUT Port 0 -> Board ID bit 0 (input pin)
@@ -98,6 +98,9 @@
 
 // GPIO OUTPUT Port 1 -> PSD 1 channel address out bit 4
 #define	PSD1_CHAN_ADDR_OUT_4	9
+
+// GPIO OUTPUT Port 1 -> PSD global enable output PCB Rev2 Bodge
+#define	PSD_GLOBAL_ENABLE_OVERRIDE	10
 
 // GPIO INPUT Port 2 -> Serial output from PSD 1 config register (input pin)
 #define	PSD_SOUT	0

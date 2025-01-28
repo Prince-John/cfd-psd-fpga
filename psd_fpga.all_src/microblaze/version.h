@@ -1,5 +1,5 @@
-// Automatically generated version file at Mon Jan 27 20:41:11 CST 2025, DO NOT MODIFY!!!
+// Automatically generated version file at Mon Jan 27 20:47:38 CST 2025, DO NOT MODIFY!!!
 #ifndef VERSION_H
 #define VERSION_H
-#define PROJECT_VERSION "v0.0.6-1-g05f22ae"
+#define PROJECT_VERSION "v0.0.7"
 #endif // VERSION_H
