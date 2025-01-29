@@ -51,6 +51,7 @@ static const PSDCommand psd_command_table[] = {
 	{"TS0:", TEST_MODE_0},
 	{"TS1:", TEST_MODE_1},
 	{"SEL:", CHANNEL_SELECT},
+	{"GEN:", PSD_GLOBAL_ENABLE}
 };
 
 const int num_cmd_commands = sizeof(cmd_command_table) / sizeof(Command);
@@ -233,6 +234,16 @@ void	configHandler() {
 
 														if (numBytes == 1) {				// Takes 1 byte to configure trigger mode
 															configure_psd_trigger_mode(buff[0]);
+															uart_send_byte(ACK) ;
+															break;
+														} else {
+															uart_send_byte(NAK) ;
+															break;
+														}
+									case PSD_GLOBAL_ENABLE : numBytes = str_to_bytes(buff) ;		// number of hex bytes it should return
+									DEBUG_LCD_PRINT_LOCATION("PSD GLOBAL ENABLE");
+														if (numBytes == 1) {				// 1 bit in 1 byte high or low
+															psd_global_enable(buff[0]);
 															uart_send_byte(ACK) ;
 															break;
 														} else {
@@ -642,6 +653,20 @@ void configure_psd_trigger_mode(u8 data){
 	write_gpio_port(PSD_MISC_PORT, 2, PSD_ACQ_ALL, data);
 
 }
+
+// ***************************************************
+// Routine to control the PSD global_enable line
+// Value should be either LOW or HIGH
+// TODO: This is a bodge for PCB Rev 2 routing, fix it properly at some point.
+// *****************************************************
+
+void	psd_global_enable(u8 value) {
+	write_gpio_port(PSD_ADDR_PORT, 1, PSD_GLOBAL_ENABLE_OVERRIDE, value) ;
+}
+
+
+
+
 
 
 /*

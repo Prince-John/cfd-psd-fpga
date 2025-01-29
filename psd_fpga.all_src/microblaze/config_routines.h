@@ -76,7 +76,7 @@ enum cmd_tokens {CONFIG_DELAY, CONFIG_PSD, GET_BOARD_ID, CFD, ERROR, CONFIG_MUX,
 
 // Define enum for PSD specific tokens
 
-enum psd_tokens {RESET_PSD, OFFSET_DAC_0, OFFSET_DAC_1, TRIGGER_MODE, SERIAL_REG, TEST_MODE_0,  TEST_MODE_1, CHANNEL_SELECT, ERROR_PSD};
+enum psd_tokens {RESET_PSD, OFFSET_DAC_0, OFFSET_DAC_1, TRIGGER_MODE, SERIAL_REG, TEST_MODE_0,  TEST_MODE_1, CHANNEL_SELECT, ERROR_PSD, PSD_GLOBAL_ENABLE};
 
 enum psd_subtokens  {PSD0, PSD1, ERROR_SUB_PSD};
 
@@ -134,6 +134,8 @@ void  	configure_psd_1_dac(u8 data, u8 addr);
 void 	configure_psd_trigger_mode(u8 data);
 void 	configure_psd_0_test_mode(u8 addr, u8 enable);
 void 	configure_psd_1_test_mode(u8 addr, u8 enable);
+void	psd_global_enable(u8 value);
+
 
 void	configure_delay_chips(u8 chip_num, u8 delay_data) ;
 

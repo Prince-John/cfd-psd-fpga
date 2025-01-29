@@ -77,6 +77,9 @@ GPIO,Dir,Bit,Nickname,Verilog Signal,Comment
 1,out,8,>,psd1_chan_addr_out[3],PSD 1 channel address out bit 3
 1,out,9,>,psd1_chan_addr_out[4],PSD 1 channel address out bit 4
 1,out,10,>,psd_global_enable_override,PSD global enable output PCB Rev2 Bodge
+1,out,11,>,psd_force_rst,PSD force reset uBlaze control
+1,out,12,>,psd_veto_reset,PSD veto reset uBlaze control
+1,out,13,>,psd_reset,PSD reset uBlaze control
 ,,,,,
 ,,,,,
 2,in,0,>,psd_sout,Serial output from PSD 1 config register (input pin)

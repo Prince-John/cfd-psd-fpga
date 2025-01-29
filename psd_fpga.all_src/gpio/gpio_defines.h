@@ -2,7 +2,7 @@
 // *******************************************************
 // This header files creates defines for the gpio bits   
 // The file is AUTO-GENERATED, DO NOT MODIFY!!!   
-// Timestamp:  			Tue Jan 28 16:25:08 CST 2025
+// Timestamp:  			Tue Jan 28 19:00:09 CST 2025
 // TCL Code Version:    	v0.0.7 released at	2025-01-27 20:45:56
 // *******************************************************
 
@@ -101,6 +101,15 @@
 
 // GPIO OUTPUT Port 1 -> PSD global enable output PCB Rev2 Bodge
 #define	PSD_GLOBAL_ENABLE_OVERRIDE	10
+
+// GPIO OUTPUT Port 1 -> PSD force reset uBlaze control
+#define	PSD_FORCE_RST	11
+
+// GPIO OUTPUT Port 1 -> PSD veto reset uBlaze control
+#define	PSD_VETO_RESET	12
+
+// GPIO OUTPUT Port 1 -> PSD reset uBlaze control
+#define	PSD_RESET	13
 
 // GPIO INPUT Port 2 -> Serial output from PSD 1 config register (input pin)
 #define	PSD_SOUT	0
