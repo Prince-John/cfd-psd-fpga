@@ -842,7 +842,7 @@ void	write_mux(u8 data) {
  * 	The LTC1660 DAC requires 4 address bits[a3-a0] followed by 10 data bits[d9-d0] representing voltage setting for the DAC channel.
  * 	+ 2 don't care bits to align the word to its 16 bit shit register.
  *
- * 	MSB is shifted first for both address and data. Data is latched by LTC1660 on the rising edge and sifted out on falling edge
+ * 	MSB is shifted first for both address and data. Data is  latched by LTC1660 on the rising edge and sifted out on falling edge
  * 	of the SCK.
  *
  * 	Data Word: [a3 a2 a1 a0| d9 d8 d7 d6| d5 d4 d3 d2| d1 d0 x1 x0]
