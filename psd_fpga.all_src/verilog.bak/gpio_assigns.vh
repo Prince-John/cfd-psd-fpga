@@ -1,0 +1,1 @@
+../gpio/gpio_assigns.vh
