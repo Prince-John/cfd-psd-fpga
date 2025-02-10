@@ -38,12 +38,19 @@ module psd_fpga_top(
 
 `include    "gpio_defines.vh"
 
-// Define a bunch of wires
+// ***********************************************************
+// Define a large number of wires
 // Hand generated but include reduces clutter in this file
+// ***********************************************************
 
 `include    "psd_fpga_top_wires.vh"
 
-// $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+// *****************************************************
+// The gpio_assigns.h file AUTO-GENERATED
+// NEVER DIRECTLY MODIFY IT!!!!
+// *****************************************************
+
+`include "gpio_assigns.vh"
 
 // *********************************     
 // Instaniate the ublaze wrapper
@@ -88,37 +95,82 @@ module psd_fpga_top(
 // Instantiate the custom block
 // mclk is 100 MHz clock from ublaze
 //
-// GPIO ports 2 and 3 are for the exclusive use of uBlaze
 // **********************************************************
 
     psd_custom_block u1(
+    
+// Clocks and reset
+
         .mclk(mclk) ,
         .mrst(custom_block_reset) ,
+      
+// Status LEDs
+      
         .led(led) ,
-        .gpio0_in(gpio0_in) ,
-        .gpio1_in(gpio1_in) ,
-        .gpio0_out(gpio0_out) ,
-        .gpio1_out(gpio1_out) ,         
-        .tready(tready) ,
+   
+// ADC related signals
+
         .adc_sdo(adc_sdo) ,
         .adc_sclk(adc_sclk) ,
         .adc_conv(adc_conv) ,
+        
+// FIFO related signals
+
         .fifo_data(fifo_data) ,
         .tlast(tlast) ,
         .tvalid(tvalid) ,
-        .common_stop(common_stop)        
+        
+// PSD related signals
+
+        .psd0_oport(pico_psd0_oport) ,
+        .psd1_oport(pico_psd1_oport) ,
+        .status_port(pico_status_port),
+        .board_id_port(pico_board_id_port),
+        .psd0_iport(pico_psd0_iport),
+        .psd1_iport(pico_psd1_iport),
+        .force_psd_reset(psd_force_reset_from_pico),
+        .veto_reset(psd_veto_reset_from_pico),
+        
+// TDC related signals
+
+        .common_stop(common_stop),
+        .tdc_dout(tdc_dout),
+        .tstamp_clk(clk10),
+        .tstamp_rst(custom_block_reset),
+//        .tstamp_clk(tstamp_clk),
+//        .tstamp_rst(tstamp_rst),
+        .tdc_csb(tdc_csb),
+        .tdc_din(tdc_din),
+        .tdc_enable(tdc_enable),
+        .tdc_sclk(tdc_sclk),
+        .tdc_start(tdc_start),
+        .tdc_stop(tdc_stop)            
     ) ;
+    
+// *****************************************************************
+// Either picoblaze or microblaze must control the sel_ext_addr lines
+// Take event seems like a reasonable thing to use for pico_in_control 
+// *****************************************************************
 
-// ********************************    
-// Assign of pins to signals
-// **********************************
+// For initial testing we will generate our own take_event
+// by or'ing the twp PSD output ORs
 
-// Reset stuff
+//  assign  take_event_micro = take_event ;
+    assign  take_event_micro = psd_or_out_0 | psd_or_out_1 ;
+    
+    assign  pico_in_control = take_event_micro ;          
+//  assign  pico_in_control = take_event ;
+
+// ******************************** 
+// Reset related logic
+// ******************************** 
 
     assign  ublaze_reset = dummy_reset ;
     assign  custom_block_reset = dummy_reset ;
 
-// Make some connections for the UART
+// ******************************** 
+// UART related logic
+// ******************************** 
 
     assign dcd = 1'b1 ;
     assign dsr = 1'b1 ;
@@ -126,32 +178,128 @@ module psd_fpga_top(
     assign ri = 1'b1 ;
     assign cts = rts ;
     
-// Make connections for the ADCs 
+// ******************************** 
+// ADC related logic
+// ******************************** 
    
     assign  adc_sclk_0 = adc_sclk[0] ;
-    assign  conv_0 = adc_conv[0] ;
-
-    assign  adc_sdo[0] = 1'b0 ;     // PSD 0 Sub-Channel A
-    assign  adc_sdo[1] = 1'b0 ;     // PSD 0 Sub-Channel B    
-    assign  adc_sdo[2] = 1'b0 ;     // PSD 0 Sub-Channel C   
-    assign  adc_sdo[3] = sdo_t_0 ;  // PSD 0 Sub-Channel T
-    assign  adc_sdo[4] = 1'b0 ;     // PSD 1 Sub-Channel A    
-    assign  adc_sdo[5] = 1'b0 ;     // PSD 1 Sub-Channel B     
-    assign  adc_sdo[6] = 1'b0 ;     // PSD 1 Sub-Channel C  
-    assign  adc_sdo[7] = 1'b0 ;     // PSD 1 Sub-Channel T 
+    assign  conv_0 = adc_conv[0] ;   
+    assign  adc_sclk_1 = adc_sclk[1] ;
+    assign  conv_1 = adc_conv[1] ;    
     
-// Timestamp related stuff
-// This is just a place keeper
+    assign  adc_sdo[0] = sdo_a_0 ;     // PSD 0 Sub-Channel A
+    assign  adc_sdo[1] = sdo_b_0 ;     // PSD 0 Sub-Channel B    
+    assign  adc_sdo[2] = sdo_c_0 ;     // PSD 0 Sub-Channel C   
+    assign  adc_sdo[3] = sdo_t_0 ;     // PSD 0 Sub-Channel T
+    assign  adc_sdo[4] = sdo_a_1 ;     // PSD 1 Sub-Channel A    
+    assign  adc_sdo[5] = sdo_b_1 ;     // PSD 1 Sub-Channel B     
+    assign  adc_sdo[6] = sdo_c_1 ;     // PSD 1 Sub-Channel C  
+    assign  adc_sdo[7] = sdo_t_1 ;     // PSD 1 Sub-Channel T 
 
-    assign  tstamp_clk = clk10 ;
-    assign  tstamp_rst = 1'b0 ;
+// ****************************************************** 
+// The led[1] signal is also the PicoBlaze busy bit
+// Let's use it to generate the busy_L pin signal
+// There is also a busy_out_micro from the microblaze
+// There should be an external pull-up on busy_out_l line
+// ****************************************************** 
+
+// TODO: For PCB rev 2 and backplane rev 1 no pull up exists, we are driving the busy out line high. Change this for new rev version. 
+    assign  busy_out_l = (led[1] | busy_out_micro) ? 1'b0 : 1'b1 ;
+   
+// *****************************************************************  
+// Create the buses we need to connect to PicoBlaze input ports
+// *****************************************************************  
+ 
+// For initial testing we will use take_event_micro
+// Later this needs to be changed
+       
+    assign  pico_status_port = {5'd0, tdc_intb, take_event_micro, tready}  ;
+//    assign  pico_status_port = {6'd0, take_event, tready}  ;
+    assign  pico_board_id_port = {2'd0, board_id[5:0]} ;            
+    assign  pico_psd0_iport = {1'b0, 1'b0, psd0_chan_addr_out[2:0], psd_acq_ack_0, psd_token_out_0, psd_or_out_0} ;
+    assign  pico_psd1_iport = {1'b0, 1'b1, psd1_chan_addr_out[2:0], psd_acq_ack_1, psd_token_out_1, psd_or_out_1} ;         
+
+// *****************************************************************  
+// Connect things up which are coming off of PicoBlaze output ports
+// PicoBlaze PSD0_OPORT (port #5) and PSD1_OPORT (port #6)
+// Adress bits 4 and 5 are set to 0. 
+// PicoBlaze is just reading lower 3 bits i.e. a real channel address
+// *****************************************************************  
+             
+    assign  psd_addr_in_0_from_pico = {2'd0, pico_psd0_oport[2:0]} ;    
+    assign  psd_addr_in_1_from_pico = {2'd0, pico_psd1_oport[2:0]} ;
+       
+    assign  psd_sc_addr_0_from_pico = pico_psd0_oport[5:4] ;
+    assign  psd_sc_addr_1_from_pico = pico_psd1_oport[5:4] ;
     
-// *****************************************************
-// The gpio_assigns.h file AUTO-GENERATED
-// NEVER DIRECTLY MODIFY IT!!!!
-// *****************************************************
+    assign  psd_acq_clk_0 = pico_psd0_oport[3];
+    assign  psd_acq_clk_1 = pico_psd1_oport[3];
+    
+    assign  psd_token_in_0 = pico_psd0_oport[6] ;
+    assign  psd_token_in_1 = pico_psd1_oport[6] ;   
+    
+    assign  psd_sel_ext_addr_0_from_pico = pico_psd0_oport[7] ;
+    assign  psd_sel_ext_addr_1_from_pico = pico_psd1_oport[7] ;    
+     
+// *****************************************************************
+// Either picoblaze or microblaze must control the sel_ext_addr lines
+// Take event seems like a reasonable thing to use for pico_in_control 
+// *****************************************************************
 
-`include "gpio_assigns.vh"
+// Sel ext addr control
+        
+    assign  psd_sel_ext_addr_0 = (pico_in_control == 1'b1) ? psd_sel_ext_addr_0_from_pico : psd_sel_ext_addr_0_from_micro ;
+    assign  psd_sel_ext_addr_1 = (pico_in_control == 1'b1) ? psd_sel_ext_addr_1_from_pico : psd_sel_ext_addr_1_from_micro ;    
+    
+// Multilplex the address lines which go into the PSD chips (also sub-channel address lines)
+// Really was no reason to mux the sub-channel lines
+// Only the microblaze needs to control the sc lines!
+ 
+    assign  psd0_chan_addr_in = (pico_in_control == 1'b1) ? psd_addr_in_0_from_pico : psd_addr_in_0_from_micro ;
+    assign  psd1_chan_addr_in = (pico_in_control == 1'b1) ? psd_addr_in_1_from_pico : psd_addr_in_1_from_micro ;    
+    
+    assign  {psd_sc1_0, psd_sc0_0} = (pico_in_control == 1'b1) ?  psd_sc_addr_0_from_pico[1:0] : psd_sc_addr_0_from_micro[1:0] ;
+    assign  {psd_sc1_1, psd_sc0_1} = (pico_in_control == 1'b1) ?  psd_sc_addr_1_from_pico[1:0] : psd_sc_addr_1_from_micro[1:0] ;     
+    
+// Microblaze needs to select which OR is connected to the or_connect
+// OR from PSD 0, OR from PSD 1, OR from CFD chip, 11 - OR of PSD0 and PSD 1 or'd 
+
+    reg     or_connect_reg ;
+    always @(*) begin
+        case(or_sel)
+            2'b00 : or_connect_reg = psd_or_out_0  ;
+            2'b01 : or_connect_reg = psd_or_out_1 ;
+            2'b10 : or_connect_reg = cfd_or ;
+            2'b11 : or_connect_reg = psd_or_out_1 | psd_or_out_0 ;            
+         endcase
+    end
+    assign  or_connect = or_connect_reg ;
+
+// Microblaze need to select either cfd output from PSD 0 or from PSD 1
+
+    assign  cfd_out = (cfd_out_sel == 1'b1) ? psd_cfd_out_1 : psd_cfd_out_0 ;
+
+// Microblaze need to select either psd_intx_out_1 or psd_intx_out_0
+
+    assign  intx_out = (psd_intx_out_sel == 1'b1) ? psd_intx_out_1 : psd_intx_out_0 ;
+    
+// Both picoblaze and ublaze can assert the psd veto_reset signal force_reset
+
+    assign  psd_veto_reset = psd_veto_reset_from_pico | psd_veto_reset_from_micro ;
+    assign  psd_force_rst = psd_force_reset_from_pico | psd_force_reset_from_micro ;
+    
+// Only Microblaze can issue a digital reset to the PSD chips
+
+    assign  psd_reset = psd_reset_from_micro ;   
+ 
+// ********************************************************************
+// Some temporary assignments for initial testing 
+// These are GPIO inputs to microbalze that eventually
+// will come from pins. 
+// ********************************************************************
+    
+    assign  event_ena_micro = 1'b0 ;
+    assign  force_reset_micro = 1'b0 ;
 
 // *****************************************************
 // Create bi-directional cfd_ad bus
@@ -159,36 +307,50 @@ module psd_fpga_top(
    
     assign  cfd_ad[7:0] = cfd_write ? cfd_ad_out[7:0] : 8'bzzzz_zzzz ;
     assign  cfd_ad_in[7:0] = cfd_ad[7:0] ;
- 
- 
-// *****************************************************
-// Create bi-directional psd_ad bus
-// ***************************************************** 
     
-    assign psd_chan_addr_0[4:0] = psd_sel_ext_addr_0 ? psd0_chan_addr_out[4:0] : 5'bzzzzz;
-    assign psd_chan_addr_1[4:0] = psd_sel_ext_addr_1 ? psd1_chan_addr_out[4:0] : 5'bzzzzz;
+// *****************************************************
+// Create bi-directional psd buses
+// psd_chan_addr_0[4:0] and psd_chan_addr_1[4:0]
+// *****************************************************
+    
+    assign  psd_chan_addr_0[4:0] = psd_sel_ext_addr_0  ? psd0_chan_addr_in[4:0] : 5'bz_zzzz ;
+    assign  psd_chan_addr_1[4:0] = psd_sel_ext_addr_1  ? psd1_chan_addr_in[4:0] : 5'bz_zzzz ;
+ 
+ // psd0_chan_addr_out means address info coming out of the PSD 0 chip
+ // psd1_chan_addr_out means address info coming out of the PSD 1 chip
+ 
+    assign  psd0_chan_addr_out[4:0] =  psd_chan_addr_0[4:0] ;
+    assign  psd1_chan_addr_out[4:0] =  psd_chan_addr_1[4:0]  ;
+    
+// *********************************************************
+// Temporary fix for rev2 pcb issue related to psd global enable routing 
+// **********************************************************
+    assign  psd_glob_ena = psd_global_enable_from_micro; // output from microblaze connected to FPGA pin on JB2 connected to PSD chips
+    assign  glob_ena = psd_global_enable_from_micro; // output from microblaze connected to FPGA pin on JB3 TEMP WORKAROUND for REV2
+    assign  glob_ena_micro = psd_global_enable_from_micro;// output from microblaze connected to input to microblaze. 
+    
     
 
-// *****************************************************
-// !!!!!!!!!!!!!!!!!!!! Overtaking the PSD Global enable !!!!!!!!!!!!!!!!!!!!!!!
-// This is the bodge for PCB Rev2 where the PSD_GLBL_ENBL Signal has been routed directly to 
-// PSD0 and PSD1 global enable lines but still is routed to the FPGA psd_global_enable_in line. 
-// This connects that lines as the output so that we can control the PSD global enable without external input.
-//  Will create a conflict if the backplane tries to drive this pin. 
-// ***************************************************** 
     
-    assign psd_global_enbl_in = psd_global_enable_override ? psd_global_enable_override : 1'bz; 
-    
-    
-// *****************************************************
-// TEMP:   Create PSD0 test intx output to be routed out to backboard.
-// TODO: Implement a mux for this in custom block. 
-// *****************************************************  
-    
-     assign intx_out =  psd_intx_out_0; 
-    
-    
-// assign or_connect = cfd_or_connect;
-//assign cfd_or_connect = cfd_or ;
+// Some special stuff to make my Digilent board happy
 
+//    assign  sdo_a_0 = 1&apos;b0 ;
+//    assign  sdo_b_0 = 1&apos;b0 ;
+//    assign  sdo_c_0 = 1&apos;b0 ;
+//    assign  sdo_t_0 = 1&apos;b0 ;
+    
+//    assign  sdo_a_1 = 1&apos;b0 ;
+//    assign  sdo_b_1 = 1&apos;b0 ;
+//    assign  sdo_c_1 = 1&apos;b0 ;
+//    assign  sdo_t_1 = 1&apos;b0 ;
+    
+//    assign  psd_or_out_1 = 1&apos;b0 ;
+//    assign  board_id[5:0] = 6&apos;d0 ;
+//  assign  psd_token_out_0 = 1&apos;b0 ;
+//assign  psd_token_out_1 = 1&apos;b0 ;      
+//  assign  psd_acq_ack_0 = 1&apos;b0 ;
+//    assign  psd_acq_ack_1 = 1&apos;b0 ;    
+//    assign  tdc_dout = 1&apos;b0 ;
+//    assign  tdc_intb = 1&apos;b0 ;    
+    
 endmodule

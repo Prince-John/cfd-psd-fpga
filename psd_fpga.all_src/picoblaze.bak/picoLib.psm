@@ -1,0 +1,72 @@
+; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+; Subroutine Name: dly_100ns
+;
+; Delay of 100 ns
+;
+; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+dly_100ns: 	
+			nop
+			nop
+			nop
+			return
+			   
+; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+; Subroutine Name: dly_100ms
+; 
+; Delay for "about" 100ms by repeatly calling 
+; delay_1us subroutine
+; Note: 100,000 is $0186A0
+;
+; Uses scr0, scr1, scr2 but does NOT destroys them
+; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+dly_100ms:	
+
+; Push scr regs onto stack
+
+			push(scr0) 
+			push(scr1)
+			push(scr2)
+			
+			load		scr2, 01
+			load		scr1, 86
+			load		scr0, A0
+.loop:		call		dly_us
+			sub			scr0, 01
+			subcy		scr1, 00
+			subcy		scr2, 00
+			jump		NC, .loop
+
+; Restore scratch registers
+			
+			pop(scr2)
+			pop(scr1)
+			pop(scr0)
+			
+			return
+	
+; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+; Subroutine Name: dly_sec
+; Delays for about 1 second
+; Uses cnt but saves it on stack and then
+; pops it off the stack before returning
+; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+dly_sec:	
+
+; Push counter register onto stack
+
+			push(cnt)
+			
+			load		cnt, 10'd
+.loop:		call		dly_100ms
+			sub			cnt, 01
+			jump		NZ, .loop
+	
+; Pop counter register off stack
+		
+			pop(cnt)
+			return	
+	
+			  

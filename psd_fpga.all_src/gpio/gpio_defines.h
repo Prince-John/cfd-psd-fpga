@@ -2,7 +2,7 @@
 // *******************************************************
 // This header files creates defines for the gpio bits   
 // The file is AUTO-GENERATED, DO NOT MODIFY!!!   
-// Timestamp:  			Tue Jan 28 19:00:09 CST 2025
+// Timestamp:  			Mon Feb 10 14:35:08 CST 2025
 // TCL Code Version:    	v0.0.7 released at	2025-01-27 20:45:56
 // *******************************************************
 
@@ -39,6 +39,18 @@
 // GPIO INPUT Port 0 -> Take event signal from the host (input pin)
 #define	TAKE_EVENT	10
 
+// GPIO OUTPUT Port 0 -> 2-bit code used to select which OR we use
+#define	OR_SEL_0	0
+
+// GPIO OUTPUT Port 0 -> 00 is PSD0 OR ; 01 is PSD1 OR ; 11 for both PSD Ors; 10 is the CFD chip OR
+#define	OR_SEL_1	1
+
+// GPIO OUTPUT Port 0 -> Select cfd output from either 0- PSD0 or 1– PSD1
+#define	CFD_OUT_SEL	2
+
+// GPIO OUTPUT Port 0 -> Route out intx from either PSD 0 or PSD1 to host
+#define	PSD_INTX_OUT_SEL	3
+
 // GPIO INPUT Port 1 -> PSD 0 channel address input bit 0
 #define	PSD0_CHAN_ADDR_IN_0	0
 
@@ -69,46 +81,46 @@
 // GPIO INPUT Port 1 -> PSD 1 channel address input bit 4
 #define	PSD1_CHAN_ADDR_IN_4	9
 
-// GPIO OUTPUT Port 1 -> PSD 0 channel address out bit 0
+// GPIO OUTPUT Port 1 -> PSD 0 channel address input bit 0
 #define	PSD0_CHAN_ADDR_OUT_0	0
 
-// GPIO OUTPUT Port 1 -> PSD 0 channel address out bit 1
+// GPIO OUTPUT Port 1 -> PSD 0 channel address input bit 1
 #define	PSD0_CHAN_ADDR_OUT_1	1
 
-// GPIO OUTPUT Port 1 -> PSD 0 channel address out bit 2
+// GPIO OUTPUT Port 1 -> PSD 0 channel address input bit 2
 #define	PSD0_CHAN_ADDR_OUT_2	2
 
-// GPIO OUTPUT Port 1 -> PSD 0 channel address out bit 3
+// GPIO OUTPUT Port 1 -> PSD 0 channel address input bit 3
 #define	PSD0_CHAN_ADDR_OUT_3	3
 
-// GPIO OUTPUT Port 1 -> PSD 0 channel address out bit 4
+// GPIO OUTPUT Port 1 -> PSD 0 channel address input bit 4
 #define	PSD0_CHAN_ADDR_OUT_4	4
 
-// GPIO OUTPUT Port 1 -> PSD 1 channel address out bit 0
+// GPIO OUTPUT Port 1 -> PSD 1 channel address input bit 0
 #define	PSD1_CHAN_ADDR_OUT_0	5
 
-// GPIO OUTPUT Port 1 -> PSD 1 channel address out bit 1
+// GPIO OUTPUT Port 1 -> PSD 1 channel address input bit 1
 #define	PSD1_CHAN_ADDR_OUT_1	6
 
-// GPIO OUTPUT Port 1 -> PSD 1 channel address out bit 2
+// GPIO OUTPUT Port 1 -> PSD 1 channel address input bit 2
 #define	PSD1_CHAN_ADDR_OUT_2	7
 
-// GPIO OUTPUT Port 1 -> PSD 1 channel address out bit 3
+// GPIO OUTPUT Port 1 -> PSD 1 channel address input bit 3
 #define	PSD1_CHAN_ADDR_OUT_3	8
 
-// GPIO OUTPUT Port 1 -> PSD 1 channel address out bit 4
+// GPIO OUTPUT Port 1 -> PSD 1 channel address input bit 4
 #define	PSD1_CHAN_ADDR_OUT_4	9
 
-// GPIO OUTPUT Port 1 -> PSD global enable output PCB Rev2 Bodge
-#define	PSD_GLOBAL_ENABLE_OVERRIDE	10
+// GPIO OUTPUT Port 1 -> Global enable signal from ublaze to psd chips
+#define	PSD_GLOBAL_ENABLE	10
 
-// GPIO OUTPUT Port 1 -> PSD force reset uBlaze control
+// GPIO OUTPUT Port 1 -> Force a reset on both psd chips
 #define	PSD_FORCE_RST	11
 
-// GPIO OUTPUT Port 1 -> PSD veto reset uBlaze control
+// GPIO OUTPUT Port 1 -> Veto reset signal into PSD chips i.e. take_event
 #define	PSD_VETO_RESET	12
 
-// GPIO OUTPUT Port 1 -> PSD reset uBlaze control
+// GPIO OUTPUT Port 1 -> Digial reset for PSD chip
 #define	PSD_RESET	13
 
 // GPIO INPUT Port 2 -> Serial output from PSD 1 config register (input pin)
@@ -141,71 +153,74 @@
 // GPIO OUTPUT Port 2 -> Serial enable (active LOW) for delay chip #5 (output pin)
 #define	DELAY_EN_L_5	8
 
+// GPIO OUTPUT Port 2 -> Delay chip amplifer setting 0 
+#define	DELAY_X2	9
+
 // GPIO OUTPUT Port 2 -> Test MUX enable (output pin)
-#define	MUX_EN	9
+#define	MUX_EN	10
 
 // GPIO OUTPUT Port 2 -> Test MUX select bit 0 (output pin)
-#define	MUX_SEL_0	10
+#define	MUX_SEL_0	11
 
 // GPIO OUTPUT Port 2 -> Test MUX select bit 1 (output pin)
-#define	MUX_SEL_1	11
+#define	MUX_SEL_1	12
 
 // GPIO OUTPUT Port 2 -> Test MUX select bit 2 (output pin)
-#define	MUX_SEL_2	12
+#define	MUX_SEL_2	13
 
 // GPIO OUTPUT Port 2 -> Test MUX select bit 3 (output pin)
-#define	MUX_SEL_3	13
+#define	MUX_SEL_3	14
 
 // GPIO OUTPUT Port 2 -> Octal DAC load signal (output pin)
-#define	DAC_LD	14
+#define	DAC_LD	15
 
 // GPIO OUTPUT Port 2 -> Octal DAC serial clock (output pin)
-#define	DAC_SCLK	15
+#define	DAC_SCLK	16
 
 // GPIO OUTPUT Port 2 -> Octal DAC serial input (output pin)
-#define	DAC_DIN	16
+#define	DAC_DIN	17
 
 // GPIO OUTPUT Port 2 -> PSD chip 0 DAC strobe (output pin)
-#define	PSD_DAC_STB_0	17
+#define	PSD_DAC_STB_0	18
 
 // GPIO OUTPUT Port 2 -> PSD chip 1 DAC strobe (output pin)
-#define	PSD_DAC_STB_1	18
+#define	PSD_DAC_STB_1	19
 
 // GPIO OUTPUT Port 2 -> ACQ all to both PSD chips (output pin)
-#define	PSD_ACQ_ALL	19
+#define	PSD_ACQ_ALL	20
 
 // GPIO OUTPUT Port 2 -> Selects cfd-bypass mode for PSDs (output pin)
-#define	PSD_CFD_BYPASS	20
+#define	PSD_CFD_BYPASS	21
 
 // GPIO OUTPUT Port 2 -> Serial input  into PSD 0 (output pin)
-#define	PSD_SIN	21
+#define	PSD_SIN	22
 
 // GPIO OUTPUT Port 2 -> Serial clock into PSD 0 and 1 (output pin)
-#define	PSD_SCLK	22
+#define	PSD_SCLK	23
 
 // GPIO OUTPUT Port 2 -> PSD chip 0 address direction selection line
-#define	PSD_SEL_EXT_ADDR_0	23
+#define	PSD_SEL_EXT_ADDR_0	24
 
 // GPIO OUTPUT Port 2 -> PSD chip 1 address direction selection line
-#define	PSD_SEL_EXT_ADDR_1	24
+#define	PSD_SEL_EXT_ADDR_1	25
 
-// GPIO OUTPUT Port 2 -> PSD chip 0 sub channel selct bit 0
-#define	PSD_SC0_0	25
+// GPIO OUTPUT Port 2 -> PSD chip 0 sub channel select bit 0
+#define	PSD_SC0_0	26
 
-// GPIO OUTPUT Port 2 -> PSD chip 0 sub channel selct bit 1
-#define	PSD_SC1_0	26
+// GPIO OUTPUT Port 2 -> PSD chip 0 sub channel select bit 1
+#define	PSD_SC1_0	27
 
-// GPIO OUTPUT Port 2 -> PSD chip 1 sub channel selct bit 0
-#define	PSD_SC0_1	27
+// GPIO OUTPUT Port 2 -> PSD chip 1 sub channel select bit 0
+#define	PSD_SC0_1	28
 
-// GPIO OUTPUT Port 2 -> PSD chip 1 sub channel selct bit 1
-#define	PSD_SC1_1	28
+// GPIO OUTPUT Port 2 -> PSD chip 1 sub channel select bit 1
+#define	PSD_SC1_1	29
 
-// GPIO OUTPUT Port 2 -> PSD chip 0 test int enable is Active High
-#define	PSD_TEST_MODE_INT_0	29
+// GPIO OUTPUT Port 2 -> PSD 0 select test mode
+#define	PSD_TEST_MODE_INT_0	30
 
-// GPIO OUTPUT Port 2 -> PSD chip 1 test int enable is Active High
-#define	PSD_TEST_MODE_INT_1	30
+// GPIO OUTPUT Port 2 -> PSD 1 select test mode
+#define	PSD_TEST_MODE_INT_1	31
 
 // GPIO INPUT Port 3 -> Bit 0 of cfd_ad_in bus from the cfd_ad tri-state circuits
 #define	CFD_AD_IN_0	0

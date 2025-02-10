@@ -181,15 +181,25 @@ void eventHandler(void) {
 // 4 bytes to a 32-bit word
 // But ADC data is only 2 bytes
 // We will just send the ADC data
+// Changed to use all 4 bytes
+// GLE: 6-Feb-2025
 
-	packet_len = 2 * packet_word_len ;
+//	packet_len = 2 * packet_word_len ;
+	packet_len = 4 * packet_word_len ;
 
 // Need a byte array rather than a word array
 
-    for (int i = 0; i < packet_word_len; i++) {
-        data_packet[2 * i] = (DestinationBuffer[i] >> 8) & 0xFF;
-        data_packet[2 * i + 1] = DestinationBuffer[i] & 0xFF;
-    }
+//    for (int i = 0; i < packet_word_len; i++) {
+//        data_packet[2 * i] = (DestinationBuffer[i] >> 8) & 0xFF;
+//        data_packet[2 * i + 1] = DestinationBuffer[i] & 0xFF;
+//    }
+
+	for (int i = 0; i < packet_word_len; i++) {
+		data_packet[4 * i] = (DestinationBuffer[i] >> 24) & 0xFF;
+		data_packet[4 * i + 1] = (DestinationBuffer[i] >> 16) & 0xFF;
+		data_packet[4 * i + 2] = (DestinationBuffer[i] >> 8) & 0xFF;
+		data_packet[4 * i + 3] = DestinationBuffer[i] & 0xFF;
+	}
 
 // Make sure packet length is not 0
 
