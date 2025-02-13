@@ -725,6 +725,7 @@ get_event:
 ; PSD chips put out new analog outputs when acq_clk goes high!
 
 			load		op, 00
+			output		op, PSD0_OPORT		; ensures that the acq clk is low and token in is low before acq clk is raised.
 			or op, 08  ; Set bit 3				; acq clk for PSD 0 high
 			output		op, PSD0_OPORT
 			call		dly_us			; Give analog outputs chance to settle
