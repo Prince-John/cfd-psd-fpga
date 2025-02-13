@@ -51,7 +51,7 @@ static const PSDCommand psd_command_table[] = {
 	{"TS0:", TEST_MODE_0},
 	{"TS1:", TEST_MODE_1},
 	{"SEL:", CHANNEL_SELECT},
-	{"GEN:", PSD_GLOBAL_ENABLE}
+	{"GEN:", PSD_GLOBAL_ENABLE_TKN}
 };
 
 const int num_cmd_commands = sizeof(cmd_command_table) / sizeof(Command);
@@ -132,6 +132,7 @@ void	configHandler() {
     			case STX : 	uart_send_byte(NAK) ; // Shouldn't see another STX so NAK
     						return ;
     			case ETX :  uart_send_byte(ACK) ;  // Leave config mode
+    						DEBUG_LCD_PRINT_LOCATION("Stand by for event!")
     						return ;
     			default :	uart_send_byte(NAK) ;  // ???? so send NAK
     						DEBUG_LCD_PRINT_LOCATION("Invalid Command")
@@ -240,7 +241,7 @@ void	configHandler() {
 															uart_send_byte(NAK) ;
 															break;
 														}
-									case PSD_GLOBAL_ENABLE : numBytes = str_to_bytes(buff) ;		// number of hex bytes it should return
+									case PSD_GLOBAL_ENABLE_TKN : numBytes = str_to_bytes(buff) ;		// number of hex bytes it should return
 									DEBUG_LCD_PRINT_LOCATION("PSD GLOBAL ENABLE");
 														if (numBytes == 1) {				// 1 bit in 1 byte high or low
 															psd_global_enable(buff[0]);
@@ -661,7 +662,7 @@ void configure_psd_trigger_mode(u8 data){
 // *****************************************************
 
 void	psd_global_enable(u8 value) {
-	write_gpio_port(PSD_ADDR_PORT, 1, PSD_GLOBAL_ENABLE_OVERRIDE, value) ;
+	write_gpio_port(PSD_ADDR_PORT, 1, PSD_GLOBAL_ENABLE, value) ;
 }
 
 

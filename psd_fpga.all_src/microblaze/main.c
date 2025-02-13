@@ -119,7 +119,7 @@ int main() {
     		eventHandler() ;
     		event_cntr++ ;
     	}
-    	usleep(10000) ; // wait 10 ms ... used to debounce take_event switch during testing
+    	//usleep(10000) ; // wait 10 ms ... used to debounce take_event switch during testing
     }
 
 } // end main
