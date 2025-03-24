@@ -335,7 +335,7 @@ module psd_fpga_top(
     assign  glob_ena_micro = psd_global_enable_from_micro;// output from microblaze connected to input to microblaze. 
     
 // Some special stuff to make my Digilent board happy
-
+/*
     assign  sdo_a_0 = 1'b0;
     assign  sdo_b_0 = 1'b0 ;
     assign  sdo_c_0 = 1'b0 ;
@@ -351,6 +351,6 @@ module psd_fpga_top(
     assign  psd_token_out_1 = 1'b0 ;      
     assign  psd_acq_ack_0 = 1'b0 ;
     assign  psd_acq_ack_1 = 1'b0 ;    
-   
+  */ 
     
 endmodule

@@ -111,7 +111,7 @@ void	configHandler() {
 
 
 
-	u32 	tdc_time;
+//u32 	tdc_time;
 
 // Token representing which command was received
 
@@ -354,7 +354,7 @@ void	configHandler() {
 							// Couldn't understand or cannot do command
 							// Send back negative acknowledge
 
-       		case CONFIG_TDC : 			buff = &uartStr[4] ;			// string past the :
+       	/*	case CONFIG_TDC : 			buff = &uartStr[4] ;			// string past the :
        		       						numBytes = str_to_bytes(buff) ;		// number of hex bytes
 
 
@@ -362,7 +362,7 @@ void	configHandler() {
        		       						DEBUG_LCD_PRINT_CONFIG("TDC DEBUG READ:", numBytes);
 
        		       							  	tdc_time = read_tdc(buff[0]);
-       		       							  	data = (tdc_time & 0xff0000)
+       		       							  	data = (tdc_time & 0xff0000);
        		       							  	uart_send_byte( (tdc_time & 0xff0000);
        											uart_send_byte(ACK) ;
 
@@ -370,7 +370,7 @@ void	configHandler() {
        		       							  uart_send_byte(NAK) ;
        		       						} // end if-then-else
        		       						break ;
-
+*/
     		default :			uart_send_byte(NAK) ;
     							break ;
 
@@ -955,7 +955,7 @@ void	write_dac(u16 data) {
 // **********************************************
  * 	TDC7200 uBlaze Debug implementation
  * **********************************************
-*/
+
 
 void write_tdc(u16 data){
 
@@ -1059,4 +1059,4 @@ u32 read_tdc(u8 addr, int num_bytes){
 
 	return data;
 }
-
+*/
