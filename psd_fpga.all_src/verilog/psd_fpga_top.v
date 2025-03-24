@@ -136,7 +136,7 @@ module psd_fpga_top(
 // For initial testing on digilent board use take_event (button) for common stop
 
 //        .common_stop(common_stop),
-        .common_stop(take_event),
+        .common_stop(take_event_micro),
         .tdc_dout(tdc_dout),
         .tdc_intb(tdc_intb),
         .tstamp_clk(clk10),
@@ -159,8 +159,8 @@ module psd_fpga_top(
 // For initial testing we will generate our own take_event
 // by or'ing the two PSD output ORs
 
-    assign  take_event_micro = take_event ;
-//  assign  take_event_micro = psd_or_out_0 | psd_or_out_1 ;
+  //  assign  take_event_micro = take_event ;
+    assign  take_event_micro = psd_or_out_0 | psd_or_out_1 ;
     
     assign  pico_in_control = take_event_micro ;          
 //  assign  pico_in_control = take_event ;
