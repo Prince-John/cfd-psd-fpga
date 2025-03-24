@@ -83,7 +83,7 @@
     wire    psd_dac_stb_0 ;
     wire    psd_dac_stb_1 ;
     wire    psd_force_rst ;
-    wire    psd_glob_ena ;
+    wire    psd_global_ena ;
     wire    psd_reset ;
     wire    psd_sc0_0 ;
     wire    psd_sc0_1 ;
@@ -91,7 +91,7 @@
     wire    psd_sc1_1 ;
     wire    psd_sclk ;
     wire    psd_sel_ext_addr_0 ;
-    wire    psd_sel_ext_addr_1 ;
+    wire    psd_sel_ex_addr_1 ;
     wire    psd_sin ;
     wire    psd_test_mode_int_0 ;
     wire    psd_test_mode_int_1 ;
@@ -250,6 +250,7 @@
     wire    [1:0] psd_sc_addr_0_from_pico ;
     wire    [1:0] psd_sc_addr_1_from_pico ; 
     wire    force_reset_from_pico ; 
+    wire    psd_glob_ena_from_pico ; // Added by GLE: 18-Feb-2025
 
 // ******************************************************	
 // Decided not to directly connect these signals from
@@ -262,10 +263,3 @@
     wire    force_reset_micro ;
     wire    take_event_micro ;
 
-/* ***********************************************************
-    TDC Debug wires from microblaze
-  ************************************************************/
-  
-  
-    wire    tdc_dout_from_micro ;
-    wire    tdc_intb_from_micro ;

@@ -25,6 +25,10 @@ module timestamp_interface(
 
     input       tstamp_clk,
     input       tstamp_rst,
+
+// Common stop signal
+
+    input       common_stop,
   
 // tdc_reg serial clock
   
@@ -46,6 +50,10 @@ module timestamp_interface(
 
     input       [7:0] tdc_reg_byte,
     
+// Interrupt signal from the TDC7200
+
+    input       tdc_intb, 
+    
 // Serial output from TDC7200
 
     input       tdc_dout,
@@ -54,9 +62,9 @@ module timestamp_interface(
  
     output      tdc_din,   
     
- // Timestamp counter
+ // Latched timestamp counter value
  
-    output      reg   [43:0] tstamp_counter ,
+    output      [47:0] tstamp,
     
 // TDC register
 
@@ -68,10 +76,28 @@ module timestamp_interface(
 // We can reset the counter!
 // Count changes on posedge of tstamp_clk
 
+    reg     [47:0] tstamp_counter ;
     always @(posedge tstamp_clk) begin
-        if (tstamp_rst) tstamp_counter <= 44'd0 ;
-        else tstamp_counter <= 44'd1 ;
+        if (tstamp_rst == 1'b1) tstamp_counter <= 48'd0 ;
+        else tstamp_counter <= tstamp_counter + 48'd1 ;
     end
+    
+// We want to capture counter value on rising edge of common_stop signal
+// There are issues with this but oK for initial testing 
+
+// Synchronize (2 flop synchronizer) the common_stop signal to tstamp clock
+
+    reg     common_stop_sync0, common_stop_sync ;
+    always @(negedge tstamp_clk) begin
+        common_stop_sync0 <= common_stop ;
+        common_stop_sync <= common_stop_sync0 ;
+    end
+
+    reg     [47:0] tstamp_reg ;
+    always @(posedge common_stop_sync) begin
+        tstamp_reg <= tstamp_counter ;
+    end    
+    assign  tstamp = tstamp_reg ;   
 
 // Implement the tdc register (24 bits)
 // Any of the three bytes can be parallel loaded"

@@ -130,21 +130,25 @@ module psd_fpga_top(
         .psd1_iport(pico_psd1_iport),
         .force_psd_reset(psd_force_reset_from_pico),
         .veto_reset(psd_veto_reset_from_pico),
+        .psd_glob_ena(psd_glob_ena_from_pico),
         
 // TDC related signals
+// For initial testing on digilent board use take_event (button) for common stop
 
-        .common_stop(common_stop),
+//        .common_stop(common_stop),
+        .common_stop(take_event),
         .tdc_dout(tdc_dout),
+        .tdc_intb(tdc_intb),
         .tstamp_clk(clk10),
         .tstamp_rst(custom_block_reset),
 //        .tstamp_clk(tstamp_clk),
 //        .tstamp_rst(tstamp_rst),
-        .tdc_csb(tdc_csb_from_pico),
-        .tdc_din(tdc_din_from_pico),
-        .tdc_enable(tdc_enable_from_pico),
-        .tdc_sclk(tdc_sclk_from_pico),
-        .tdc_start(tdc_start_from_pico),
-        .tdc_stop(tdc_stop_from_pico)            
+        .tdc_csb(tdc_csb),
+        .tdc_din(tdc_din),
+        .tdc_enable(tdc_enable),
+        .tdc_sclk(tdc_sclk),
+        .tdc_start(tdc_start),
+        .tdc_stop(tdc_stop)            
     ) ;
     
 // *****************************************************************
@@ -153,10 +157,10 @@ module psd_fpga_top(
 // *****************************************************************
 
 // For initial testing we will generate our own take_event
-// by or'ing the twp PSD output ORs
+// by or'ing the two PSD output ORs
 
-//  assign  take_event_micro = take_event ;
-    assign  take_event_micro = psd_or_out_0 | psd_or_out_1 ;
+    assign  take_event_micro = take_event ;
+//  assign  take_event_micro = psd_or_out_0 | psd_or_out_1 ;
     
     assign  pico_in_control = take_event_micro ;          
 //  assign  pico_in_control = take_event ;
@@ -324,43 +328,29 @@ module psd_fpga_top(
     
 // *********************************************************
 // Temporary fix for rev2 pcb issue related to psd global enable routing 
+
 // **********************************************************
     assign  psd_glob_ena = psd_global_enable_from_micro; // output from microblaze connected to FPGA pin on JB2 connected to PSD chips
     assign  glob_ena = psd_global_enable_from_micro; // output from microblaze connected to FPGA pin on JB3 TEMP WORKAROUND for REV2
     assign  glob_ena_micro = psd_global_enable_from_micro;// output from microblaze connected to input to microblaze. 
     
-    
-/*  *********************************************************
-        TDC DEBUG uBlaze Control 
-    *********************************************************/
-    
-    assign	tdc_sclk = tdc_sclk_from_micro;
-	assign	tdc_din = tdc_din_from_micro;
-	assign	tdc_enable = tdc_enable_from_micro;
-	assign	tdc_csb = tdc_csb_from_micro;
-	assign	tdc_start = tdc_start_from_micro;
-	assign	tdc_stop = tdc_stop_from_micro;
-
-    
 // Some special stuff to make my Digilent board happy
 
-//    assign  sdo_a_0 = 1&apos;b0 ;
-//    assign  sdo_b_0 = 1&apos;b0 ;
-//    assign  sdo_c_0 = 1&apos;b0 ;
-//    assign  sdo_t_0 = 1&apos;b0 ;
+    assign  sdo_a_0 = 1'b0;
+    assign  sdo_b_0 = 1'b0 ;
+    assign  sdo_c_0 = 1'b0 ;
     
-//    assign  sdo_a_1 = 1&apos;b0 ;
-//    assign  sdo_b_1 = 1&apos;b0 ;
-//    assign  sdo_c_1 = 1&apos;b0 ;
-//    assign  sdo_t_1 = 1&apos;b0 ;
+    assign  sdo_a_1 = 1'b0 ;
+    assign  sdo_b_1 = 1'b0 ;
+    assign  sdo_c_1 = 1'b0 ;
+    assign  sdo_t_1 = 1'b0 ;
     
-//    assign  psd_or_out_1 = 1&apos;b0 ;
-//    assign  board_id[5:0] = 6&apos;d0 ;
-//  assign  psd_token_out_0 = 1&apos;b0 ;
-//assign  psd_token_out_1 = 1&apos;b0 ;      
-//  assign  psd_acq_ack_0 = 1&apos;b0 ;
-//    assign  psd_acq_ack_1 = 1&apos;b0 ;    
-//    assign  tdc_dout = 1&apos;b0 ;
-//    assign  tdc_intb = 1&apos;b0 ;    
+    assign  psd_or_out_0 = 1'b1 ;
+    assign  psd_or_out_1 = 1'b0 ;
+    assign  psd_token_out_0 = 1'b0 ;
+    assign  psd_token_out_1 = 1'b0 ;      
+    assign  psd_acq_ack_0 = 1'b0 ;
+    assign  psd_acq_ack_1 = 1'b0 ;    
+   
     
 endmodule

@@ -25,8 +25,9 @@
 // 29-Jan-2025
 // Very close to being able to do readout from PSD chips!!!
 //
+// 18-Feb-2025
+// Close to being able to support timestamp creation circuits
 /////////////////////////////////////////////////////
-
 
 module psd_custom_block(
 
@@ -82,11 +83,16 @@ module psd_custom_block(
 // PSD veto_reset (Output port 7, bit 1)    
 
     output  veto_reset,
+    
+// PSD global enable
+
+    output  psd_glob_ena,
 
 // TDC related signals
 
     input   common_stop,
     input   tdc_dout,
+    input   tdc_intb,
     input   tstamp_clk,
     input   tstamp_rst,
     
@@ -310,11 +316,19 @@ module psd_custom_block(
 //
 // Bit 0 : force_reset
 // Bit 1 : veto_reset
+// Bit 2:  fifo_mux_sel[0]
+// Bit 3:  fifo_mux_sel[1]
+// Bit 4:  psd_glob_ena
 //
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   
     
     assign  force_psd_reset = p7_out[0] ;
     assign  veto_reset = p7_out[1] ;
+    
+    wire    [1:0] fifo_mux_sel ;
+    assign  fifo_mux_sel[1:0] = p7_out[3:2] ;
+    
+    assign  psd_glob_ena = p7_out[4] ;
     
 // $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 // Instantiate our Picoblaze 6 microcontroller
@@ -348,19 +362,21 @@ module psd_custom_block(
 // $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$  
 
     wire    [23:0] tdc_reg ;
-    wire    [43:0] tstamp_counter ;
+    wire    [47:0] tstamp_counter ;
 
     timestamp_interface tstamp_0(
             .tstamp_clk(tstamp_clk),
             .tstamp_rst(tstamp_rst),
+            .common_stop(common_stop),
             .tdc_sclk(tdc_sclk),   
             .tdc_reg_rst(tdc_reg_rst),
             .tdc_reg_ld(tdc_reg_ld),
             .tdc_reg_shift(tdc_reg_shift),
             .tdc_reg_byte(tdc_byte),
+            .tdc_intb(tdc_intb),
             .tdc_dout(tdc_dout),
             .tdc_din(tdc_din),   
-            .tstamp_counter(tstamp_counter),
+            .tstamp(tstamp_counter),
             .tdc_reg(tdc_reg) 
     ) ;
 
@@ -371,7 +387,20 @@ module psd_custom_block(
 // Use the common_stop to start the TDC
 
     assign  tdc_start = common_stop ;
-         
+    
+// TDC data that we need to route to FIFO
+
+    wire    [31:0] tdc_data ;
+    assign  tdc_data = {data_tag, tdc_reg} ; 
+    
+// Also need tto route the timestamp counter (upper and lower) to FIFO
+
+    wire    [31:0] tstamp_lower_data ;
+    wire    [31:0] tstamp_upper_data ;
+    
+    assign  tstamp_lower_data = {data_tag, tstamp_counter[23:0]} ;
+    assign  tstamp_upper_data = {data_tag, tstamp_counter[47:24]} ;
+                
 // $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ 
 // Instantiate our adc interface module
 //
@@ -387,12 +416,25 @@ module psd_custom_block(
                                     .adc_mux_sel(adc_mux_sel),
                                     .adc_reg(adc_reg)
                                     ) ;
-                                    
+
+// ADC data that we need to route to FIFO
+           
+    wire    [31:0] adc_data ;                       
+    assign  adc_data = {data_tag, board_id_port, adc_reg} ;
+                                                                        
 // $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ 
-// Output of the adc interface block will drive the FIFO
+// Output of the FIFO MUX drives the FIFO
 // $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ 
 
-    assign  fifo_data = {data_tag, board_id_port, adc_reg} ;
-    
-
+    reg     [31:0] fifo_data_reg  ;   
+    always @(*) begin   
+        case (fifo_mux_sel)
+            2'd0:   fifo_data_reg = adc_data ;
+            2'd1:   fifo_data_reg = tdc_data ;       
+            2'd2:   fifo_data_reg = tstamp_lower_data ;        
+            2'd3:   fifo_data_reg = tstamp_upper_data ;
+        endcase
+    end   
+    assign  fifo_data = fifo_data_reg ;
+     
 endmodule
