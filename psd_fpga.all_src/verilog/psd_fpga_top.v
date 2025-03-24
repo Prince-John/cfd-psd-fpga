@@ -139,12 +139,12 @@ module psd_fpga_top(
         .tstamp_rst(custom_block_reset),
 //        .tstamp_clk(tstamp_clk),
 //        .tstamp_rst(tstamp_rst),
-        .tdc_csb(tdc_csb),
-        .tdc_din(tdc_din),
-        .tdc_enable(tdc_enable),
-        .tdc_sclk(tdc_sclk),
-        .tdc_start(tdc_start),
-        .tdc_stop(tdc_stop)            
+        .tdc_csb(tdc_csb_from_pico),
+        .tdc_din(tdc_din_from_pico),
+        .tdc_enable(tdc_enable_from_pico),
+        .tdc_sclk(tdc_sclk_from_pico),
+        .tdc_start(tdc_start_from_pico),
+        .tdc_stop(tdc_stop_from_pico)            
     ) ;
     
 // *****************************************************************
@@ -330,6 +330,16 @@ module psd_fpga_top(
     assign  glob_ena_micro = psd_global_enable_from_micro;// output from microblaze connected to input to microblaze. 
     
     
+/*  *********************************************************
+        TDC DEBUG uBlaze Control 
+    *********************************************************/
+    
+    assign	tdc_sclk = tdc_sclk_from_micro;
+	assign	tdc_din = tdc_din_from_micro;
+	assign	tdc_enable = tdc_enable_from_micro;
+	assign	tdc_csb = tdc_csb_from_micro;
+	assign	tdc_start = tdc_start_from_micro;
+	assign	tdc_stop = tdc_stop_from_micro;
 
     
 // Some special stuff to make my Digilent board happy

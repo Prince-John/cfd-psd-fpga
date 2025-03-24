@@ -21,9 +21,10 @@ static const Command cmd_command_table[] = {
 	{"DLY:", CONFIG_DELAY},
 	{"PSD:", CONFIG_PSD},
 	{"BID:", GET_BOARD_ID},
-	{"CFD:", CFD},
+	{"CFD:", CONFIG_CFD},
 	{"MUX:", CONFIG_MUX},
 	{"DAC:", CONFIG_DAC},
+	{"TDC:", CONFIG_TDC},
 	{"RST:", RESET},
 };
 
@@ -107,6 +108,10 @@ void	configHandler() {
 // in command handler
 
 	u8 		dlyVal ;
+
+
+
+	u32 	tdc_time;
 
 // Token representing which command was received
 
@@ -270,7 +275,7 @@ void	configHandler() {
 
 // Write to CFD register
 
-       		case CFD :	buff = &uartStr[8] ;  			// 2x 3 ascii character command plus the :
+       		case CONFIG_CFD :	buff = &uartStr[8] ;  			// 2x 3 ascii character command plus the :
 
 						cfd_token = get_cfd_token();
 
@@ -314,7 +319,7 @@ void	configHandler() {
 						}
 						break ;
 
-// Configure AMUX Channel
+			// Configure AMUX Channel
 
        		case CONFIG_MUX : buff = &uartStr[4] ;			// string past the :
        						  numBytes = str_to_bytes(buff) ;		// number of hex bytes
@@ -331,6 +336,7 @@ void	configHandler() {
        						  break ;
 
        		case CONFIG_DAC : buff = &uartStr[4] ;
+
        						  numBytes = str_to_bytes(buff) ;		// number of hex bytes
        						  u16 data = buff[0]<<8 | buff[1];
 
@@ -347,6 +353,23 @@ void	configHandler() {
 								  break ;
 							// Couldn't understand or cannot do command
 							// Send back negative acknowledge
+
+       		case CONFIG_TDC : 			buff = &uartStr[4] ;			// string past the :
+       		       						numBytes = str_to_bytes(buff) ;		// number of hex bytes
+
+
+       		       						if (numBytes == 1) {					// 1 byte really 5 bit config data
+       		       						DEBUG_LCD_PRINT_CONFIG("TDC DEBUG READ:", numBytes);
+
+       		       							  	tdc_time = read_tdc(buff[0]);
+       		       							  	data = (tdc_time & 0xff0000)
+       		       							  	uart_send_byte( (tdc_time & 0xff0000);
+       											uart_send_byte(ACK) ;
+
+       		       						} else {
+       		       							  uart_send_byte(NAK) ;
+       		       						} // end if-then-else
+       		       						break ;
 
     		default :			uart_send_byte(NAK) ;
     							break ;
@@ -917,7 +940,123 @@ void	write_dac(u16 data) {
 	dac_ld = HIGH;
 	write_gpio_port(DAC_OUT_PORT, 1, DAC_LD, dac_ld) ;
 
-	DEBUG_LCD_PRINT_LOCATION("In write_dac")
-
 	return ;
 }
+
+
+
+
+
+
+
+
+
+/*
+// **********************************************
+ * 	TDC7200 uBlaze Debug implementation
+ * **********************************************
+*/
+
+void write_tdc(u16 data){
+
+	u8 tdc_sclk;
+	u8 tdc_csb;
+	u8 tdc_en;
+	u8 tdc_sdin;
+	u8 value;
+
+	//start state
+	tdc_sclk = LOW;
+	tdc_sdin = LOW;
+	tdc_en = HIGH;
+	tdc_csb = HIGH;
+
+
+	//init state mask
+	value = (tdc_csb << 3) | (tdc_en << 2) | (tdc_sdin << 1) | (tdc_sclk)
+
+	write_gpio_port(TDC_PORT, 4, TDC_SCLK_FROM_MICRO, value) ;
+
+	// Pull CSB low
+	write_gpio_port(TDC_PORT, 1, TDC_CSB_FROM_MICRO, LOW) ;
+
+	for (i = 15; i >= 0; i--){
+
+
+			tdc_sdin = ( data & (1 << i) ) >> i;
+			tdc_sclk = LOW;
+
+			//CLK is set low, data pushed out
+			value = (tdc_sdin << 1) | (tdc_sclk) ;
+			write_gpio_port(TDC_PORT, 2, TDC_SCLK_FROM_MICRO, value) ;
+
+			//CLK is set high, data latched by TDC
+			tdc_sclk = HIGH;
+			write_gpio_port(TDC_PORT, 1, TDC_SCLK_FROM_MICRO, tdc_sclk) ;
+
+		}
+
+	//PULL chip select High
+	write_gpio_port(TDC_PORT, 1, TDC_CSB_FROM_MICRO, HIGH) ;
+
+}
+
+
+u32 read_tdc(u8 addr, int num_bytes){
+
+	u8 tdc_sclk;
+	u8 tdc_csb;
+	u8 tdc_en;
+	u8 tdc_sdin;
+	u8 tdc_sdout;
+	u8 value;
+	u32 data = 0;
+	//start state
+	tdc_sclk = LOW;
+	tdc_sdin = LOW;
+	tdc_en = HIGH;
+	tdc_csb = HIGH;
+	tdc_sdout = LOW;
+
+	int read_cycles = num_bytes*8 - 1;
+
+
+	// Pull CSB low
+	write_gpio_port(TDC_PORT, 1, TDC_CSB_FROM_MICRO, LOW) ;
+	for (i = 7; i >= 0; i--){
+
+
+				tdc_sdin = ( addr & (1 << i) ) >> i;
+				tdc_sclk = LOW;
+
+				//CLK is set low, data pushed out
+				value = (tdc_sdin << 1) | (tdc_sclk) ;
+				write_gpio_port(TDC_PORT, 2, TDC_SCLK_FROM_MICRO, value) ;
+
+				//CLK is set high, data latched by TDC
+				tdc_sclk = HIGH;
+				write_gpio_port(TDC_PORT, 1, TDC_SCLK_FROM_MICRO, tdc_sclk) ;
+
+			}
+
+
+	for (i = read_cycles; i >= 0; i--){
+
+				tdc_sclk = LOW;
+				//CLK is set low, data pushed out
+				write_gpio_port(TDC_PORT, 1, TDC_SCLK_FROM_MICRO, tdc_sclk) ;
+				//CLK is set high, data latched by uBlaze
+				tdc_sclk = HIGH;
+				write_gpio_port(TDC_PORT, 1, TDC_SCLK_FROM_MICRO, tdc_sclk) ;
+
+				value = (u8) read_gpio_port(TDC_PORT, 1, TDC_DOUT_FROM_MICRO);
+				data = ((value & 1) << i) | data  ;
+
+			}
+
+	//PULL chip select High
+	write_gpio_port(TDC_PORT, 1, TDC_CSB_FROM_MICRO, HIGH) ;
+
+	return data;
+}
+

@@ -262,3 +262,10 @@
     wire    force_reset_micro ;
     wire    take_event_micro ;
 
+/* ***********************************************************
+    TDC Debug wires from microblaze
+  ************************************************************/
+  
+  
+    wire    tdc_dout_from_micro ;
+    wire    tdc_intb_from_micro ;

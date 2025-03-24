@@ -163,8 +163,8 @@ GPIO,Dir,Bit,Nickname,Verilog Signal,Comment
 3,in,5,>,cfd_ad_in[5],Bit 5 of cfd_ad_in bus from the cfd_ad tri-state circuits
 3,in,6,>,cfd_ad_in[6],Bit 6 of cfd_ad_in bus from the cfd_ad tri-state circuits
 3,in,7,>,cfd_ad_in[7],Bit 7 of cfd_ad_in bus from the cfd_ad tri-state circuits
-3,in,8,?,0,Ground unused input line
-3,in,9,?,0,Ground unused input line
+3,in,8,>,tdc_dout_from_micro,TEMP TDC DEBUG: TDC Data out
+3,in,9,>,tdc_intb_from_micro,TEMP TDC DEBUG: TDC Interrupt[Active Low]
 3,in,10,?,0,Ground unused input line
 3,in,11,?,0,Ground unused input line
 3,in,12,?,0,Ground unused input line
@@ -201,3 +201,9 @@ GPIO,Dir,Bit,Nickname,Verilog Signal,Comment
 3,out,10,>,cfd_neg_pol,When high select negative pulses (output pin)
 3,out,11,>,cfd_reset,Resets CFD chip (output pin)
 3,out,12,>,cfd_global_ena,CFD global enable (output pin)
+3,out,13,>,tdc_sclk_from_micro,TEMP TDC DEBUG: TDC SPI CLOCK
+3,out,14,>,tdc_din_from_micro,TEMP TDC DEBUG: TDC Data in
+3,out,15,>,tdc_enable_from_micro,TEMP TDC DEBUG: TDC Enable[ Active High]
+3,out,16,>,tdc_csb_from_micro,TEMP TDC DEBUG: TDC Chip Select [Active Low]
+3,out,17,>,tdc_start_from_micro,TEMP TDC DEBUG: TDC Start Signal
+3,out,18,>,tdc_stop_from_micro,TEMP TDC DEBUG: TDC Stop Signal

@@ -2,7 +2,7 @@
 // *************************************************
 // localparams definitions for the gpio bits   
 // The file is AUTO-GENERATED, DO NOT MODIFY!!!   
-// Timestamp:           Mon Feb 10 17:23:47 CST 2025
+// Timestamp:           Sun Mar 23 21:26:24 CDT 2025
 // TCL Code Version:    v0.0.7 released at	2025-01-27 20:45:56
 // *************************************************
 
@@ -246,6 +246,12 @@ localparam	CFD_AD_IN_6 = 6 ;
 // GPIO INPUT Port 3 -> Bit 7 of cfd_ad_in bus from the cfd_ad tri-state circuits
 localparam	CFD_AD_IN_7 = 7 ;
 
+// GPIO INPUT Port 3 -> TEMP TDC DEBUG: TDC Data out
+localparam	TDC_DOUT_FROM_MICRO = 8 ;
+
+// GPIO INPUT Port 3 -> TEMP TDC DEBUG: TDC Interrupt[Active Low]
+localparam	TDC_INTB_FROM_MICRO = 9 ;
+
 // GPIO OUTPUT Port 3 -> Bit 0 of cfd_ad_out bus from the cfd_ad tri-state circuits
 localparam	CFD_AD_OUT_0 = 0 ;
 
@@ -284,5 +290,23 @@ localparam	CFD_RESET = 11 ;
 
 // GPIO OUTPUT Port 3 -> CFD global enable (output pin)
 localparam	CFD_GLOBAL_ENA = 12 ;
+
+// GPIO OUTPUT Port 3 -> TEMP TDC DEBUG: TDC SPI CLOCK
+localparam	TDC_SCLK_FROM_MICRO = 13 ;
+
+// GPIO OUTPUT Port 3 -> TEMP TDC DEBUG: TDC Data in
+localparam	TDC_DIN_FROM_MICRO = 14 ;
+
+// GPIO OUTPUT Port 3 -> TEMP TDC DEBUG: TDC Enable[ Active High]
+localparam	TDC_ENABLE_FROM_MICRO = 15 ;
+
+// GPIO OUTPUT Port 3 -> TEMP TDC DEBUG: TDC Chip Select [Active Low]
+localparam	TDC_CSB_FROM_MICRO = 16 ;
+
+// GPIO OUTPUT Port 3 -> TEMP TDC DEBUG: TDC Start Signal
+localparam	TDC_START_FROM_MICRO = 17 ;
+
+// GPIO OUTPUT Port 3 -> TEMP TDC DEBUG: TDC Stop Signal
+localparam	TDC_STOP_FROM_MICRO = 18 ;
 
 

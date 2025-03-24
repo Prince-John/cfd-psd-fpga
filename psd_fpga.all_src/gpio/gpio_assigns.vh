@@ -2,7 +2,7 @@
 // ********************************************************
 // This header file creates wires and assigns for gpio bits
 // The file is AUTO-GENERATED, DO NOT MODIFY!!!   
-// Timestamp:  		  Mon Feb 10 17:23:47 CST 2025
+// Timestamp:  		  Sun Mar 23 21:26:24 CDT 2025
 // TCL Code Version:    v0.0.7 released at	2025-01-27 20:45:56
 // ********************************************************
 
@@ -160,8 +160,8 @@
 	assign	gpio3_in[CFD_AD_IN_5] = cfd_ad_in[5] ;
 	assign	gpio3_in[CFD_AD_IN_6] = cfd_ad_in[6] ;
 	assign	gpio3_in[CFD_AD_IN_7] = cfd_ad_in[7] ;
-	assign	gpio3_in[8] = 0 ;
-	assign	gpio3_in[9] = 0 ;
+	assign	gpio3_in[TDC_DOUT_FROM_MICRO] = tdc_dout_from_micro ;
+	assign	gpio3_in[TDC_INTB_FROM_MICRO] = tdc_intb_from_micro ;
 	assign	gpio3_in[10] = 0 ;
 	assign	gpio3_in[11] = 0 ;
 	assign	gpio3_in[12] = 0 ;
@@ -197,4 +197,10 @@
 	assign	cfd_neg_pol = gpio3_out[CFD_NEG_POL] ;
 	assign	cfd_reset = gpio3_out[CFD_RESET] ;
 	assign	cfd_global_ena = gpio3_out[CFD_GLOBAL_ENA] ;
+	assign	tdc_sclk_from_micro = gpio3_out[TDC_SCLK_FROM_MICRO] ;
+	assign	tdc_din_from_micro = gpio3_out[TDC_DIN_FROM_MICRO] ;
+	assign	tdc_enable_from_micro = gpio3_out[TDC_ENABLE_FROM_MICRO] ;
+	assign	tdc_csb_from_micro = gpio3_out[TDC_CSB_FROM_MICRO] ;
+	assign	tdc_start_from_micro = gpio3_out[TDC_START_FROM_MICRO] ;
+	assign	tdc_stop_from_micro = gpio3_out[TDC_STOP_FROM_MICRO] ;
 

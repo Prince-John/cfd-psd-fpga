@@ -35,7 +35,7 @@ import serial
 
 # Importing the required module for plotting
 
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 
 # So we can get environment variable info
 
@@ -125,27 +125,33 @@ ser.baudrate = 3000000
 ser.flushInput() 
 ser.flushOutput() 
 
+event_counter = 0
 # Open up file to write binary data into file
 # Call -->  get_cobs_packet()
+try:   
+    while True: 
+        print("Opening up binary file:  %s" % binFilename)
+        fid_bin = open(binFilename, "wb")
+        get_cobs_packet(ser, fid_bin)
+        fid_bin.close()
+              
+        # Open up a file for storing adc data in ascii format
+        # Call -->  get_event_packet()
 
-print("Opening up binary file:  %s" % binFilename)
-fid_bin = open(binFilename, "wb")
-get_cobs_packet(ser, fid_bin)
-fid_bin.close()
-ser.close()
-      
-# Open up a file for storing adc data in ascii format
-# Call -->  get_event_packet()
+        print("Reading event_data.bin and creating event_data.asc")
+        fid_bin = open(binFilename, "rb")
+        fid_asc = open(ascFilename, "w")
+        get_event_packet(fid_bin, fid_asc)    
+        print(f"Packet # {event_counter}")
+        event_counter = event_counter + 1
+        fid_bin.close()
+        fid_asc.close()
+          
 
-print("Reading event_data.bin and creating event_data.asc")
-fid_bin = open(binFilename, "rb")
-fid_asc = open(ascFilename, "w")
-get_event_packet(fid_bin, fid_asc)    
-fid_bin.close()
-fid_asc.close()
-      
-
-
+except KeyboardInterrupt:
+    print(f"Exiting! {event_counter} events")
+    fid_bin.close()
+    fid_asc.close()
 
 
 
