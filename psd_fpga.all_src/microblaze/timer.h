@@ -39,6 +39,6 @@
 // ***********************
 
 void    	init_timer(void) ;
-
+u32    	get_timer_value(void) ;
 #endif /* SRC_TIMER_H_ */
 

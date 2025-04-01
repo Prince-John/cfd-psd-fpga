@@ -27,11 +27,21 @@
 		
 		constant	LED_PORT, 00		
 ; --------------------------------
-; PORT 0 (LED stuff)
+; PORT 0 (LED stuff) 
 ; -------------------------------
 ; 0		LED 0
 ; 1		LED 1 (also the busy bit!)
-				
+; 2 		PICO Debug Flag 0 
+; 3 		PICO Debug Flag 1 
+; 	.
+; 	. 
+; 	.
+; 7 		PICO Debug Flag 5  
+;
+; Prince - March 30: Used remaining bits to bring out 6 debug flag signals. 		
+		
+		
+		
 		constant	ADC_CTL_PORT, 01
 ; --------------------------------
 ; PORT 1 (ADC control)
@@ -409,6 +419,7 @@ init:
 ; We need to initialize the timestamp stuff if we are board 0
 
 			fetch		scr0, BOARD_ID
+			;compare 	scr0, 00
 			jump		NZ, .done
 
 ; If we are board 0, then we need to initialize the TDC7200 chip
@@ -656,6 +667,7 @@ start_tdc:
 ; Fetch the board id
 
 			fetch		scr0, BOARD_ID
+			;compare 	scr0, 00
 			jump		Z, .done
 			
 ; Start the TDC7200 since the board is 0
@@ -761,13 +773,16 @@ time_to_fifo:
 			output	misc_oport_reg, MISC_OPORT 
 			
 ; Wait for FIFO to be ready
+; Set the status bit LED[2] to high before starting to wait for tready
 			
-.wait0:		input		ip, STATUS_IPORT	
+.wait0:					
+			input		ip, STATUS_IPORT	
 
 ; Test bit 0 of STATUS_PORT (i.e. tready) ... if zero we should wait
 
 			testbit(ip, 0) 
 			jump		Z,	.wait0	
+
 			
 ; When FIFO is ready, send data (what we send to vaild port makes no diff)
 ; Writing to the VALID_port, strobes the tvalid control signal!
@@ -786,15 +801,18 @@ time_to_fifo:
 
 ; Wait for FIFO to be ready
 			
-.wait1:		input		ip, STATUS_IPORT	
+.wait1:						
+			input		ip, STATUS_IPORT	
 			testbit(ip, 0) 
 			jump		Z,	.wait1	
+
 			
 ; Need to check if we are board 0 or not?
 ; The board ID is saved in scratchpad memory
 ; If not board 0, then got DONE!
 
-			fetch		scr0, BOARD_ID			
+			fetch		scr0, BOARD_ID
+			;compare 	scr0, 00			
 			jump		NZ, .done
 
 ; This is board 0!
@@ -818,9 +836,11 @@ time_to_fifo:
 
 ; Wait for the FIFO to be ready
 
-.wait2:		input		ip, STATUS_IPORT
+.wait2:			
+			input		ip, STATUS_IPORT
 			testbit(ip, 0) 
 			jump		Z,	.wait2
+
 			
 ; Strobe TIME1 data into FIFO
 		
@@ -839,7 +859,7 @@ time_to_fifo:
 
 ; Wait for the FIFO to be ready
 
-.wait3:		input		ip, STATUS_IPORT
+.wait3:			input		ip, STATUS_IPORT
 			testbit(ip, 0) 
 			jump		Z,	.wait3
 
@@ -860,10 +880,11 @@ time_to_fifo:
 
 ; Wait for the FIFO to be ready
 
-.wait4:		input		ip, STATUS_IPORT
+.wait4:			input		ip, STATUS_IPORT
 			testbit(ip, 0) 
 			jump		Z,	.wait4
 
+			
 ; Strobe data into FIFO
 		
 			output		scr0, VALID_PORT	
@@ -881,9 +902,10 @@ time_to_fifo:
 
 ; Wait for the FIFO to be ready
 
-.wait5:		input		ip, STATUS_IPORT
+.wait5:			input		ip, STATUS_IPORT
 			testbit(ip, 0) 
 			jump		Z,	.wait5
+
 						
 ; DONE!
 			
@@ -1013,6 +1035,9 @@ adc_to_fifo:
 		
 ; Push some registers onto stack
 
+			setbit(led_reg, 2)  			;DEBUG FLAG 0 START
+			output		led_reg, LED_PORT	;DEBUG FLAG 0
+			
 			push(cnt)
 			push(op)
 			push(ip)
@@ -1066,12 +1091,16 @@ adc_to_fifo:
 ; Wait for 'tready' signal to be active
 ;
 
-.wait_trdy:	input		ip, STATUS_IPORT	
-
+.wait_trdy:		setbit(led_reg, 3)  			;DEBUG FLAG 1 START
+			output		led_reg, LED_PORT	;DEBUG FLAG 1
+			input		ip, STATUS_IPORT	
+			
 ; Test bit 0 of STATUS_PORT (i.e. tready) ... if zero we should wait
 
 			testbit(ip, 0) 
 			jump		Z,	.wait_trdy	
+			clearbit(led_reg, 3) 			;DEBUG FLAG 1
+			output		led_reg, LED_PORT	;DEBUG FLAG 1 STOP
 			
 ; When FIFO is ready, send data (what we send to vaild port makes no diff)
 	
@@ -1181,16 +1210,18 @@ get_event:
 			load		adc_conv_mask, 00000100'b	
 			
 ; Perform adc conversion
-		
+			
 			call		adc_conv
+			
 			
 ; Read PSD address 
 			
 			input		addr_reg, PSD0_IPORT
 			
 ; We need to send A, B, C, T off to FIFO
-
+			
 			call		adc_to_fifo
+		
 			
 ; Bring acq_clk low (acq_clk is bit 3)
 ; Resets the hit and active registers
@@ -1287,9 +1318,9 @@ get_event:
 			input		adc_reg, PSD0_IPORT			
 			
 ; We need to send A, B, C, T off to FIFO
-
+			
 			call		adc_to_fifo
-
+			
 ; Read PSD 1 address 
 			
 			input		adc_reg, PSD1_IPORT
@@ -1318,9 +1349,13 @@ get_event:
 
 ; We are DONE!
 
-.done:		input		ip, STATUS_IPORT	
-			testbit(ip, 0) 
-			jump		Z,	.done	
+.done:			setbit(led_reg, 4)  			;DEBUG FLAG 2 START
+			output		led_reg, LED_PORT	;DEBUG FLAG 2			
+			
+			; Not required as of Mar 31 - Prince 
+			;input		ip, STATUS_IPORT	; Tready  is bit 0 of STATUS_IPORT
+			;testbit(ip, 0) 
+			;jump		Z,	.done	
 
 ; (1)
 ; Bring token_in (bit 6) high for bit PSD0 and PSD1
@@ -1331,9 +1366,15 @@ get_event:
 			
 ; (2)
 ; Get and send time data to the FIFO
-;
+;			
+			setbit(led_reg, 5)  			;DEBUG FLAG 3 START
+			output		led_reg, LED_PORT	;DEBUG FLAG 3	
 			call		time_to_fifo
 			
+			clearbit(led_reg, 2) 			;DEBUG FLAG 0
+			clearbit(led_reg, 5) 			;DEBUG FLAG 3
+			clearbit(led_reg, 4) 			;DEBUG FLAG 2
+			output		led_reg, LED_PORT	;DEBUG FLAG 0,2,3 STOP
 ; (3)			
 ; Unset the busy flag (busy flag is same as LED 1)
 ;
@@ -1370,8 +1411,8 @@ nuclear:
 		
 ; Enable the PSD chips (turn on global enable)
 		
-			setbit(misc_oport_reg, 4)
-			output		misc_oport_reg, MISC_OPORT	
+			; setbit(misc_oport_reg, 4)
+			; output		misc_oport_reg, MISC_OPORT	
 		
 ; Turn led[0] on (On while we wait for take_event to go high!)	
 
@@ -1391,7 +1432,7 @@ nuclear:
 
 			setbit(misc_oport_reg, 1)		; Assert veto_reset
 			clearbit(misc_oport_reg, 4)		; Disable PSD
-			output		op, MISC_OPORT
+			output		misc_oport_reg, MISC_OPORT
 			
 ; Turn led[0] off since we are now processing an event!
 

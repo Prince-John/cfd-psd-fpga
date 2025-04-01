@@ -148,7 +148,8 @@ module psd_fpga_top(
         .tdc_enable(tdc_enable),
         .tdc_sclk(tdc_sclk),
         .tdc_start(tdc_start),
-        .tdc_stop(tdc_stop)            
+        .tdc_stop(tdc_stop), 
+        .pico_flag(debug_flags_from_pico)            
     ) ;
     
 // *****************************************************************
@@ -162,7 +163,7 @@ module psd_fpga_top(
   //  assign  take_event_micro = take_event ;
     assign  take_event_micro = psd_or_out_0 | psd_or_out_1 ;
     
-    assign  pico_in_control = take_event_micro ;          
+    assign  pico_in_control = take_event_micro | led[1] ;          
 //  assign  pico_in_control = take_event ;
 
 // ******************************** 
@@ -330,10 +331,32 @@ module psd_fpga_top(
 // Temporary fix for rev2 pcb issue related to psd global enable routing 
 
 // **********************************************************
-    assign  psd_glob_ena = psd_global_enable_from_micro; // output from microblaze connected to FPGA pin on JB2 connected to PSD chips
-    assign  glob_ena = psd_global_enable_from_micro; // output from microblaze connected to FPGA pin on JB3 TEMP WORKAROUND for REV2
-    assign  glob_ena_micro = psd_global_enable_from_micro;// output from microblaze connected to input to microblaze. 
+    assign  psd_glob_ena = (pico_in_control == 1'b1) ? psd_glob_ena_from_pico : psd_global_enable_from_micro ; // output from microblaze connected to FPGA pin on JB2 connected to PSD chips
+    assign  glob_ena = (pico_in_control == 1'b1) ? psd_glob_ena_from_pico : psd_global_enable_from_micro; // output from microblaze connected to FPGA pin on JB3 TEMP WORKAROUND for REV2
+    assign  glob_ena_micro = (pico_in_control == 1'b1) ? psd_glob_ena_from_pico : psd_global_enable_from_micro ;// output from microblaze connected to input to microblaze. 
     
+    
+    // tdc_clock is on the original debug_gpio[3] FPGA pin, I have now redefined the XDC but regenerating it might cause the build to fail. 
+    
+// *************************************************************************
+//  DEBUG FLAGS AND GPIO Routing - Assigned only for debugging 
+// *************************************************************************     
+     
+    assign debug_gpio[0] = pico_in_control;
+    assign debug_gpio[6:1] = debug_flags_from_pico[5:0]; // connecting 6 debug flags from pico, inside pico they are controlled by led_reg[7:2] - Prince, March 30
+        
+// *************************************************************************
+//  Temporary fix for rev2 pcb: Routing 10 MHz Clk to the TDC7200 clock net 
+// *************************************************************************
+/*    assign	tdc_sclk = (pico_in_control == 1'b1) tdc_sclk_from_pico : tdc_sclk_from_micro ;
+	assign	tdc_din_from_micro ;
+	assign	tdc_enable_from_micro = gpio3_out[TDC_ENABLE_FROM_MICRO] ;
+	assign	tdc_csb_from_micro = gpio3_out[TDC_CSB_FROM_MICRO] ;
+	assign	tdc_start_from_micro = gpio3_out[TDC_START_FROM_MICRO] ;
+	assign	tdc_stop_from_micro = gpio3_out[TDC_STOP_FROM_MICRO] ;
+	
+    
+*/    
 // Some special stuff to make my Digilent board happy
 /*
     assign  sdo_a_0 = 1'b0;

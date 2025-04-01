@@ -73,6 +73,7 @@
     wire    delay_x2 ;
     wire    intx_out ;
     wire    [1:0] led ;
+    wire    [5:0] debug_flags_from_pico; // March 30, Prince
     wire    mux_en ;
     wire    [3:0] mux_sel ;
     wire    or_connect ;
@@ -112,6 +113,7 @@
 
     wire    [7:0] cfd_ad ;
 //  wire    [7:0] debug_gpio ;
+//    wire    [7:4] debug_gpio ;
     wire    i2c_scl ;
     wire    i2c_sda ;
     

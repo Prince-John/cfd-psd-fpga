@@ -109,7 +109,7 @@ module timestamp_interface(
         if (tdc_reg_rst) tdc_reg <= 24'd0 ;
         else if (tdc_reg_ld[0]) tdc_reg[7:0] <= tdc_reg_byte ;
         else if (tdc_reg_ld[1]) tdc_reg[15:8] <= tdc_reg_byte ;
-        else if (tdc_reg_ld[2]) tdc_reg[23:0] <= tdc_reg_byte ;
+        else if (tdc_reg_ld[2]) tdc_reg[23:16] <= tdc_reg_byte ;
         else if (tdc_reg_shift) tdc_reg[23:0] <= {tdc_reg[22:0], tdc_dout} ;
     end
     

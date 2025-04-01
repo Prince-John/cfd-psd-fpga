@@ -98,7 +98,7 @@ board_id[4]	Input	U7	JB3-7	**NA**
 board_id[5]	Input	R6	JB3-8	**NA**	
 i2c_scl	BiDir	U6	JB3-9	**NA**	
 i2c_sda	BiDir	R5	JB3-10	**NA**	
-tdc_sclk	Output	R2	JB3-13	**NA**	
+tdc_clock	Output	R2	JB3-13	**NA**	
 tdc_dout	Input	R7	JB3-14	**NA**	
 tdc_din	Output	P2	JB3-15	**NA**	
 tdc_enable	Output	T6	JB3-16	**NA**	
@@ -126,7 +126,7 @@ mux_en	Output	J3	JB2-43	J6-5
 debug_gpio[0]	BiDir	H5	JB2-44	J13-20	
 debug_gpio[1]	BiDir	J4	JB2-46	J11-25	
 debug_gpio[2]	BiDir	B1	JB2-75	J13-32	
-debug_gpio[3]	BiDir	E2	JB2-52	J11-20	
+tdc_sclk	BiDir	E2	JB2-52	J11-20	
 debug_gpio[4]	BiDir	C2	JB2-73	J13-33	
 debug_gpio[5]	BiDir	G4	JB2-56	J13-22	
 debug_gpio[6]	BiDir	A1	JB2-77	J11-32	

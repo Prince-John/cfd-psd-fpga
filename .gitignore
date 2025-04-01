@@ -54,6 +54,9 @@ psd_fpga.all_src/vitis_project/psd_fpga_platform/tempdsa/
 psd_fpga.all_src/vitis_project/
 
 
+# Ignore pycache 
+psd_fpga.all_src/python/__pycache__/*
+
 #Ignore version headers
 psd_fpga.all_src/microblaze.beta/version.h
 

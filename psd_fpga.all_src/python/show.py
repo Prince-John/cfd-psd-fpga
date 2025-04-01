@@ -67,6 +67,15 @@ import matplotlib.pyplot as plt
 # So we can get environment variable info
 
 import os
+from plotting_utils import HistogramPlotter
+
+################################
+# Plotting 
+################################
+
+plotter = HistogramPlotter(bin_size = 100)
+
+
 
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # Routine to take two bytes and convert to
@@ -78,7 +87,7 @@ def bytes_to_adc(lower_byte, upper_byte, tag) :
     if (adc_value >= (1 << 15)) :
         adc_value = adc_value - (1 << 16)
     print(f"......... {tag} -> {adc_value}")
-    return
+    return adc_value
 
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # Routine to process an event
@@ -110,10 +119,14 @@ def process_event(event_packet_len, event_packet, event_counter) :
     for k in range(7, event_packet_len, 9) :
         addr = event_packet[k]
         print(f"...... Channel -> {addr}")
-        bytes_to_adc(event_packet[k+1], event_packet[k+2], 'A')
-        bytes_to_adc(event_packet[k+3], event_packet[k+4], 'B')
-        bytes_to_adc(event_packet[k+5], event_packet[k+6], 'C')
-        bytes_to_adc(event_packet[k+7], event_packet[k+8], 'T')                 
+        plotter.adc_data[0].append(bytes_to_adc(event_packet[k+1], event_packet[k+2], 'A'))
+        plotter.adc_data[1].append(bytes_to_adc(event_packet[k+3], event_packet[k+4], 'B'))
+        plotter.adc_data[2].append(bytes_to_adc(event_packet[k+5], event_packet[k+6], 'C'))
+        bytes_to_adc(event_packet[k+7], event_packet[k+8], 'T')     
+        
+        
+               
+                 
     return
 
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -170,7 +183,7 @@ binFilename =  "./event_data.bin"
 # Read binary file
 
 print("Reading event_data.bin \n")
-fid_bin = open(binFilename, "rb")
+fid_bin = open(binFilename, "rb", os.O_NONBLOCK)
 
 # Read the binary file and display in human
 # readable form each of the event packets

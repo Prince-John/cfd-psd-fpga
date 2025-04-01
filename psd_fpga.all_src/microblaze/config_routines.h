@@ -31,7 +31,7 @@
 		if (useLCD) { \
 			lcd_set_cursor(0, 0); \
 			lcd_print_str("                    "); \
-			lite_sprintf(LCDstr, "-->%s ", message); \
+			lite_sprintf(LCDstr, "%s", message); \
 			lcd_print_str(LCDstr); \
 			lcd_set_cursor(1, 0); \
 		}

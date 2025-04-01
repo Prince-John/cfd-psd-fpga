@@ -101,7 +101,11 @@ module psd_custom_block(
     output  tdc_enable,
     output  tdc_sclk,
     output  tdc_start,
-    output  tdc_stop
+    output  tdc_stop,
+    
+ // PICO Debug Flags
+    
+    output  [5:0]   pico_flag
     
    ) ;   
   
@@ -199,11 +203,19 @@ module psd_custom_block(
 //  Called LED_PORT in picoblaze code
 //  Bit 0 : LED[0]
 //  Bit 1 : LED[1] (also the busy bit!)
+//  Bit 2 : PICO_FLAG[0] 
+//  Bit 3 : PICO_FLAG[1]
+//      .
+//      .
+//  Bit 7 : PICO_FLAG[5] 
+//  Prince, Mar 30: Using the unused bits to bring out debug flags from picoblaze.
 //  Other bits of port currently UNUSED
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     assign  led[0] = p0_out[0] ;
     assign  led[1] = p0_out[1] ;
+    assign  pico_flag[5:0] = p0_out[7:2];
+    
     
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  
 //  Picoblaze output port #1
@@ -272,8 +284,8 @@ module psd_custom_block(
     assign  tdc_reg_rst = p4_out[3] ;
     assign  tdc_reg_shift = p4_out[4] ;
     assign  tdc_sclk = p4_out[5] ;
-    assign  tdc_enable = p4_out[6] ;
-    assign  tdc_csb = p4_out[7] ;
+    assign  tdc_csb = p4_out[6] ;
+    assign  tdc_enable = p4_out[7] ;
     
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  
 //  OUTPUT PORT 5

@@ -11,6 +11,9 @@
 // ***************************************
 
 #include  "event.h"
+#include "timer.h"
+
+u32 occupancy = 0;
 
 // ********************************************************
 // Check the take event input to see if take_event is high.
@@ -18,11 +21,14 @@
 // *******************************************************
 
 bool	isEventMode() {
+	
 	if (read_gpio_port(TAKE_EVENT_PORT, 1, TAKE_EVENT)) {
 		return true ;
 	} else {
 		return false ;
 	}
+	
+	
 }
 
 // ********************************************************
@@ -137,7 +143,7 @@ int get_packet (XLlFifo *InstancePtr, u32* buffer) {
 	u32		ReceiveLength ;
 
 	ReceiveLength = 0 ;
-	if (XLlFifo_iRxOccupancy(InstancePtr)) {
+	while (XLlFifo_iRxOccupancy(InstancePtr)) {
 		ReceiveLength = (XLlFifo_iRxGetLen(InstancePtr)) / FIFO_WORD_SIZE ;
 		for (i=0; i < ReceiveLength; i++) {
 			RxWord = XLlFifo_RxGetWord(InstancePtr);
@@ -147,60 +153,6 @@ int get_packet (XLlFifo *InstancePtr, u32* buffer) {
 	return ((int) ReceiveLength) ;
 }
 
-// **********************************************
-// Event handler (Old)
-// *************************************************
-
-void eventHandlerOld(void) {
-
-// Data packet
-
-	u8		data_packet[MAX_PACKET_BYTE_SIZE] ;
-
-// Data packet after being COBS encoded
-
-    u8		cobs_packet[MAX_PACKET_BYTE_SIZE + 2] ;
-
-// Length of packet in words
-
-    int		packet_word_len ;
-
-// Length of packet in bytes
-
-    int		packet_len ;
-
-// Length of packet after being COBS encoded
-
-    int		cobs_packet_len ;
-
-// Get a packet from the custom logic block
-// DestinationBuffer contains 32-bit words (4-bytes per word)
-
-	packet_word_len = get_packet(&FifoInstance, DestinationBuffer) ;
-
-	for (int i = 0; i < packet_word_len; i++) {
-		data_packet[4 * i] = (DestinationBuffer[i] >> 24) & 0xFF;
-		data_packet[4 * i + 1] = (DestinationBuffer[i] >> 16) & 0xFF;
-		data_packet[4 * i + 2] = (DestinationBuffer[i] >> 8) & 0xFF;
-		data_packet[4 * i + 3] = DestinationBuffer[i] & 0xFF;
-	}
-	packet_len = 4 * packet_word_len ;
-	if (packet_len != 0) {
-		cobs_packet_len = cobsEncode(data_packet, packet_len, cobs_packet) ;
-		cobs_packet[cobs_packet_len] = 0x00 ;
-		int		i ;
-		for (i = 0 ; i  <= cobs_packet_len ; i++) {
-	    	XUartNs550_SendByte(UART_BASEADDR, cobs_packet[i]);
-		} // end for
-	} // end if
-
-// Don't leave this eventHandler until take_event goes low
-
-	while (isEventMode()){
-		usleep(100) ;
-	} ;
-
-} // end eventHandler
 
 // **********************************************
 // New event handler
@@ -222,7 +174,11 @@ void eventHandler(void) {
 // DestinationBuffer contains 32-bit words (4-bytes per word)
 
 	int		packet_word_len ;
+
 	packet_word_len = get_packet(&FifoInstance, DestinationBuffer) ;
+	
+	
+	
 
 // Go through the Destination Buffer to build event
 // Data tag will tell us what kind of data we have
@@ -272,9 +228,10 @@ void eventHandler(void) {
 	} // end for
 
 // We'll COBS encode the data_packet and then send the COBS encoded packet data out UART
-
+	
 	packet_len = 7 + 9 * chan_cnt ;
-	if (packet_len != 0) {
+	
+	if (packet_word_len != 0) {
 		cobs_packet_len = cobsEncode(data_packet, packet_len, cobs_packet) ;
 		cobs_packet[cobs_packet_len] = 0x00 ;
 		int		i ;
@@ -288,10 +245,72 @@ void eventHandler(void) {
 	XLlFifo_IntClear(&FifoInstance,0xffffffff);
 
 // Don't leave this eventHandler until take_event goes low
-
 	while (isEventMode()){
+		//eventHandler();
 		usleep(100) ;
-	} ;
+	}
 
 } // end eventHandlerNew
 
+
+
+
+// **********************************************
+// Event handler (Old)
+// *************************************************
+
+/*
+ 
+	void eventHandlerOld(void) {
+	
+	// Data packet
+	
+		u8		data_packet[MAX_PACKET_BYTE_SIZE] ;
+	
+	// Data packet after being COBS encoded
+	
+		u8		cobs_packet[MAX_PACKET_BYTE_SIZE + 2] ;
+	
+	// Length of packet in words
+	
+		int		packet_word_len ;
+	
+	// Length of packet in bytes
+	
+		int		packet_len ;
+	
+	// Length of packet after being COBS encoded
+	
+		int		cobs_packet_len ;
+	
+	// Get a packet from the custom logic block
+	// DestinationBuffer contains 32-bit words (4-bytes per word)
+	
+		packet_word_len = get_packet(&FifoInstance, DestinationBuffer) ;
+	
+		for (int i = 0; i < packet_word_len; i++) {
+			data_packet[4 * i] = (DestinationBuffer[i] >> 24) & 0xFF;
+			data_packet[4 * i + 1] = (DestinationBuffer[i] >> 16) & 0xFF;
+			data_packet[4 * i + 2] = (DestinationBuffer[i] >> 8) & 0xFF;
+			data_packet[4 * i + 3] = DestinationBuffer[i] & 0xFF;
+		}
+		packet_len = 4 * packet_word_len ;
+		if (packet_len != 0) {
+			cobs_packet_len = cobsEncode(data_packet, packet_len, cobs_packet) ;
+			cobs_packet[cobs_packet_len] = 0x00 ;
+			int		i ;
+			for (i = 0 ; i  <= cobs_packet_len ; i++) {
+				XUartNs550_SendByte(UART_BASEADDR, cobs_packet[i]);
+			} // end for
+		} // end if
+	
+	// Don't leave this eventHandler until take_event goes low
+	
+		while (isEventMode()){
+			//eventHandler();
+			usleep(100) ;
+		} ;
+		
+
+} // end eventHandler
+*/

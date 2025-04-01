@@ -106,20 +106,47 @@ int main() {
 // Stay in event handler until take_event goes low
 // Later we will change this be busy signal probably.
 // $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-
+	int time_1;
+	int time_2;
 	int event_cntr = 1 ;
+	int time_cntr = 1 ;
+	u32 occupancy_flag = 0;
+	
     while (true) {
-    	if ( isConfigMode() ) configHandler() ;
-    	if ( isEventMode() ) {
-    		if (useLCD) {
-    			lcd_set_cursor(2,0) ;
-    		    lite_sprintf(LCDstr, "Event # -> %d", event_cntr) ;
-    		    lcd_print_str(LCDstr) ;
-    		}
-    		eventHandler() ;
-    		event_cntr++ ;
+ 
+    	//time_1 = XTmrCtr_GetTimerCounterReg(TMRCTR_BASEADDR, TIMER_COUNTER_0);	
+    	if ( isConfigMode() ) {
+    		configHandler() ;
     	}
-    	//usleep(10000) ; // wait 10 ms ... used to debounce take_event switch during testing
-    }
-
-} // end main
+    	if ( isEventMode() ) { 		
+        	eventHandler() ;
+			event_cntr++ ;
+    	}
+    		
+		if (useLCD && (event_cntr % time_cntr == 0)) {
+				int fifo_occupancy_count = (int) XLlFifo_iRxOccupancy(&FifoInstance);
+				lcd_set_cursor(2,0) ;
+				lite_sprintf(LCDstr, "Event # -> %d", event_cntr) ;
+				lcd_print_str(LCDstr) ;
+				lite_sprintf(LCDstr, "Fifo count: %d",fifo_occupancy_count);
+				lcd_set_cursor(3,0) ;
+				lcd_print_str(LCDstr) ;
+				time_cntr += time_cntr; 
+			} 
+    	
+    	/*
+    	time_2 = XTmrCtr_GetTimerCounterReg(TMRCTR_BASEADDR, TIMER_COUNTER_0);
+    	
+    	
+    	if ( (time_cntr < 500) || (occupancy > 256)) {
+    		xil_printf("%d timecounter %d ticks \t fifo occupancy = %d \t event counter = %d\r\n", time_cntr,
+    				(time_2-time_1), (int) XLlFifo_iRxOccupancy(&FifoInstance), event_cntr);	
+    	}
+    	time_cntr ++;
+    	//usleep(1) ; // wait 10 ms ... used to debounce take_event switch during testing
+    	 * 
+    	 */
+    	
+    }  
+    // end main
+} 
