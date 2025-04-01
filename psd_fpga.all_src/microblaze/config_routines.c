@@ -1,66 +1,16 @@
 #include	"main.h"
-// Changes begin now.
+
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 // Configuration routines
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
-/*
- * *******************************************************************
- * 	 Command Tables that define commands supported by our ChipBoard
- * *******************************************************************
- * -The commands should be entered in each table in order of most frequently used to least frequently used.
- *  Not required but will allow for early exits.
- */
 
-/* **************************
- *  Top level Command  table
- * **************************
- */
-static const Command cmd_command_table[] = {
-	{"DLY:", CONFIG_DELAY},
-	{"PSD:", CONFIG_PSD},
-	{"BID:", GET_BOARD_ID},
-	{"CFD:", CONFIG_CFD},
-	{"MUX:", CONFIG_MUX},
-	{"DAC:", CONFIG_DAC},
-	{"TDC:", CONFIG_TDC},
-	{"RST:", RESET},
-};
-
-/* **************************
- *  CFD Sub command  table
- * **************************
- */
-static const CFDCommand cfd_command_table[] = {
-    {"WRT:", WRITE_REG},
-    {"RST:", RESET_CFD},
-	{"GEN:", CFD_GLOBAL_ENABLE},
-};
-
-
-/* **************************
- * PSD Sub command  table
- * **************************
- */
-static const PSDCommand psd_command_table[] = {
-    {"SER:", SERIAL_REG},
-    {"OD0:", OFFSET_DAC_0},
-    {"OD1:", OFFSET_DAC_1},
-    {"RST:", RESET_PSD},
-    {"TRG:", TRIGGER_MODE},
-	{"TS0:", TEST_MODE_0},
-	{"TS1:", TEST_MODE_1},
-	{"SEL:", CHANNEL_SELECT},
-	{"GEN:", PSD_GLOBAL_ENABLE_TKN}
-};
-
-const int num_cmd_commands = sizeof(cmd_command_table) / sizeof(Command);
-const int num_cfd_commands = sizeof(cfd_command_table) / sizeof(CFDCommand);
-const int num_psd_commands = sizeof(psd_command_table) / sizeof(PSDCommand);
-const int command_length = 4; // Commands are 4 characters long
-
-
+// ****************************************************
+// isConfigMode()
+// Check if STX as a string has come in from host
+// uartStr is a global
+// ***************************************************
 bool	isConfigMode() {
 	if (!uart_byte_ready()) return false ;
 //
@@ -83,6 +33,8 @@ bool	isConfigMode() {
 	return false ;
 }
 
+
+
 // ****************************************************
 // configHandler()
 //
@@ -92,6 +44,12 @@ bool	isConfigMode() {
 // ****************************************************
 
 void	configHandler() {
+
+
+	top_control_flow();
+
+
+	/*
 
 // Number of bytes returned from str_to_bytes()
 
@@ -165,11 +123,11 @@ void	configHandler() {
     			    			if (numBytes == 18) {				// Need 18 bytes to configure delay ICs
     	   							for (chip_num = 0; chip_num < 6; chip_num++) {
     	   								dlyVal = buff[(3 * chip_num)] | (1 << 5 );			// Red channel i.e. channel 1
-    	    							configure_delay_chips(chip_num, dlyVal) ;
+    	    							write_delay_chip(chip_num, dlyVal) ;
     	   								dlyVal = buff[(3 * chip_num) + 1] | (2 << 5) ;    	// Green channel i.e. channel 2
-    	    							configure_delay_chips(chip_num, dlyVal) ;
+    	    							write_delay_chip(chip_num, dlyVal) ;
     	   								dlyVal = buff[(3 * chip_num) + 2] | (3 << 5 );    	// Blue channel i.e. channel 3
-    	    							configure_delay_chips(chip_num, dlyVal) ;
+    	    							write_delay_chip(chip_num, dlyVal) ;
     			    				} // end for-loop
     	    						uart_send_byte(ACK) ;
     			    			} else {
@@ -354,7 +312,7 @@ void	configHandler() {
 							// Couldn't understand or cannot do command
 							// Send back negative acknowledge
 
-       	/*	case CONFIG_TDC : 			buff = &uartStr[4] ;			// string past the :
+       		case CONFIG_TDC : 			buff = &uartStr[4] ;			// string past the :
        		       						numBytes = str_to_bytes(buff) ;		// number of hex bytes
 
 
@@ -370,7 +328,7 @@ void	configHandler() {
        		       							  uart_send_byte(NAK) ;
        		       						} // end if-then-else
        		       						break ;
-*/
+
     		default :			uart_send_byte(NAK) ;
     							break ;
 
@@ -379,17 +337,12 @@ void	configHandler() {
     } while (true) ; // end do-while loop
 
 // Not really an infinite loop, we exit when ETX comes in
+*/
 
 	return ;
 }
 
-// ****************************************************
-// isConfigMode()
-// Check if STX as a string has come in from host
-// uartStr is a global
-// ***************************************************
-
-
+/*
 
 // *****************************************************************
 // get_token() takes the global string, uartStr, and returns a token
@@ -408,9 +361,9 @@ enum cmd_tokens get_token() {
 }
 
 
-/*
+
  * Processes the next three characters to return the PSD config sub type
- */
+
 enum psd_tokens get_psd_token() {
 	int		i ;
 
@@ -424,9 +377,9 @@ enum psd_tokens get_psd_token() {
 }
 
 
-/*
+
  * Processes the next three characters to return the CFD config sub type
- */
+
 enum cfd_tokens get_cfd_token() {
 
 	int		i ;
@@ -440,6 +393,7 @@ enum cfd_tokens get_cfd_token() {
 	return ERROR_CFD;
 
 }
+*/
 
 
 
@@ -493,12 +447,6 @@ void 	cfd_reset(){
 	write_gpio_port(CFD_PORT, 1, CFD_RESET, HIGH) ;
 	return;
 }
-
-
-
-
-
-
 
 
 // ******************************************************************************
@@ -774,13 +722,51 @@ void configure_psd_1_test_mode(u8 addr, u8 enable){
 
 
 
-// *****************************************************************S
-// Configure the delay chips
-// chip_num :  delay chip (0 - 5)
-// delay_data : 0 a b v w x y z (see datasheet)
+/* *****************************************************************
+// Delay Configuration
 // *****************************************************************
+ *
+ * Configures all the delay chips on the chipboard, segments the
+ * incoming data and calls write_delay_chip() to implement the per
+ * chip configuration.
+ *
+ * Expects 18 bytes of configuration data.
+ *
+   ***************************************************************** */
+void configure_delay_chips(u8 *buff){
 
-void configure_delay_chips(u8 chip_num, u8 delay_data) {
+		u8 		dlyVal ;
+		int chip_num;
+
+		for (chip_num = 0; chip_num < 6; chip_num++) {
+				dlyVal = buff[(3 * chip_num)] | (1 << 5 );			// Red channel i.e. channel 1
+				write_delay_chip(chip_num, dlyVal) ;
+				dlyVal = buff[(3 * chip_num) + 1] | (2 << 5) ;    	// Green channel i.e. channel 2
+				write_delay_chip(chip_num, dlyVal) ;
+				dlyVal = buff[(3 * chip_num) + 2] | (3 << 5 );    	// Blue channel i.e. channel 3
+				write_delay_chip(chip_num, dlyVal) ;
+		} // end for-loop
+
+}
+
+
+
+
+
+
+/* *****************************************************************
+// Delay IC Configuration low level implementation
+// *****************************************************************
+ *
+ * Implements the configuration of a single delay chip on the
+ * chipboard.
+ *
+ * chip_num :  delay chip (0 - 5)
+// delay_data : 0 a b v w x y z (see datasheet)
+ *
+   ***************************************************************** */
+
+void write_delay_chip(u8 chip_num, u8 delay_data) {
     u32     ena_val ;
     u32		clk_val ;
     u32		data_val ;
