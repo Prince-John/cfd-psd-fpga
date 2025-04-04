@@ -71,6 +71,8 @@ module psd_fpga_top(
         .mclk(mclk),
         .reset(ublaze_reset),
         .sys_clk(sys_clk),
+        .uart_rtl_0_rxd(debug_uart_rx),
+        .uart_rtl_0_txd(debug_uart_tx),
         .uart_rtl_1_baudoutn(baudout),
         .uart_rtl_1_ctsn(cts),
         .uart_rtl_1_dcdn(dcd),
@@ -342,7 +344,7 @@ module psd_fpga_top(
 //  DEBUG FLAGS AND GPIO Routing - Assigned only for debugging 
 // *************************************************************************     
      
-    assign debug_gpio[0] = pico_in_control;
+    assign debug_gpio[0] = tlast;
     assign debug_gpio[6:1] = debug_flags_from_pico[5:0]; // connecting 6 debug flags from pico, inside pico they are controlled by led_reg[7:2] - Prince, March 30
         
 // *************************************************************************

@@ -303,9 +303,13 @@ proc pin_assign_sdcs { fp } {
 
 # If we are using the Trenz board need to treat the "reset" in a special way
 
-			if { ($fpga_board == "trenz") && ($name == "dummy_reset") } {
-				puts $fp	"set_property\tIOSTANDARD	LVCMOS18 $signal"
-				puts $fp	"set_property\tPULLDOWN\ttrue\t\[get_ports \{ dummy_reset \} \]"	
+			if { ($fpga_board == "trenz") } {
+				if {$name == "dummy_reset"}{
+					puts $fp	"set_property\tIOSTANDARD	LVCMOS18 $signal"
+					puts $fp	"set_property\tPULLDOWN\ttrue\t\[get_ports \{ dummy_reset \} \]"
+				} else if {$name == "led[1]"}{
+					puts $fp	"set_property\tIOSTANDARD	LVCMOS18 $signal"
+				}			
 			} else {			
 				puts $fp	"set_property\tIOSTANDARD	LVCMOS33 $signal"	
 			}	

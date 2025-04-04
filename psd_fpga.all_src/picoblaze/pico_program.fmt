@@ -938,7 +938,11 @@
 
                       ; DONE!
 
-               .done: output scr0, LAST_PORT
+               .done: or led_reg, 40                 ; Set bit 6  			;DEBUG FLAG 4 START
+                      output led_reg, LED_PORT       ;DEBUG FLAG 4
+                      output scr0, LAST_PORT
+                      and led_reg, bf                ; Clear bit 6  			;DEBUG FLAG 4
+                      output led_reg, LED_PORT       ;DEBUG FLAG 4 END
                       return
 
                       ; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

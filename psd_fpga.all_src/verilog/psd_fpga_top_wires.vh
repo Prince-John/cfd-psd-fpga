@@ -48,6 +48,7 @@
     wire    tstamp_clk ;
     wire    tstamp_rst ;
     wire    uart_rx ;
+    wire    debug_uart_rx ;
     
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 // Let's define wires for all of the FPGA output pins
@@ -106,6 +107,7 @@
     wire    tdc_start ;
     wire    tdc_stop ;
     wire    uart_tx ;
+    wire    debug_uart_tx ;
 
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 // Let's define wires for all of the FPGA inout pins

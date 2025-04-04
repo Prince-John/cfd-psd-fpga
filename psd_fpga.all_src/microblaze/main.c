@@ -50,7 +50,7 @@ u8		uartStr[256] ;
 XLlFifo_Config 	*Config ;
 XLlFifo 		FifoInstance ;
 u32 			DestinationBuffer[MAX_DATA_BUFFER_SIZE] ;
-
+int fifo_occupancy_flag = 0;
 // **************************************************
 // Main program
 // **************************************************
@@ -59,7 +59,7 @@ int main() {
 
 // Init 16550 uart
 
-    init_uart() ;
+   init_uart() ;
    xil_printf("PSD_FPGA %s \r\n", PROJECT_VERSION) ;
 
 // Init timer/counter
@@ -106,11 +106,11 @@ int main() {
 // Stay in event handler until take_event goes low
 // Later we will change this be busy signal probably.
 // $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-	int time_1;
-	int time_2;
+	//int time_1;
+	//int time_2;
 	int event_cntr = 1 ;
 	int time_cntr = 1 ;
-	u32 occupancy_flag = 0;
+	
 	
     while (true) {
  
@@ -118,20 +118,24 @@ int main() {
     	if ( isConfigMode() ) {
     		configHandler() ;
     	}
-    	if ( isEventMode() ) { 		
+    	if ( isEventMode() || fifo_occupancy_flag) { 		
         	eventHandler() ;
 			event_cntr++ ;
+			xil_printf("Event # -> %d\r\n", event_cntr);
+			xil_printf("Fifo Occupancy: %d\r\n", fifo_occupancy_flag);
     	}
     		
-		if (useLCD && (event_cntr % time_cntr == 0)) {
+    	
+    	
+		if (useLCD && (0)) {
 				int fifo_occupancy_count = (int) XLlFifo_iRxOccupancy(&FifoInstance);
 				lcd_set_cursor(2,0) ;
 				lite_sprintf(LCDstr, "Event # -> %d", event_cntr) ;
 				lcd_print_str(LCDstr) ;
-				lite_sprintf(LCDstr, "Fifo count: %d",fifo_occupancy_count);
+				lite_sprintf(LCDstr, "Fifo count: %d          ",fifo_occupancy_count);
 				lcd_set_cursor(3,0) ;
 				lcd_print_str(LCDstr) ;
-				time_cntr += time_cntr; 
+				time_cntr = time_cntr  + event_cntr*0.5; 
 			} 
     	
     	/*

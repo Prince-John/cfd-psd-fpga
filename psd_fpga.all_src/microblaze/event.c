@@ -13,7 +13,7 @@
 #include  "event.h"
 #include "timer.h"
 
-u32 occupancy = 0;
+extern int fifo_occupancy_flag; 
 
 // ********************************************************
 // Check the take event input to see if take_event is high.
@@ -137,13 +137,13 @@ int		init_fifo() {
 //
 // **********************************************************
 
-int get_packet (XLlFifo *InstancePtr, u32* buffer) {
+int old_get_packet (XLlFifo *InstancePtr, u32* buffer) {
 	int 	i;
 	u32 	RxWord ;
 	u32		ReceiveLength ;
 
 	ReceiveLength = 0 ;
-	while (XLlFifo_iRxOccupancy(InstancePtr)) {
+	if (XLlFifo_iRxOccupancy(InstancePtr)) {
 		ReceiveLength = (XLlFifo_iRxGetLen(InstancePtr)) / FIFO_WORD_SIZE ;
 		for (i=0; i < ReceiveLength; i++) {
 			RxWord = XLlFifo_RxGetWord(InstancePtr);
@@ -152,6 +152,36 @@ int get_packet (XLlFifo *InstancePtr, u32* buffer) {
 	} // end if
 	return ((int) ReceiveLength) ;
 }
+
+int get_packet(XLlFifo *InstancePtr, u32* buffer) {
+    u32 i;
+    u32 RxWord;
+    u32 ReceiveLength;
+
+    // Check if at least one frame is available
+    if (!XLlFifo_iRxOccupancy(InstancePtr)) {
+        return 0;
+    }
+
+    // Read frame length (in words)
+    ReceiveLength = XLlFifo_iRxGetLen(InstancePtr) / FIFO_WORD_SIZE;
+
+    for (i = 0; i < ReceiveLength; i++) {
+        RxWord = XLlFifo_RxGetWord(InstancePtr);
+        buffer[i] = RxWord;
+    }
+
+    // Make sure the packet was actually complete
+    if (!XLlFifo_IsRxDone(InstancePtr)) {
+        xil_printf("Warning: Incomplete packet read!\n\r");
+        return -1;
+    }
+    
+    return (int)ReceiveLength;
+}
+
+
+
 
 
 // **********************************************
@@ -231,7 +261,7 @@ void eventHandler(void) {
 	
 	packet_len = 7 + 9 * chan_cnt ;
 	
-	if (packet_word_len != 0) {
+	if (packet_word_len > 0) {
 		cobs_packet_len = cobsEncode(data_packet, packet_len, cobs_packet) ;
 		cobs_packet[cobs_packet_len] = 0x00 ;
 		int		i ;
@@ -242,8 +272,11 @@ void eventHandler(void) {
 
 // Clear the FIFO before we continue
 
-	XLlFifo_IntClear(&FifoInstance,0xffffffff);
+	//XLlFifo_IntClear(&FifoInstance,0xffffffff);
 
+	
+	fifo_occupancy_flag = XLlFifo_iRxOccupancy(&FifoInstance);
+	
 // Don't leave this eventHandler until take_event goes low
 	while (isEventMode()){
 		//eventHandler();
