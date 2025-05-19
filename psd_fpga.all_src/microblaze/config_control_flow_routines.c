@@ -110,6 +110,7 @@ void	top_control_flow() {
 
     		case CONFIG_DELAY :	buff = &uartStr[4] ;			// string past the :
     			    			numBytes = str_to_bytes(buff) ;		// number of hex bytes
+    			    			DEBUG_LCD_PRINT_CONFIG("Config Delay command:", numBytes);
     			    			if (numBytes == 18) {				// Need 18 bytes to configure delay ICs
     	   							configure_delay_chips(buff);
     	    						uart_send_byte(ACK) ;
@@ -127,7 +128,10 @@ void	top_control_flow() {
        	    						lite_sprintf(LCDstr, "Board ID: %d", get_board_id() ) ;
        	    						lcd_print_str(LCDstr) ;
        	    					}
-    							uart_send_byte(ACK) ;
+       							uart_send_byte(ACK) ;
+
+       							uart_send_byte(get_board_id());
+
     							break ;
 
 
