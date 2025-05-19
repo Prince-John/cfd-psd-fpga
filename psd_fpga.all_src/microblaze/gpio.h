@@ -44,7 +44,7 @@
 #define 	PSD_ADDR_PORT					1
 #define		PSD_MISC_PORT					2
 #define		TAKE_EVENT_PORT					0
-
+#define		TDC_PORT						3
 
 // &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 // Global variables defined in main

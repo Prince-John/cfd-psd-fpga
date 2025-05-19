@@ -105,7 +105,7 @@ void config_tests() {
         int chip_num ;
         u8  delay_data = 0x4f ;
         for (chip_num = 0; chip_num < 6; chip_num++) {
-            configure_delay_chips(chip_num, delay_data) ;
+            write_delay_chip(chip_num, delay_data) ;
         } // end for
         sleep(1) ;
     } // end if

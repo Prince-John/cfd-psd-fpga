@@ -268,6 +268,9 @@ proc sort_signal_names { } {
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 proc pin_assign_sdcs { fp } {
+
+	signalArrayDump
+	
 	global	signals
 	global	version
 	global	timestamp
@@ -303,9 +306,13 @@ proc pin_assign_sdcs { fp } {
 
 # If we are using the Trenz board need to treat the "reset" in a special way
 
-			if { ($fpga_board == "trenz") && ($name == "dummy_reset") } {
-				puts $fp	"set_property\tIOSTANDARD	LVCMOS18 $signal"
-				puts $fp	"set_property\tPULLDOWN\ttrue\t\[get_ports \{ dummy_reset \} \]"	
+			if { $fpga_board == "trenz" } {
+				if { $name == "dummy_reset" } {
+					puts $fp	"set_property\tIOSTANDARD	LVCMOS18 $signal"
+					puts $fp	"set_property\tPULLDOWN\ttrue\t\[get_ports \{ dummy_reset \} \]"
+				} else {
+					puts $fp	"set_property\tIOSTANDARD	LVCMOS33 $signal"
+				}			
 			} else {			
 				puts $fp	"set_property\tIOSTANDARD	LVCMOS33 $signal"	
 			}	
@@ -317,7 +324,19 @@ proc pin_assign_sdcs { fp } {
    				puts $fp	"\n### Signal: \t$sname can be found on board connector $conn"
 				puts $fp	"### Signal: \t$sname can be found on breakout connector $jconn"    
 				puts $fp	"\nset_property\tPACKAGE_PIN	$pin  	 $signal"
-				puts $fp	"set_property\tIOSTANDARD	LVCMOS33 $signal"				
+				
+				if { $fpga_board == "trenz" } {
+					if { $sname == "led\[1\]" } {
+						puts $fp	"set_property\tIOSTANDARD	LVCMOS18 $signal"
+					} else {
+						puts $fp	"set_property\tIOSTANDARD	LVCMOS33 $signal"
+					}
+						
+				} else {			
+					puts $fp	"set_property\tIOSTANDARD	LVCMOS33 $signal"	
+				}
+				
+								
 			} ; # end of foreach loop
 		} ; # end of if-then-else
 	}  ; # end of outer foreach loop

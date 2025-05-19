@@ -2,8 +2,8 @@
 // ********************************************************
 // This header file creates wires and assigns for gpio bits
 // The file is AUTO-GENERATED, DO NOT MODIFY!!!   
-// Timestamp:  		  Mon Dec 16 13:07:39 CST 2024
-// TCL Code Version:    v0.0.5 released at	2024-10-30 11:29:11
+// Timestamp:  		  Sun Mar 23 21:26:24 CDT 2025
+// TCL Code Version:    v0.0.7 released at	2025-01-27 20:45:56
 // ********************************************************
 
 	assign	gpio0_in[BOARD_ID_0] = board_id[0] ;
@@ -13,10 +13,10 @@
 	assign	gpio0_in[BOARD_ID_4] = board_id[4] ;
 	assign	gpio0_in[BOARD_ID_5] = board_id[5] ;
 	assign	gpio0_in[COMMON_STOP] = common_stop ;
-	assign	gpio0_in[GLOB_ENA] = glob_ena ;
-	assign	gpio0_in[EVENT_ENA] = event_ena ;
-	assign	gpio0_in[FORCE_RESET] = force_reset ;
-	assign	gpio0_in[TAKE_EVENT] = take_event ;
+	assign	gpio0_in[GLOB_ENA] = glob_ena_micro ;
+	assign	gpio0_in[EVENT_ENA] = event_ena_micro ;
+	assign	gpio0_in[FORCE_RESET] = force_reset_micro ;
+	assign	gpio0_in[TAKE_EVENT] = take_event_micro ;
 	assign	gpio0_in[11] = 0 ;
 	assign	gpio0_in[12] = 0 ;
 	assign	gpio0_in[13] = 0 ;
@@ -38,6 +38,10 @@
 	assign	gpio0_in[29] = 0 ;
 	assign	gpio0_in[30] = 0 ;
 	assign	gpio0_in[31] = 0 ;
+	assign	or_sel[0] = gpio0_out[OR_SEL_0] ;
+	assign	or_sel[1] = gpio0_out[OR_SEL_1] ;
+	assign	cfd_out_sel = gpio0_out[CFD_OUT_SEL] ;
+	assign	psd_intx_out_sel = gpio0_out[PSD_INTX_OUT_SEL] ;
 	assign	gpio1_in[PSD0_CHAN_ADDR_IN_0] = 0 ;
 	assign	gpio1_in[PSD0_CHAN_ADDR_IN_1] = 0 ;
 	assign	gpio1_in[PSD0_CHAN_ADDR_IN_2] = 0 ;
@@ -70,16 +74,20 @@
 	assign	gpio1_in[29] = 0 ;
 	assign	gpio1_in[30] = 0 ;
 	assign	gpio1_in[31] = 0 ;
-	assign	psd0_chan_addr_out[0] = gpio1_out[PSD0_CHAN_ADDR_OUT_0] ;
-	assign	psd0_chan_addr_out[1] = gpio1_out[PSD0_CHAN_ADDR_OUT_1] ;
-	assign	psd0_chan_addr_out[2] = gpio1_out[PSD0_CHAN_ADDR_OUT_2] ;
-	assign	psd0_chan_addr_out[3] = gpio1_out[PSD0_CHAN_ADDR_OUT_3] ;
-	assign	psd0_chan_addr_out[4] = gpio1_out[PSD0_CHAN_ADDR_OUT_4] ;
-	assign	psd1_chan_addr_out[0] = gpio1_out[PSD1_CHAN_ADDR_OUT_0] ;
-	assign	psd1_chan_addr_out[1] = gpio1_out[PSD1_CHAN_ADDR_OUT_1] ;
-	assign	psd1_chan_addr_out[2] = gpio1_out[PSD1_CHAN_ADDR_OUT_2] ;
-	assign	psd1_chan_addr_out[3] = gpio1_out[PSD1_CHAN_ADDR_OUT_3] ;
-	assign	psd1_chan_addr_out[4] = gpio1_out[PSD1_CHAN_ADDR_OUT_4] ;
+	assign	psd_addr_in_0_from_micro[0] = gpio1_out[PSD0_CHAN_ADDR_OUT_0] ;
+	assign	psd_addr_in_0_from_micro[1] = gpio1_out[PSD0_CHAN_ADDR_OUT_1] ;
+	assign	psd_addr_in_0_from_micro[2] = gpio1_out[PSD0_CHAN_ADDR_OUT_2] ;
+	assign	psd_addr_in_0_from_micro[3] = gpio1_out[PSD0_CHAN_ADDR_OUT_3] ;
+	assign	psd_addr_in_0_from_micro[4] = gpio1_out[PSD0_CHAN_ADDR_OUT_4] ;
+	assign	psd_addr_in_1_from_micro[0] = gpio1_out[PSD1_CHAN_ADDR_OUT_0] ;
+	assign	psd_addr_in_1_from_micro[1] = gpio1_out[PSD1_CHAN_ADDR_OUT_1] ;
+	assign	psd_addr_in_1_from_micro[2] = gpio1_out[PSD1_CHAN_ADDR_OUT_2] ;
+	assign	psd_addr_in_1_from_micro[3] = gpio1_out[PSD1_CHAN_ADDR_OUT_3] ;
+	assign	psd_addr_in_1_from_micro[4] = gpio1_out[PSD1_CHAN_ADDR_OUT_4] ;
+	assign	psd_global_enable_from_micro = gpio1_out[PSD_GLOBAL_ENABLE] ;
+	assign	psd_force_reset_from_micro = gpio1_out[PSD_FORCE_RST] ;
+	assign	psd_veto_reset_from_micro = gpio1_out[PSD_VETO_RESET] ;
+	assign	psd_reset_from_micro = gpio1_out[PSD_RESET] ;
 	assign	gpio2_in[PSD_SOUT] = psd_sout ;
 	assign	gpio2_in[1] = 0 ;
 	assign	gpio2_in[2] = 0 ;
@@ -112,7 +120,7 @@
 	assign	gpio2_in[29] = 0 ;
 	assign	gpio2_in[30] = 0 ;
 	assign	gpio2_in[31] = 0 ;
-	assign	busy_out = gpio2_out[BUSY_OUT] ;
+	assign	busy_out_micro = gpio2_out[BUSY_OUT] ;
 	assign	delay_data = gpio2_out[DELAY_DATA] ;
 	assign	delay_clk = gpio2_out[DELAY_CLK] ;
 	assign	delay_en_l[0] = gpio2_out[DELAY_EN_L_0] ;
@@ -121,6 +129,7 @@
 	assign	delay_en_l[3] = gpio2_out[DELAY_EN_L_3] ;
 	assign	delay_en_l[4] = gpio2_out[DELAY_EN_L_4] ;
 	assign	delay_en_l[5] = gpio2_out[DELAY_EN_L_5] ;
+	assign	delay_x2 = gpio2_out[DELAY_X2] ;
 	assign	mux_en = gpio2_out[MUX_EN] ;
 	assign	mux_sel[0] = gpio2_out[MUX_SEL_0] ;
 	assign	mux_sel[1] = gpio2_out[MUX_SEL_1] ;
@@ -135,12 +144,12 @@
 	assign	psd_cfd_bypass = gpio2_out[PSD_CFD_BYPASS] ;
 	assign	psd_sin = gpio2_out[PSD_SIN] ;
 	assign	psd_sclk = gpio2_out[PSD_SCLK] ;
-	assign	psd_sel_ext_addr_0 = gpio2_out[PSD_SEL_EXT_ADDR_0] ;
-	assign	psd_sel_ext_addr_1 = gpio2_out[PSD_SEL_EXT_ADDR_1] ;
-	assign	psd_sc0_0 = gpio2_out[PSD_SC0_0] ;
-	assign	psd_sc1_0 = gpio2_out[PSD_SC1_0] ;
-	assign	psd_sc0_1 = gpio2_out[PSD_SC0_1] ;
-	assign	psd_sc1_1 = gpio2_out[PSD_SC1_1] ;
+	assign	psd_sel_ext_addr_0_from_micro = gpio2_out[PSD_SEL_EXT_ADDR_0] ;
+	assign	psd_sel_ext_addr_1_from_micro = gpio2_out[PSD_SEL_EXT_ADDR_1] ;
+	assign	psd_sc_addr_0_from_micro[0] = gpio2_out[PSD_SC0_0] ;
+	assign	psd_sc_addr_0_from_micro[1] = gpio2_out[PSD_SC1_0] ;
+	assign	psd_sc_addr_1_from_micro[0] = gpio2_out[PSD_SC0_1] ;
+	assign	psd_sc_addr_1_from_micro[1] = gpio2_out[PSD_SC1_1] ;
 	assign	psd_test_mode_int_0 = gpio2_out[PSD_TEST_MODE_INT_0] ;
 	assign	psd_test_mode_int_1 = gpio2_out[PSD_TEST_MODE_INT_1] ;
 	assign	gpio3_in[CFD_AD_IN_0] = cfd_ad_in[0] ;
@@ -151,8 +160,8 @@
 	assign	gpio3_in[CFD_AD_IN_5] = cfd_ad_in[5] ;
 	assign	gpio3_in[CFD_AD_IN_6] = cfd_ad_in[6] ;
 	assign	gpio3_in[CFD_AD_IN_7] = cfd_ad_in[7] ;
-	assign	gpio3_in[8] = 0 ;
-	assign	gpio3_in[9] = 0 ;
+	assign	gpio3_in[TDC_DOUT_FROM_MICRO] = tdc_dout_from_micro ;
+	assign	gpio3_in[TDC_INTB_FROM_MICRO] = tdc_intb_from_micro ;
 	assign	gpio3_in[10] = 0 ;
 	assign	gpio3_in[11] = 0 ;
 	assign	gpio3_in[12] = 0 ;
@@ -188,4 +197,10 @@
 	assign	cfd_neg_pol = gpio3_out[CFD_NEG_POL] ;
 	assign	cfd_reset = gpio3_out[CFD_RESET] ;
 	assign	cfd_global_ena = gpio3_out[CFD_GLOBAL_ENA] ;
+	assign	tdc_sclk_from_micro = gpio3_out[TDC_SCLK_FROM_MICRO] ;
+	assign	tdc_din_from_micro = gpio3_out[TDC_DIN_FROM_MICRO] ;
+	assign	tdc_enable_from_micro = gpio3_out[TDC_ENABLE_FROM_MICRO] ;
+	assign	tdc_csb_from_micro = gpio3_out[TDC_CSB_FROM_MICRO] ;
+	assign	tdc_start_from_micro = gpio3_out[TDC_START_FROM_MICRO] ;
+	assign	tdc_stop_from_micro = gpio3_out[TDC_STOP_FROM_MICRO] ;
 

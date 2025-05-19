@@ -44,26 +44,18 @@
 
 #include 	<sleep.h>
 
+// Define the byte locations in data packet array where data must be
 
-// ***********************************************************
-// Useful structures (MAYBE) .. placekeeper at this point
-// *******************************************************S****
+#define		BOARD_ID	0
 
-struct	channel_t {
-	u8		addr ;
-	u16		a ;
-	u16		b ;
-	u16		c ;
-	u16		t ;
-} ;
+// Next six locations contain the timestamp counter (Little Endian)
 
-struct	event_t {
-	u8		board_id ;
-	u8		tstamp_low ;
-	u8		tstamp_mid ;
-	u16		tstamp_high ;
-	struct 	channel_t	chan_data[16] ;
-} ;
+#define		TSTAMP_LOW	1
+#define		TSTAMP_HIGH	4
+
+// Start of ADC data
+
+#define		ADC_OS		7
 
 // *****************************************
 // Some defines we need for the FIFO

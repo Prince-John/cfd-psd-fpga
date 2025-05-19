@@ -1,0 +1,810 @@
+
+# ************************************
+# Pin location constraints!!!!   
+# Timestamp:  Tue Mar 25 18:20:46 CDT 2025
+# Version:  v0.1.0 released at	2025-03-24 10:57:17
+# FPGA development board: trenz - CHIPBOARD
+# ************************************
+
+
+### Signal: 	board_id[0] can be found on board connector JB3-1
+### Signal: 	board_id[0] can be found on breakout connector **NA**
+
+set_property	PACKAGE_PIN	T3  	 [get_ports {board_id[0]}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {board_id[0]}]
+
+### Signal: 	board_id[1] can be found on board connector JB3-2
+### Signal: 	board_id[1] can be found on breakout connector **NA**
+
+set_property	PACKAGE_PIN	M4  	 [get_ports {board_id[1]}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {board_id[1]}]
+
+### Signal: 	board_id[2] can be found on board connector JB3-3
+### Signal: 	board_id[2] can be found on breakout connector **NA**
+
+set_property	PACKAGE_PIN	R3  	 [get_ports {board_id[2]}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {board_id[2]}]
+
+### Signal: 	board_id[3] can be found on board connector JB3-4
+### Signal: 	board_id[3] can be found on breakout connector **NA**
+
+set_property	PACKAGE_PIN	N4  	 [get_ports {board_id[3]}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {board_id[3]}]
+
+### Signal: 	board_id[4] can be found on board connector JB3-7
+### Signal: 	board_id[4] can be found on breakout connector **NA**
+
+set_property	PACKAGE_PIN	U7  	 [get_ports {board_id[4]}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {board_id[4]}]
+
+### Signal: 	board_id[5] can be found on board connector JB3-8
+### Signal: 	board_id[5] can be found on breakout connector **NA**
+
+set_property	PACKAGE_PIN	R6  	 [get_ports {board_id[5]}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {board_id[5]}]
+
+### Signal: 	cfd_or can be found on board connector JB1-56
+### Signal: 	cfd_or can be found on breakout connector J13-14
+
+set_property	PACKAGE_PIN	A16  	 [get_ports {cfd_or}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {cfd_or}]
+
+### Signal: 	common_stop can be found on board connector JB3-31
+### Signal: 	common_stop can be found on breakout connector **NA**
+
+set_property	PACKAGE_PIN	T5  	 [get_ports {common_stop}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {common_stop}]
+
+### Signal: 	dummy_reset can be found on board connector dummy_reset
+### Signal: 	dummy_reset can be found on breakout connector *****
+
+set_property	PACKAGE_PIN	D9  	 [get_ports {dummy_reset}]
+set_property	IOSTANDARD	LVCMOS18 [get_ports {dummy_reset}]
+set_property	PULLDOWN	true	[get_ports { dummy_reset } ]
+
+### Signal: 	event_ena can be found on board connector JB3-33
+### Signal: 	event_ena can be found on breakout connector **NA**
+
+set_property	PACKAGE_PIN	T4  	 [get_ports {event_ena}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {event_ena}]
+
+### Signal: 	force_reset can be found on board connector JB3-34
+### Signal: 	force_reset can be found on breakout connector **NA**
+
+set_property	PACKAGE_PIN	P5  	 [get_ports {force_reset}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {force_reset}]
+
+### Signal: 	psd_acq_ack_0 can be found on board connector JB1-62
+### Signal: 	psd_acq_ack_0 can be found on breakout connector **NA**
+
+set_property	PACKAGE_PIN	H16  	 [get_ports {psd_acq_ack_0}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {psd_acq_ack_0}]
+
+### Signal: 	psd_acq_ack_1 can be found on board connector JB1-87
+### Signal: 	psd_acq_ack_1 can be found on breakout connector J11-3
+
+set_property	PACKAGE_PIN	C14  	 [get_ports {psd_acq_ack_1}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {psd_acq_ack_1}]
+
+### Signal: 	psd_cfd_out_0 can be found on board connector JB1-66
+### Signal: 	psd_cfd_out_0 can be found on breakout connector **NA**
+
+set_property	PACKAGE_PIN	F16  	 [get_ports {psd_cfd_out_0}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {psd_cfd_out_0}]
+
+### Signal: 	psd_cfd_out_1 can be found on board connector JB1-91
+### Signal: 	psd_cfd_out_1 can be found on breakout connector J1-2
+
+set_property	PACKAGE_PIN	N17  	 [get_ports {psd_cfd_out_1}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {psd_cfd_out_1}]
+
+### Signal: 	psd_intx_out_0 can be found on board connector JB1-76
+### Signal: 	psd_intx_out_0 can be found on breakout connector **NA**
+
+set_property	PACKAGE_PIN	C15  	 [get_ports {psd_intx_out_0}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {psd_intx_out_0}]
+
+### Signal: 	psd_intx_out_1 can be found on board connector JB1-99
+### Signal: 	psd_intx_out_1 can be found on breakout connector J11-1
+
+set_property	PACKAGE_PIN	B12  	 [get_ports {psd_intx_out_1}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {psd_intx_out_1}]
+
+### Signal: 	psd_or_out_0 can be found on board connector JB1-77
+### Signal: 	psd_or_out_0 can be found on breakout connector J13-5
+
+set_property	PACKAGE_PIN	D17  	 [get_ports {psd_or_out_0}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {psd_or_out_0}]
+
+### Signal: 	psd_or_out_1 can be found on board connector JB1-100
+### Signal: 	psd_or_out_1 can be found on breakout connector **NA**
+
+set_property	PACKAGE_PIN	R16  	 [get_ports {psd_or_out_1}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {psd_or_out_1}]
+
+### Signal: 	psd_sout can be found on board connector JB1-61
+### Signal: 	psd_sout can be found on breakout connector J13-7
+
+set_property	PACKAGE_PIN	J15  	 [get_ports {psd_sout}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {psd_sout}]
+
+### Signal: 	psd_token_out_0 can be found on board connector JB1-86
+### Signal: 	psd_token_out_0 can be found on breakout connector J1-1
+
+set_property	PACKAGE_PIN	R10  	 [get_ports {psd_token_out_0}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {psd_token_out_0}]
+
+### Signal: 	psd_token_out_1 can be found on board connector JB2-18
+### Signal: 	psd_token_out_1 can be found on breakout connector J13-19
+
+set_property	PACKAGE_PIN	P14  	 [get_ports {psd_token_out_1}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {psd_token_out_1}]
+
+### Signal: 	sdo_a_0 can be found on board connector JB1-3
+### Signal: 	sdo_a_0 can be found on breakout connector J14-1
+
+set_property	PACKAGE_PIN	L4  	 [get_ports {sdo_a_0}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {sdo_a_0}]
+
+### Signal: 	sdo_a_1 can be found on board connector JB1-15
+### Signal: 	sdo_a_1 can be found on breakout connector J14-5
+
+set_property	PACKAGE_PIN	T8  	 [get_ports {sdo_a_1}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {sdo_a_1}]
+
+### Signal: 	sdo_b_0 can be found on board connector JB1-5
+### Signal: 	sdo_b_0 can be found on breakout connector J14-2
+
+set_property	PACKAGE_PIN	K5  	 [get_ports {sdo_b_0}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {sdo_b_0}]
+
+### Signal: 	sdo_b_1 can be found on board connector JB1-17
+### Signal: 	sdo_b_1 can be found on breakout connector J14-6
+
+set_property	PACKAGE_PIN	R8  	 [get_ports {sdo_b_1}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {sdo_b_1}]
+
+### Signal: 	sdo_c_0 can be found on board connector JB1-9
+### Signal: 	sdo_c_0 can be found on breakout connector J14-3
+
+set_property	PACKAGE_PIN	N6  	 [get_ports {sdo_c_0}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {sdo_c_0}]
+
+### Signal: 	sdo_c_1 can be found on board connector JB1-21
+### Signal: 	sdo_c_1 can be found on breakout connector J14-7
+
+set_property	PACKAGE_PIN	L6  	 [get_ports {sdo_c_1}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {sdo_c_1}]
+
+### Signal: 	sdo_t_0 can be found on board connector JB1-11
+### Signal: 	sdo_t_0 can be found on breakout connector J14-4
+
+set_property	PACKAGE_PIN	M6  	 [get_ports {sdo_t_0}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {sdo_t_0}]
+
+### Signal: 	sdo_t_1 can be found on board connector JB1-23
+### Signal: 	sdo_t_1 can be found on breakout connector J14-8
+
+set_property	PACKAGE_PIN	L5  	 [get_ports {sdo_t_1}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {sdo_t_1}]
+
+### Signal: 	sys_clk can be found on board connector sys_clk
+### Signal: 	sys_clk can be found on breakout connector *****
+
+set_property	PACKAGE_PIN	P17  	 [get_ports {sys_clk}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {sys_clk}]
+
+### Signal: 	take_event can be found on board connector JB3-37
+### Signal: 	take_event can be found on breakout connector **NA**
+
+set_property	PACKAGE_PIN	V1  	 [get_ports {take_event}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {take_event}]
+
+### Signal: 	tdc_dout can be found on board connector JB3-14
+### Signal: 	tdc_dout can be found on breakout connector **NA**
+
+set_property	PACKAGE_PIN	R7  	 [get_ports {tdc_dout}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {tdc_dout}]
+
+### Signal: 	tdc_intb can be found on board connector JB3-20
+### Signal: 	tdc_intb can be found on breakout connector **NA**
+
+set_property	PACKAGE_PIN	V9  	 [get_ports {tdc_intb}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {tdc_intb}]
+
+### Signal: 	tstamp_clk can be found on board connector JB3-27
+### Signal: 	tstamp_clk can be found on breakout connector **NA**
+
+set_property	PACKAGE_PIN	U3  	 [get_ports {tstamp_clk}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {tstamp_clk}]
+
+### Signal: 	tstamp_rst can be found on board connector JB3-28
+### Signal: 	tstamp_rst can be found on breakout connector **NA**
+
+set_property	PACKAGE_PIN	V4  	 [get_ports {tstamp_rst}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {tstamp_rst}]
+
+### Signal: 	uart_rx can be found on board connector uart_rx
+### Signal: 	uart_rx can be found on breakout connector *****
+
+set_property	PACKAGE_PIN	R11  	 [get_ports {uart_rx}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {uart_rx}]
+
+### Signal: 	debug_uart_rx can be found on board connector BDBUS0
+### Signal: 	uart_rx can be found on breakout connector *****
+
+set_property	PACKAGE_PIN	P18  	 [get_ports {debug_uart_rx}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {debug_uart_rx}]
+
+### Signal: 	adc_sclk_0 can be found on board connector JB1-32
+### Signal: 	adc_sclk_0 can be found on breakout connector **NA**
+
+set_property	PACKAGE_PIN	F13  	 [get_ports {adc_sclk_0}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {adc_sclk_0}]
+
+### Signal: 	adc_sclk_1 can be found on board connector JB1-34
+### Signal: 	adc_sclk_1 can be found on breakout connector **NA**
+
+set_property	PACKAGE_PIN	F14  	 [get_ports {adc_sclk_1}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {adc_sclk_1}]
+
+### Signal: 	busy_out_l can be found on board connector JB3-25
+### Signal: 	busy_out_l can be found on breakout connector **NA**
+
+set_property	PACKAGE_PIN	U4  	 [get_ports {busy_out_l}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {busy_out_l}]
+
+### Signal: 	cfd_global_ena can be found on board connector JB1-58
+### Signal: 	cfd_global_ena can be found on breakout connector J13-13
+
+set_property	PACKAGE_PIN	A15  	 [get_ports {cfd_global_ena}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {cfd_global_ena}]
+
+### Signal: 	cfd_neg_pol can be found on board connector JB1-55
+### Signal: 	cfd_neg_pol can be found on breakout connector J11-8
+
+set_property	PACKAGE_PIN	K13  	 [get_ports {cfd_neg_pol}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {cfd_neg_pol}]
+
+### Signal: 	cfd_out can be found on board connector JB3-40
+### Signal: 	cfd_out can be found on breakout connector **NA**
+
+set_property	PACKAGE_PIN	L3  	 [get_ports {cfd_out}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {cfd_out}]
+
+### Signal: 	cfd_reset can be found on board connector JB1-57
+### Signal: 	cfd_reset can be found on breakout connector J11-7
+
+set_property	PACKAGE_PIN	J13  	 [get_ports {cfd_reset}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {cfd_reset}]
+
+### Signal: 	cfd_stb can be found on board connector JB1-51
+### Signal: 	cfd_stb can be found on breakout connector J13-9
+
+set_property	PACKAGE_PIN	H15  	 [get_ports {cfd_stb}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {cfd_stb}]
+
+### Signal: 	cfd_write can be found on board connector JB1-52
+### Signal: 	cfd_write can be found on breakout connector J13-15
+
+set_property	PACKAGE_PIN	D13  	 [get_ports {cfd_write}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {cfd_write}]
+
+### Signal: 	conv_0 can be found on board connector JB1-35
+### Signal: 	conv_0 can be found on breakout connector J11-12
+
+set_property	PACKAGE_PIN	E18  	 [get_ports {conv_0}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {conv_0}]
+
+### Signal: 	conv_1 can be found on board connector JB1-36
+### Signal: 	conv_1 can be found on breakout connector **NA**
+
+set_property	PACKAGE_PIN	H14  	 [get_ports {conv_1}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {conv_1}]
+
+### Signal: 	dac_din can be found on board connector JB1-39
+### Signal: 	dac_din can be found on breakout connector J13-12
+
+set_property	PACKAGE_PIN	J18  	 [get_ports {dac_din}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {dac_din}]
+
+### Signal: 	dac_ld can be found on board connector JB1-37
+### Signal: 	dac_ld can be found on breakout connector J11-11
+
+set_property	PACKAGE_PIN	D18  	 [get_ports {dac_ld}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {dac_ld}]
+
+### Signal: 	dac_sclk can be found on board connector JB1-38
+### Signal: 	dac_sclk can be found on breakout connector **NA**
+
+set_property	PACKAGE_PIN	G14  	 [get_ports {dac_sclk}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {dac_sclk}]
+
+### Signal: 	delay_clk can be found on board connector JB2-27
+### Signal: 	delay_clk can be found on breakout connector J5-2
+
+set_property	PACKAGE_PIN	M17  	 [get_ports {delay_clk}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {delay_clk}]
+
+### Signal: 	delay_data can be found on board connector JB2-28
+### Signal: 	delay_data can be found on breakout connector J5-8
+
+set_property	PACKAGE_PIN	R15  	 [get_ports {delay_data}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {delay_data}]
+
+### Signal: 	delay_en_l[0] can be found on board connector JB2-31
+### Signal: 	delay_en_l[0] can be found on breakout connector J6-8
+
+set_property	PACKAGE_PIN	E6  	 [get_ports {delay_en_l[0]}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {delay_en_l[0]}]
+
+### Signal: 	delay_en_l[1] can be found on board connector JB2-32
+### Signal: 	delay_en_l[1] can be found on breakout connector J11-17
+
+set_property	PACKAGE_PIN	T11  	 [get_ports {delay_en_l[1]}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {delay_en_l[1]}]
+
+### Signal: 	delay_en_l[2] can be found on board connector JB2-33
+### Signal: 	delay_en_l[2] can be found on breakout connector J6-6
+
+set_property	PACKAGE_PIN	E5  	 [get_ports {delay_en_l[2]}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {delay_en_l[2]}]
+
+### Signal: 	delay_en_l[3] can be found on board connector JB2-34
+### Signal: 	delay_en_l[3] can be found on breakout connector J13-29
+
+set_property	PACKAGE_PIN	U11  	 [get_ports {delay_en_l[3]}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {delay_en_l[3]}]
+
+### Signal: 	delay_en_l[4] can be found on board connector JB2-35
+### Signal: 	delay_en_l[4] can be found on breakout connector J13-27
+
+set_property	PACKAGE_PIN	K2  	 [get_ports {delay_en_l[4]}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {delay_en_l[4]}]
+
+### Signal: 	delay_en_l[5] can be found on board connector JB2-36
+### Signal: 	delay_en_l[5] can be found on breakout connector J11-18
+
+set_property	PACKAGE_PIN	T10  	 [get_ports {delay_en_l[5]}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {delay_en_l[5]}]
+
+### Signal: 	delay_x2 can be found on board connector JB2-64
+### Signal: 	delay_x2 can be found on breakout connector J11-21
+
+set_property	PACKAGE_PIN	G2  	 [get_ports {delay_x2}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {delay_x2}]
+
+### Signal: 	glob_ena can be found on board connector JB3-32
+### Signal: 	glob_ena can be found on breakout connector **NA**
+
+set_property	PACKAGE_PIN	N5  	 [get_ports {glob_ena}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {glob_ena}]
+
+### Signal: 	intx_out can be found on board connector JB3-39
+### Signal: 	intx_out can be found on breakout connector **NA**
+
+set_property	PACKAGE_PIN	U1  	 [get_ports {intx_out}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {intx_out}]
+
+### Signal: 	led[0] can be found on board connector LEDS[1]
+### Signal: 	led[0] can be found on breakout connector *****
+
+set_property	PACKAGE_PIN	R17	 [get_ports {led[0]}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {led[0]}]
+
+### Signal: 	led[1] can be found on board connector LEDS[2]
+### Signal: 	led[1] can be found on breakout connector *****
+
+set_property	PACKAGE_PIN	A8  	 [get_ports {led[1]}]
+set_property	IOSTANDARD	LVCMOS18 [get_ports {led[1]}]
+
+### Signal: 	mux_en can be found on board connector JB2-43
+### Signal: 	mux_en can be found on breakout connector J6-5
+
+set_property	PACKAGE_PIN	J3  	 [get_ports {mux_en}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {mux_en}]
+
+### Signal: 	mux_sel[0] can be found on board connector JB2-37
+### Signal: 	mux_sel[0] can be found on breakout connector **NA**
+
+set_property	PACKAGE_PIN	K1  	 [get_ports {mux_sel[0]}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {mux_sel[0]}]
+
+### Signal: 	mux_sel[1] can be found on board connector JB2-38
+### Signal: 	mux_sel[1] can be found on breakout connector J13-25
+
+set_property	PACKAGE_PIN	T9  	 [get_ports {mux_sel[1]}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {mux_sel[1]}]
+
+### Signal: 	mux_sel[2] can be found on board connector JB2-41
+### Signal: 	mux_sel[2] can be found on breakout connector J6-7
+
+set_property	PACKAGE_PIN	J2  	 [get_ports {mux_sel[2]}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {mux_sel[2]}]
+
+### Signal: 	mux_sel[3] can be found on board connector JB2-42
+### Signal: 	mux_sel[3] can be found on breakout connector J13-26
+
+set_property	PACKAGE_PIN	H6  	 [get_ports {mux_sel[3]}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {mux_sel[3]}]
+
+### Signal: 	or_connect can be found on board connector JB3-38
+### Signal: 	or_connect can be found on breakout connector **NA**
+
+set_property	PACKAGE_PIN	K3  	 [get_ports {or_connect}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {or_connect}]
+
+### Signal: 	psd_acq_all can be found on board connector JB2-21
+### Signal: 	psd_acq_all can be found on breakout connector J5-3
+
+set_property	PACKAGE_PIN	N15  	 [get_ports {psd_acq_all}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {psd_acq_all}]
+
+### Signal: 	psd_acq_clk_0 can be found on board connector JB1-65
+### Signal: 	psd_acq_clk_0 can be found on breakout connector **NA**
+
+set_property	PACKAGE_PIN	E16  	 [get_ports {psd_acq_clk_0}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {psd_acq_clk_0}]
+
+### Signal: 	psd_acq_clk_1 can be found on board connector JB1-88
+### Signal: 	psd_acq_clk_1 can be found on breakout connector J1-6
+
+set_property	PACKAGE_PIN	R13  	 [get_ports {psd_acq_clk_1}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {psd_acq_clk_1}]
+
+### Signal: 	psd_cfd_bypass can be found on board connector JB2-22
+### Signal: 	psd_cfd_bypass can be found on breakout connector J5-5
+
+set_property	PACKAGE_PIN	T14  	 [get_ports {psd_cfd_bypass}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {psd_cfd_bypass}]
+
+### Signal: 	psd_dac_stb_0 can be found on board connector JB1-75
+### Signal: 	psd_dac_stb_0 can be found on breakout connector J13-6
+
+set_property	PACKAGE_PIN	E17  	 [get_ports {psd_dac_stb_0}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {psd_dac_stb_0}]
+
+### Signal: 	psd_dac_stb_1 can be found on board connector JB1-98
+### Signal: 	psd_dac_stb_1 can be found on breakout connector J1-7
+
+set_property	PACKAGE_PIN	M18  	 [get_ports {psd_dac_stb_1}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {psd_dac_stb_1}]
+
+### Signal: 	psd_force_rst can be found on board connector JB2-23
+### Signal: 	psd_force_rst can be found on breakout connector J5-1
+
+set_property	PACKAGE_PIN	N16  	 [get_ports {psd_force_rst}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {psd_force_rst}]
+
+### Signal: 	psd_glob_ena can be found on board connector JB2-24
+### Signal: 	psd_glob_ena can be found on breakout connector J5-7
+
+set_property	PACKAGE_PIN	T15  	 [get_ports {psd_glob_ena}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {psd_glob_ena}]
+
+### Signal: 	psd_reset can be found on board connector JB2-25
+### Signal: 	psd_reset can be found on breakout connector J5-4
+
+set_property	PACKAGE_PIN	M16  	 [get_ports {psd_reset}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {psd_reset}]
+
+### Signal: 	psd_sc0_0 can be found on board connector JB1-78
+### Signal: 	psd_sc0_0 can be found on breakout connector **NA**
+
+set_property	PACKAGE_PIN	D15  	 [get_ports {psd_sc0_0}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {psd_sc0_0}]
+
+### Signal: 	psd_sc0_1 can be found on board connector JB2-12
+### Signal: 	psd_sc0_1 can be found on breakout connector J13-18
+
+set_property	PACKAGE_PIN	U12  	 [get_ports {psd_sc0_1}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {psd_sc0_1}]
+
+### Signal: 	psd_sc1_0 can be found on board connector JB1-79
+### Signal: 	psd_sc1_0 can be found on breakout connector J13-4
+
+set_property	PACKAGE_PIN	C17  	 [get_ports {psd_sc1_0}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {psd_sc1_0}]
+
+### Signal: 	psd_sc1_1 can be found on board connector JB2-13
+### Signal: 	psd_sc1_1 can be found on breakout connector **NA**
+
+set_property	PACKAGE_PIN	V11  	 [get_ports {psd_sc1_1}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {psd_sc1_1}]
+
+### Signal: 	psd_sclk can be found on board connector JB1-60
+### Signal: 	psd_sclk can be found on breakout connector **NA**
+
+set_property	PACKAGE_PIN	G16  	 [get_ports {psd_sclk}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {psd_sclk}]
+
+### Signal: 	psd_sel_ext_addr_0 can be found on board connector JB1-81
+### Signal: 	psd_sel_ext_addr_0 can be found on breakout connector J11-4
+
+set_property	PACKAGE_PIN	C16  	 [get_ports {psd_sel_ext_addr_0}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {psd_sel_ext_addr_0}]
+
+### Signal: 	psd_sel_ext_addr_1 can be found on board connector JB2-14
+### Signal: 	psd_sel_ext_addr_1 can be found on breakout connector J11-15
+
+set_property	PACKAGE_PIN	V12  	 [get_ports {psd_sel_ext_addr_1}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {psd_sel_ext_addr_1}]
+
+### Signal: 	psd_sin can be found on board connector JB1-59
+### Signal: 	psd_sin can be found on breakout connector J13-8
+
+set_property	PACKAGE_PIN	K15  	 [get_ports {psd_sin}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {psd_sin}]
+
+### Signal: 	psd_test_mode_int_0 can be found on board connector JB1-82
+### Signal: 	psd_test_mode_int_0 can be found on breakout connector **NA**
+
+set_property	PACKAGE_PIN	A11  	 [get_ports {psd_test_mode_int_0}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {psd_test_mode_int_0}]
+
+### Signal: 	psd_test_mode_int_1 can be found on board connector JB2-15
+### Signal: 	psd_test_mode_int_1 can be found on breakout connector **NA**
+
+set_property	PACKAGE_PIN	V10  	 [get_ports {psd_test_mode_int_1}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {psd_test_mode_int_1}]
+
+### Signal: 	psd_token_in_0 can be found on board connector JB1-85
+### Signal: 	psd_token_in_0 can be found on breakout connector **NA**
+
+set_property	PACKAGE_PIN	D14  	 [get_ports {psd_token_in_0}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {psd_token_in_0}]
+
+### Signal: 	psd_token_in_1 can be found on board connector JB2-16
+### Signal: 	psd_token_in_1 can be found on breakout connector J11-16
+
+set_property	PACKAGE_PIN	N14  	 [get_ports {psd_token_in_1}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {psd_token_in_1}]
+
+### Signal: 	psd_veto_reset can be found on board connector JB2-26
+### Signal: 	psd_veto_reset can be found on breakout connector J5-6
+
+set_property	PACKAGE_PIN	P15  	 [get_ports {psd_veto_reset}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {psd_veto_reset}]
+
+### Signal: 	tdc_clock can be found on board connector JB3-13
+### Signal: 	tdc_clock can be found on breakout connector **NA**
+
+set_property	PACKAGE_PIN	R2  	 [get_ports {tdc_clock}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {tdc_clock}]
+
+### Signal: 	tdc_csb can be found on board connector JB3-19
+### Signal: 	tdc_csb can be found on breakout connector **NA**
+
+set_property	PACKAGE_PIN	V7  	 [get_ports {tdc_csb}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {tdc_csb}]
+
+### Signal: 	tdc_din can be found on board connector JB3-15
+### Signal: 	tdc_din can be found on breakout connector **NA**
+
+set_property	PACKAGE_PIN	P2  	 [get_ports {tdc_din}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {tdc_din}]
+
+### Signal: 	tdc_enable can be found on board connector JB3-16
+### Signal: 	tdc_enable can be found on breakout connector **NA**
+
+set_property	PACKAGE_PIN	T6  	 [get_ports {tdc_enable}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {tdc_enable}]
+
+### Signal: 	tdc_start can be found on board connector JB3-21
+### Signal: 	tdc_start can be found on breakout connector **NA**
+
+set_property	PACKAGE_PIN	V6  	 [get_ports {tdc_start}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {tdc_start}]
+
+### Signal: 	tdc_stop can be found on board connector JB3-22
+### Signal: 	tdc_stop can be found on breakout connector **NA**
+
+set_property	PACKAGE_PIN	U9  	 [get_ports {tdc_stop}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {tdc_stop}]
+
+### Signal: 	uart_tx can be found on board connector uart_tx
+### Signal: 	uart_tx can be found on breakout connector *****
+
+set_property	PACKAGE_PIN	L16  	 [get_ports {uart_tx}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {uart_tx}]
+
+### Signal: 	debug_uart_tx can be found on board connector BDBUS1
+### Signal: 	uart_tx can be found on breakout connector *****
+
+set_property	PACKAGE_PIN	R18  	 [get_ports {debug_uart_tx}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {debug_uart_tx}]
+
+### Signal: 	cfd_ad[7] can be found on board connector JB1-42
+### Signal: 	cfd_ad[7] can be found on breakout connector J11-14
+
+set_property	PACKAGE_PIN	B18  	 [get_ports {cfd_ad[7]}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {cfd_ad[7]}]
+
+### Signal: 	cfd_ad[6] can be found on board connector JB1-44
+### Signal: 	cfd_ad[6] can be found on breakout connector J11-2
+
+set_property	PACKAGE_PIN	A18  	 [get_ports {cfd_ad[6]}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {cfd_ad[6]}]
+
+### Signal: 	cfd_ad[5] can be found on board connector JB1-45
+### Signal: 	cfd_ad[5] can be found on breakout connector J11-10
+
+set_property	PACKAGE_PIN	G18  	 [get_ports {cfd_ad[5]}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {cfd_ad[5]}]
+
+### Signal: 	cfd_ad[4] can be found on board connector JB1-46
+### Signal: 	cfd_ad[4] can be found on breakout connector J11-13
+
+set_property	PACKAGE_PIN	B17  	 [get_ports {cfd_ad[4]}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {cfd_ad[4]}]
+
+### Signal: 	cfd_ad[3] can be found on board connector JB1-47
+### Signal: 	cfd_ad[3] can be found on breakout connector J11-9
+
+set_property	PACKAGE_PIN	F18  	 [get_ports {cfd_ad[3]}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {cfd_ad[3]}]
+
+### Signal: 	cfd_ad[2] can be found on board connector JB1-48
+### Signal: 	cfd_ad[2] can be found on breakout connector J13-17
+
+set_property	PACKAGE_PIN	B16  	 [get_ports {cfd_ad[2]}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {cfd_ad[2]}]
+
+### Signal: 	cfd_ad[1] can be found on board connector JB1-49
+### Signal: 	cfd_ad[1] can be found on breakout connector J13-10
+
+set_property	PACKAGE_PIN	J14  	 [get_ports {cfd_ad[1]}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {cfd_ad[1]}]
+
+### Signal: 	cfd_ad[0] can be found on board connector JB1-50
+### Signal: 	cfd_ad[0] can be found on breakout connector J13-16
+
+set_property	PACKAGE_PIN	D12  	 [get_ports {cfd_ad[0]}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {cfd_ad[0]}]
+
+### Signal: 	debug_gpio[0] can be found on board connector JB2-44
+### Signal: 	debug_gpio[0] can be found on breakout connector J13-20
+
+set_property	PACKAGE_PIN	H5  	 [get_ports {debug_gpio[0]}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {debug_gpio[0]}]
+
+### Signal: 	debug_gpio[1] can be found on board connector JB2-46
+### Signal: 	debug_gpio[1] can be found on breakout connector J11-25
+
+set_property	PACKAGE_PIN	J4  	 [get_ports {debug_gpio[1]}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {debug_gpio[1]}]
+
+### Signal: 	debug_gpio[2] can be found on board connector JB2-75
+### Signal: 	debug_gpio[2] can be found on breakout connector J13-32
+
+set_property	PACKAGE_PIN	B1  	 [get_ports {debug_gpio[2]}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {debug_gpio[2]}]
+
+### Signal: 	debug_gpio[4] can be found on board connector JB2-73
+### Signal: 	debug_gpio[4] can be found on breakout connector J13-33
+
+set_property	PACKAGE_PIN	C2  	 [get_ports {debug_gpio[3]}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {debug_gpio[3]}]
+
+### Signal: 	debug_gpio[5] can be found on board connector JB2-56
+### Signal: 	debug_gpio[5] can be found on breakout connector J13-22
+
+set_property	PACKAGE_PIN	G4  	 [get_ports {debug_gpio[4]}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {debug_gpio[4]}]
+
+### Signal: 	debug_gpio[6] can be found on board connector JB2-77
+### Signal: 	debug_gpio[6] can be found on breakout connector J11-32
+
+set_property	PACKAGE_PIN	A1  	 [get_ports {debug_gpio[5]}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {debug_gpio[5]}]
+
+### Signal: 	debug_gpio[7] can be found on board connector JB2-62
+### Signal: 	debug_gpio[7] can be found on breakout connector J11-23
+
+set_property	PACKAGE_PIN	H2  	 [get_ports {debug_gpio[6]}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {debug_gpio[6]}]
+
+### Signal: 	i2c_scl can be found on board connector JB3-9
+### Signal: 	i2c_scl can be found on breakout connector **NA**
+
+set_property	PACKAGE_PIN	U6  	 [get_ports {i2c_scl}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {i2c_scl}]
+
+### Signal: 	i2c_sda can be found on board connector JB3-10
+### Signal: 	i2c_sda can be found on breakout connector **NA**
+
+set_property	PACKAGE_PIN	R5  	 [get_ports {i2c_sda}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {i2c_sda}]
+
+### Signal: 	psd_chan_addr_0[0] can be found on board connector JB1-67
+### Signal: 	psd_chan_addr_0[0] can be found on breakout connector **NA**
+
+set_property	PACKAGE_PIN	E15  	 [get_ports {psd_chan_addr_0[0]}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {psd_chan_addr_0[0]}]
+
+### Signal: 	psd_chan_addr_0[1] can be found on board connector JB1-68
+### Signal: 	psd_chan_addr_0[1] can be found on breakout connector **NA**
+
+set_property	PACKAGE_PIN	F15  	 [get_ports {psd_chan_addr_0[1]}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {psd_chan_addr_0[1]}]
+
+### Signal: 	psd_chan_addr_0[2] can be found on board connector JB1-69
+### Signal: 	psd_chan_addr_0[2] can be found on breakout connector J11-6
+
+set_property	PACKAGE_PIN	H17  	 [get_ports {psd_chan_addr_0[2]}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {psd_chan_addr_0[2]}]
+
+### Signal: 	psd_chan_addr_0[3] can be found on board connector JB1-70
+### Signal: 	psd_chan_addr_0[3] can be found on breakout connector J13-3
+
+set_property	PACKAGE_PIN	A14  	 [get_ports {psd_chan_addr_0[3]}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {psd_chan_addr_0[3]}]
+
+### Signal: 	psd_chan_addr_0[4] can be found on board connector JB1-71
+### Signal: 	psd_chan_addr_0[4] can be found on breakout connector J11-5
+
+set_property	PACKAGE_PIN	G17  	 [get_ports {psd_chan_addr_0[4]}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {psd_chan_addr_0[4]}]
+
+### Signal: 	psd_chan_addr_1[0] can be found on board connector JB1-92
+### Signal: 	psd_chan_addr_1[0] can be found on breakout connector J1-4
+
+set_property	PACKAGE_PIN	R12  	 [get_ports {psd_chan_addr_1[0]}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {psd_chan_addr_1[0]}]
+
+### Signal: 	psd_chan_addr_1[1] can be found on board connector JB1-93
+### Signal: 	psd_chan_addr_1[1] can be found on breakout connector J13-1
+
+set_property	PACKAGE_PIN	B14  	 [get_ports {psd_chan_addr_1[1]}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {psd_chan_addr_1[1]}]
+
+### Signal: 	psd_chan_addr_1[2] can be found on board connector JB1-94
+### Signal: 	psd_chan_addr_1[2] can be found on breakout connector J1-3
+
+set_property	PACKAGE_PIN	L18  	 [get_ports {psd_chan_addr_1[2]}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {psd_chan_addr_1[2]}]
+
+### Signal: 	psd_chan_addr_1[3] can be found on board connector JB1-95
+### Signal: 	psd_chan_addr_1[3] can be found on breakout connector J13-2
+
+set_property	PACKAGE_PIN	B13  	 [get_ports {psd_chan_addr_1[3]}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {psd_chan_addr_1[3]}]
+
+### Signal: 	psd_chan_addr_1[4] can be found on board connector JB1-96
+### Signal: 	psd_chan_addr_1[4] can be found on breakout connector J1-5
+
+set_property	PACKAGE_PIN	M13  	 [get_ports {psd_chan_addr_1[4]}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {psd_chan_addr_1[4]}]
+
+### Signal: 	tdc_sclk can be found on board connector JB2-52
+### Signal: 	tdc_sclk can be found on breakout connector J11-20
+
+set_property	PACKAGE_PIN	E2  	 [get_ports {tdc_sclk}]
+set_property	IOSTANDARD	LVCMOS33 [get_ports {tdc_sclk}]
+
+
+# *********************************************************
+# Default common settings that do not depend assembly variant
+# **********************************************************
+
+set_property BITSTREAM.GENERAL.COMPRESS TRUE [current_design]
+set_property BITSTREAM.CONFIG.CONFIGRATE 66 [current_design]
+set_property CONFIG_VOLTAGE 3.3 [current_design]
+set_property CFGBVS VCCO [current_design]
+set_property CONFIG_MODE SPIx4 [current_design]
+set_property BITSTREAM.CONFIG.SPI_32BIT_ADDR YES [current_design]
+set_property BITSTREAM.CONFIG.SPI_BUSWIDTH 4 [current_design]
+set_property BITSTREAM.CONFIG.M1PIN PULLNONE [current_design]
+set_property BITSTREAM.CONFIG.M2PIN PULLNONE [current_design]
+set_property BITSTREAM.CONFIG.M0PIN PULLNONE [current_design]
+set_property BITSTREAM.CONFIG.USR_ACCESS TIMESTAMP [current_design]
+set_property BITSTREAM.CONFIG.UNUSEDPIN PULLDOWN [current_design]
+
+# *********************************************************
+# Handle a few special FPGA pins for Trenz board           
+# *********************************************************
+
+set_property DRIVE 12 [get_ports {led[1]}]
+set_property SLEW SLOW [get_ports {led[1]}]
+set_property DRIVE 12 [get_ports {led[0]}]
+set_property SLEW SLOW [get_ports {led[0]}]

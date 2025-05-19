@@ -50,7 +50,7 @@ u8		uartStr[256] ;
 XLlFifo_Config 	*Config ;
 XLlFifo 		FifoInstance ;
 u32 			DestinationBuffer[MAX_DATA_BUFFER_SIZE] ;
-
+int fifo_occupancy_flag = 0;
 // **************************************************
 // Main program
 // **************************************************
@@ -59,7 +59,7 @@ int main() {
 
 // Init 16550 uart
 
-    init_uart() ;
+   init_uart() ;
    xil_printf("PSD_FPGA %s \r\n", PROJECT_VERSION) ;
 
 // Init timer/counter
@@ -106,20 +106,51 @@ int main() {
 // Stay in event handler until take_event goes low
 // Later we will change this be busy signal probably.
 // $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-
+	//int time_1;
+	//int time_2;
 	int event_cntr = 1 ;
+	int time_cntr = 1 ;
+	
+	
     while (true) {
-    	if ( isConfigMode() ) configHandler() ;
-    	if ( isEventMode() ) {
-    		if (useLCD) {
-    			lcd_set_cursor(2,0) ;
-    		    lite_sprintf(LCDstr, "Event # -> %d", event_cntr) ;
-    		    lcd_print_str(LCDstr) ;
-    		}
-    		eventHandler() ;
-    		event_cntr++ ;
+ 
+    	//time_1 = XTmrCtr_GetTimerCounterReg(TMRCTR_BASEADDR, TIMER_COUNTER_0);	
+    	if ( isConfigMode() ) {
+    		configHandler() ;
     	}
-    	usleep(10000) ; // wait 10 ms ... used to debounce take_event switch during testing
-    }
-
-} // end main
+    	if ( isEventMode() || fifo_occupancy_flag) { 		
+        	eventHandler() ;
+			event_cntr++ ;
+			xil_printf("Event # -> %d\r\n", event_cntr);
+			xil_printf("Fifo Occupancy: %d\r\n", fifo_occupancy_flag);
+    	}
+    		
+    	
+    	
+		if (useLCD && (0)) {
+				int fifo_occupancy_count = (int) XLlFifo_iRxOccupancy(&FifoInstance);
+				lcd_set_cursor(2,0) ;
+				lite_sprintf(LCDstr, "Event # -> %d", event_cntr) ;
+				lcd_print_str(LCDstr) ;
+				lite_sprintf(LCDstr, "Fifo count: %d          ",fifo_occupancy_count);
+				lcd_set_cursor(3,0) ;
+				lcd_print_str(LCDstr) ;
+				time_cntr = time_cntr  + event_cntr*0.5; 
+			} 
+    	
+    	/*
+    	time_2 = XTmrCtr_GetTimerCounterReg(TMRCTR_BASEADDR, TIMER_COUNTER_0);
+    	
+    	
+    	if ( (time_cntr < 500) || (occupancy > 256)) {
+    		xil_printf("%d timecounter %d ticks \t fifo occupancy = %d \t event counter = %d\r\n", time_cntr,
+    				(time_2-time_1), (int) XLlFifo_iRxOccupancy(&FifoInstance), event_cntr);	
+    	}
+    	time_cntr ++;
+    	//usleep(1) ; // wait 10 ms ... used to debounce take_event switch during testing
+    	 * 
+    	 */
+    	
+    }  
+    // end main
+} 

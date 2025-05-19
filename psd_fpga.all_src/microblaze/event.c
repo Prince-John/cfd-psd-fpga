@@ -11,6 +11,9 @@
 // ***************************************
 
 #include  "event.h"
+#include "timer.h"
+
+extern int fifo_occupancy_flag; 
 
 // ********************************************************
 // Check the take event input to see if take_event is high.
@@ -18,11 +21,14 @@
 // *******************************************************
 
 bool	isEventMode() {
+	
 	if (read_gpio_port(TAKE_EVENT_PORT, 1, TAKE_EVENT)) {
 		return true ;
 	} else {
 		return false ;
 	}
+	
+	
 }
 
 // ********************************************************
@@ -131,7 +137,7 @@ int		init_fifo() {
 //
 // **********************************************************
 
-int get_packet (XLlFifo *InstancePtr, u32* buffer) {
+int old_get_packet (XLlFifo *InstancePtr, u32* buffer) {
 	int 	i;
 	u32 	RxWord ;
 	u32		ReceiveLength ;
@@ -147,53 +153,115 @@ int get_packet (XLlFifo *InstancePtr, u32* buffer) {
 	return ((int) ReceiveLength) ;
 }
 
+int get_packet(XLlFifo *InstancePtr, u32* buffer) {
+    u32 i;
+    u32 RxWord;
+    u32 ReceiveLength;
+
+    // Check if at least one frame is available
+    if (!XLlFifo_iRxOccupancy(InstancePtr)) {
+        return 0;
+    }
+
+    // Read frame length (in words)
+    ReceiveLength = XLlFifo_iRxGetLen(InstancePtr) / FIFO_WORD_SIZE;
+
+    for (i = 0; i < ReceiveLength; i++) {
+        RxWord = XLlFifo_RxGetWord(InstancePtr);
+        buffer[i] = RxWord;
+    }
+
+    // Make sure the packet was actually complete
+    if (!XLlFifo_IsRxDone(InstancePtr)) {
+        xil_printf("Warning: Incomplete packet read!\n\r");
+        return -1;
+    }
+    
+    return (int)ReceiveLength;
+}
+
+
+
+
+
 // **********************************************
-// Event handler
+// New event handler
 // *************************************************
 
 void eventHandler(void) {
 
-// Data packet
+// Array to hold event data
 
 	u8		data_packet[MAX_PACKET_BYTE_SIZE] ;
+	int		packet_len ;
 
 // Data packet after being COBS encoded
 
-    u8		cobs_packet[MAX_PACKET_BYTE_SIZE + 2] ;
-
-// Length of packet in words
-
-    int		packet_word_len ;
-
-// Length of packet in bytes
-
-    int		packet_len ;
-
-// Length of packet after being COBS encoded
-
-    int		cobs_packet_len ;
+	u8		cobs_packet[MAX_PACKET_BYTE_SIZE + 2] ;
+	int		cobs_packet_len ;
 
 // Get a packet from the custom logic block
 // DestinationBuffer contains 32-bit words (4-bytes per word)
 
+	int		packet_word_len ;
+
 	packet_word_len = get_packet(&FifoInstance, DestinationBuffer) ;
+	
+	
+	
 
-// 4 bytes to a 32-bit word
-// But ADC data is only 2 bytes
-// We will just send the ADC data
+// Go through the Destination Buffer to build event
+// Data tag will tell us what kind of data we have
 
-	packet_len = 2 * packet_word_len ;
+	u32		word ;
+	u8		data_tag ;
+	u8		data_type ;
+	u8		data_subtype ;
+	int		adc_lower ;
 
-// Need a byte array rather than a word array
+// Keep track of channel count
 
-    for (int i = 0; i < packet_word_len; i++) {
-        data_packet[2 * i] = (DestinationBuffer[i] >> 8) & 0xFF;
-        data_packet[2 * i + 1] = DestinationBuffer[i] & 0xFF;
-    }
+	int		chan_cnt = 0 ;
 
-// Make sure packet length is not 0
+// Go through FIFO data one word at a time
+// Board 0 is NOT currently supported
 
-	if (packet_len != 0) {
+	for (int i = 0; i < packet_word_len; i++) {
+		word = DestinationBuffer[i] ;
+		data_tag = (word >> 24) & 0xff ;
+		data_type = (data_tag >> 6) & 0x03 ;
+		data_subtype = (data_tag >> 4) & 0x03 ;
+		switch (data_type) {
+			case 0 :	data_packet[BOARD_ID] = (word >> 16) & 0xff ;
+						data_packet[ADC_OS + 9 * chan_cnt]=  data_tag & 0x0f  ;
+						adc_lower = ADC_OS + (9 * chan_cnt) + (2 * data_subtype) + 1 ;
+						data_packet[adc_lower] = word & 0xff ;
+						data_packet[adc_lower + 1] = (word >> 8) & 0xff ;
+						if (data_subtype == 3) chan_cnt++ ; 	// increment channel count
+						break ;  // adc data
+
+			case 1 :	if (data_subtype == 0) {
+							data_packet[TSTAMP_LOW] = word & 0xff ;
+							data_packet[TSTAMP_LOW + 1] = (word >> 8) & 0xff ;
+							data_packet[TSTAMP_LOW + 2] = (word >> 16) & 0xff ;
+						} else {
+							data_packet[TSTAMP_HIGH] = word & 0xff ;
+							data_packet[TSTAMP_HIGH + 1] = (word >> 8) & 0xff ;
+							data_packet[TSTAMP_HIGH + 2] = (word >> 16) & 0xff ;
+						}
+						break ;	// timestamp data
+
+			case 2 :	break ;	// TIME1 or TIME2 data
+
+			case 3 :	break ;	// CAL1 or CAL2 data
+		} // end switch
+	} // end for
+
+// We'll COBS encode the data_packet and then send the COBS encoded packet data out UART
+	
+	packet_len = 7 + 9 * chan_cnt ;
+	
+	if (packet_word_len > 0) {
 		cobs_packet_len = cobsEncode(data_packet, packet_len, cobs_packet) ;
 		cobs_packet[cobs_packet_len] = 0x00 ;
 		int		i ;
@@ -202,10 +270,80 @@ void eventHandler(void) {
 		} // end for
 	} // end if
 
+// Clear the FIFO before we continue
+
+	//XLlFifo_IntClear(&FifoInstance,0xffffffff);
+
+	
+	fifo_occupancy_flag = XLlFifo_iRxOccupancy(&FifoInstance);
+	
 // Don't leave this eventHandler until take_event goes low
-
 	while (isEventMode()){
+		//eventHandler();
 		usleep(100) ;
-	} ;
+	}
 
-} // end fifo_test()
+} // end eventHandlerNew
+
+
+
+
+// **********************************************
+// Event handler (Old)
+// *************************************************
+
+/*
+ 
+	void eventHandlerOld(void) {
+	
+	// Data packet
+	
+		u8		data_packet[MAX_PACKET_BYTE_SIZE] ;
+	
+	// Data packet after being COBS encoded
+	
+		u8		cobs_packet[MAX_PACKET_BYTE_SIZE + 2] ;
+	
+	// Length of packet in words
+	
+		int		packet_word_len ;
+	
+	// Length of packet in bytes
+	
+		int		packet_len ;
+	
+	// Length of packet after being COBS encoded
+	
+		int		cobs_packet_len ;
+	
+	// Get a packet from the custom logic block
+	// DestinationBuffer contains 32-bit words (4-bytes per word)
+	
+		packet_word_len = get_packet(&FifoInstance, DestinationBuffer) ;
+	
+		for (int i = 0; i < packet_word_len; i++) {
+			data_packet[4 * i] = (DestinationBuffer[i] >> 24) & 0xFF;
+			data_packet[4 * i + 1] = (DestinationBuffer[i] >> 16) & 0xFF;
+			data_packet[4 * i + 2] = (DestinationBuffer[i] >> 8) & 0xFF;
+			data_packet[4 * i + 3] = DestinationBuffer[i] & 0xFF;
+		}
+		packet_len = 4 * packet_word_len ;
+		if (packet_len != 0) {
+			cobs_packet_len = cobsEncode(data_packet, packet_len, cobs_packet) ;
+			cobs_packet[cobs_packet_len] = 0x00 ;
+			int		i ;
+			for (i = 0 ; i  <= cobs_packet_len ; i++) {
+				XUartNs550_SendByte(UART_BASEADDR, cobs_packet[i]);
+			} // end for
+		} // end if
+	
+	// Don't leave this eventHandler until take_event goes low
+	
+		while (isEventMode()){
+			//eventHandler();
+			usleep(100) ;
+		} ;
+		
+
+} // end eventHandler
+*/

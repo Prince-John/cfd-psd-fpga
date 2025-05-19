@@ -1,63 +1,16 @@
 #include	"main.h"
-// Changes begin now.
+
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 // Configuration routines
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
-/*
- * *******************************************************************
- * 	 Command Tables that define commands supported by our ChipBoard
- * *******************************************************************
- * -The commands should be entered in each table in order of most frequently used to least frequently used.
- *  Not required but will allow for early exits.
- */
 
-/* **************************
- *  Top level Command  table
- * **************************
- */
-static const Command cmd_command_table[] = {
-	{"DEL:", CONFIG_DELAY},
-	{"PSD:", CONFIG_PSD},
-	{"BID:", GET_BOARD_ID},
-	{"CFD:", CFD},
-	{"MUX:", CONFIG_MUX},
-	{"DAC:", CONFIG_DAC},
-	{"RST:", RESET},
-};
-
-/* **************************
- *  CFD Sub command  table
- * **************************
- */
-static const CFDCommand cfd_command_table[] = {
-    {"WRT:", WRITE_REG},
-    {"RST:", RESET},
-	{"GEN:", CFD_GLOBAL_ENABLE},
-};
-
-
-/* **************************
- * PSD Sub command  table
- * **************************
- */
-static const PSDCommand psd_command_table[] = {
-    {"SER:", SERIAL_REG},
-    {"OD0:", OFFSET_DAC_0},
-    {"OD1:", OFFSET_DAC_1},
-    {"RST:", RESET_PSD},
-    {"TRG:", TRIGGER_MODE},
-	{"TST:", TEST_MODE},
-	{"SEL:", CHANNEL_SELECT},
-};
-
-const int num_cmd_commands = sizeof(cmd_command_table) / sizeof(Command);
-const int num_cfd_commands = sizeof(cfd_command_table) / sizeof(CFDCommand);
-const int num_psd_commands = sizeof(psd_command_table) / sizeof(PSDCommand);
-const int command_length = 4; // Commands are 4 characters long
-
-
+// ****************************************************
+// isConfigMode()
+// Check if STX as a string has come in from host
+// uartStr is a global
+// ***************************************************
 bool	isConfigMode() {
 	if (!uart_byte_ready()) return false ;
 //
@@ -80,6 +33,8 @@ bool	isConfigMode() {
 	return false ;
 }
 
+
+
 // ****************************************************
 // configHandler()
 //
@@ -89,6 +44,12 @@ bool	isConfigMode() {
 // ****************************************************
 
 void	configHandler() {
+
+
+	top_control_flow();
+
+
+	/*
 
 // Number of bytes returned from str_to_bytes()
 
@@ -105,6 +66,10 @@ void	configHandler() {
 // in command handler
 
 	u8 		dlyVal ;
+
+
+
+//u32 	tdc_time;
 
 // Token representing which command was received
 
@@ -130,6 +95,7 @@ void	configHandler() {
     			case STX : 	uart_send_byte(NAK) ; // Shouldn't see another STX so NAK
     						return ;
     			case ETX :  uart_send_byte(ACK) ;  // Leave config mode
+    						DEBUG_LCD_PRINT_LOCATION("Stand by for event!")
     						return ;
     			default :	uart_send_byte(NAK) ;  // ???? so send NAK
     						DEBUG_LCD_PRINT_LOCATION("Invalid Command")
@@ -157,11 +123,11 @@ void	configHandler() {
     			    			if (numBytes == 18) {				// Need 18 bytes to configure delay ICs
     	   							for (chip_num = 0; chip_num < 6; chip_num++) {
     	   								dlyVal = buff[(3 * chip_num)] | (1 << 5 );			// Red channel i.e. channel 1
-    	    							configure_delay_chips(chip_num, dlyVal) ;
+    	    							write_delay_chip(chip_num, dlyVal) ;
     	   								dlyVal = buff[(3 * chip_num) + 1] | (2 << 5) ;    	// Green channel i.e. channel 2
-    	    							configure_delay_chips(chip_num, dlyVal) ;
+    	    							write_delay_chip(chip_num, dlyVal) ;
     	   								dlyVal = buff[(3 * chip_num) + 2] | (3 << 5 );    	// Blue channel i.e. channel 3
-    	    							configure_delay_chips(chip_num, dlyVal) ;
+    	    							write_delay_chip(chip_num, dlyVal) ;
     			    				} // end for-loop
     	    						uart_send_byte(ACK) ;
     			    			} else {
@@ -208,10 +174,20 @@ void	configHandler() {
 															uart_send_byte(NAK) ;
 															break;
 														}
-									case TEST_MODE : numBytes = str_to_bytes(buff) ;		// number of hex bytes it should return
-									DEBUG_LCD_PRINT_LOCATION("In Test Mode");
+									case TEST_MODE_0 : numBytes = str_to_bytes(buff) ;		// number of hex bytes it should return
+									DEBUG_LCD_PRINT_LOCATION("In Test Mode PSD 0");
 														if (numBytes == 2) {				// Takes 2 byte to configure test mode
 															configure_psd_0_test_mode(buff[0], buff[1]);
+															uart_send_byte(ACK) ;
+															break;
+														} else {
+															uart_send_byte(NAK) ;
+															break;
+														}
+									case TEST_MODE_1 : numBytes = str_to_bytes(buff) ;		// number of hex bytes it should return
+									DEBUG_LCD_PRINT_LOCATION("In Test Mode PSD 1");
+														if (numBytes == 2) {				// Takes 2 byte to configure test mode
+															configure_psd_1_test_mode(buff[0], buff[1]);
 															uart_send_byte(ACK) ;
 															break;
 														} else {
@@ -222,6 +198,16 @@ void	configHandler() {
 
 														if (numBytes == 1) {				// Takes 1 byte to configure trigger mode
 															configure_psd_trigger_mode(buff[0]);
+															uart_send_byte(ACK) ;
+															break;
+														} else {
+															uart_send_byte(NAK) ;
+															break;
+														}
+									case PSD_GLOBAL_ENABLE_TKN : numBytes = str_to_bytes(buff) ;		// number of hex bytes it should return
+									DEBUG_LCD_PRINT_LOCATION("PSD GLOBAL ENABLE");
+														if (numBytes == 1) {				// 1 bit in 1 byte high or low
+															psd_global_enable(buff[0]);
 															uart_send_byte(ACK) ;
 															break;
 														} else {
@@ -241,14 +227,13 @@ void	configHandler() {
        	    						lcd_set_cursor(0,0) ;
        	    						lite_sprintf(LCDstr, "Board ID: %d", get_board_id() ) ;
        	    						lcd_print_str(LCDstr) ;
-       	    						sleep(5) ;
        	    					}
     							uart_send_byte(ACK) ;
     							break ;
 
 // Write to CFD register
 
-       		case CFD :	buff = &uartStr[8] ;  			// 2x 3 ascii character command plus the :
+       		case CONFIG_CFD :	buff = &uartStr[8] ;  			// 2x 3 ascii character command plus the :
 
 						cfd_token = get_cfd_token();
 
@@ -292,7 +277,7 @@ void	configHandler() {
 						}
 						break ;
 
-// Configure AMUX Channel
+			// Configure AMUX Channel
 
        		case CONFIG_MUX : buff = &uartStr[4] ;			// string past the :
        						  numBytes = str_to_bytes(buff) ;		// number of hex bytes
@@ -309,6 +294,7 @@ void	configHandler() {
        						  break ;
 
        		case CONFIG_DAC : buff = &uartStr[4] ;
+
        						  numBytes = str_to_bytes(buff) ;		// number of hex bytes
        						  u16 data = buff[0]<<8 | buff[1];
 
@@ -318,13 +304,30 @@ void	configHandler() {
 
 									write_dac(data);
 									uart_send_byte(ACK) ;
-
+									 break ;
 							  } else {
 									  uart_send_byte(NAK) ;
 							  } // end if-then-else
 								  break ;
 							// Couldn't understand or cannot do command
 							// Send back negative acknowledge
+
+       		case CONFIG_TDC : 			buff = &uartStr[4] ;			// string past the :
+       		       						numBytes = str_to_bytes(buff) ;		// number of hex bytes
+
+
+       		       						if (numBytes == 1) {					// 1 byte really 5 bit config data
+       		       						DEBUG_LCD_PRINT_CONFIG("TDC DEBUG READ:", numBytes);
+
+       		       							  	tdc_time = read_tdc(buff[0]);
+       		       							  	data = (tdc_time & 0xff0000);
+       		       							  	uart_send_byte( (tdc_time & 0xff0000);
+       											uart_send_byte(ACK) ;
+
+       		       						} else {
+       		       							  uart_send_byte(NAK) ;
+       		       						} // end if-then-else
+       		       						break ;
 
     		default :			uart_send_byte(NAK) ;
     							break ;
@@ -334,17 +337,12 @@ void	configHandler() {
     } while (true) ; // end do-while loop
 
 // Not really an infinite loop, we exit when ETX comes in
+*/
 
 	return ;
 }
 
-// ****************************************************
-// isConfigMode()
-// Check if STX as a string has come in from host
-// uartStr is a global
-// ***************************************************
-
-
+/*
 
 // *****************************************************************
 // get_token() takes the global string, uartStr, and returns a token
@@ -363,9 +361,9 @@ enum cmd_tokens get_token() {
 }
 
 
-/*
+
  * Processes the next three characters to return the PSD config sub type
- */
+
 enum psd_tokens get_psd_token() {
 	int		i ;
 
@@ -379,9 +377,9 @@ enum psd_tokens get_psd_token() {
 }
 
 
-/*
+
  * Processes the next three characters to return the CFD config sub type
- */
+
 enum cfd_tokens get_cfd_token() {
 
 	int		i ;
@@ -395,6 +393,7 @@ enum cfd_tokens get_cfd_token() {
 	return ERROR_CFD;
 
 }
+*/
 
 
 
@@ -448,12 +447,6 @@ void 	cfd_reset(){
 	write_gpio_port(CFD_PORT, 1, CFD_RESET, HIGH) ;
 	return;
 }
-
-
-
-
-
-
 
 
 // ******************************************************************************
@@ -544,7 +537,7 @@ void	psd_strobe(u8 value, u8 psd_chip_number) {
  * 	PSD 0 Offset DAC config
  * **********************************************
  *
- * 	This function takes in the address [channel(5 bits) | sub channel(2 LSB)] and data words (5 bit sign/mag DAC value) and loads it into
+ * 	This function takes in the data words (5 bit sign/mag DAC value) and address [channel(5 bits) | sub channel(2 LSB)] and loads it into
  * 	the internal channel registers of PSD 0 chip.
  *
  * 	Steps:
@@ -591,7 +584,7 @@ void  configure_psd_0_dac(u8 data, u8 addr) {
  * **********************************************
  * Identical to `configure_psd_1_dac` with changed pin names. Refer to that for documentation
  */
-void  configure_psd_1_dac(u8 addr, u8 data) {
+void  configure_psd_1_dac( u8 data, u8 addr) {
 	DEBUG_LCD_PRINT_LOCATION("In PSD DAC 1")
 	u8 subchannel;
 
@@ -633,6 +626,20 @@ void configure_psd_trigger_mode(u8 data){
 
 }
 
+// ***************************************************
+// Routine to control the PSD global_enable line
+// Value should be either LOW or HIGH
+// TODO: This is a bodge for PCB Rev 2 routing, fix it properly at some point.
+// *****************************************************
+
+void	psd_global_enable(u8 value) {
+	write_gpio_port(PSD_ADDR_PORT, 1, PSD_GLOBAL_ENABLE, value) ;
+}
+
+
+
+
+
 
 /*
 // **********************************************
@@ -653,21 +660,92 @@ void configure_psd_trigger_mode(u8 data){
  */
 void configure_psd_0_test_mode(u8 addr, u8 enable){
 	DEBUG_LCD_PRINT_LOCATION("In PSD 0 TEST Mode")
+
 	u8 subchannel;
 
 	if (enable == 1){
 
 		subchannel = addr & 0x3;
 		addr = addr >> 2;
-
+		DEBUG_LCD_PRINT_NUMBER("sub-ch: ", subchannel)
 		write_gpio_port(PSD_MISC_PORT, 1, PSD_SEL_EXT_ADDR_0, HIGH) ;
+		write_gpio_port(PSD_ADDR_PORT, 5, PSD0_CHAN_ADDR_OUT_0, addr);
+		write_gpio_port(PSD_MISC_PORT, 2, PSD_SC0_0, subchannel);
+	}
+
+
+	write_gpio_port(PSD_MISC_PORT, 1, PSD_TEST_MODE_INT_0, enable);
+	//write_gpio_port(PSD_MISC_PORT, 1, PSD_SEL_EXT_ADDR_0, enable) ;
+
+}
+
+
+
+/*
+// **********************************************
+ * 	PSD Test Mode Config
+ * **********************************************
+ * Configures the PSD1 chip test mode.
+ * This function takes in the address [channel(5 bits) | sub channel(2 LSB)] and enable [1 bit].
+ *
+ * Sets the PSD1 in test mode if enable is High.
+ * Leaves the External Address selection line high to allow the PSD1 to remain in test mode.
+ *
+ * Note: A subsequent disable call or any dac config will set the ext addr sel line low.
+ *
+ *
+ *
+ * TODO: enforce that only PSD 0 or PSD 1 can have test mode active at once.
+ *
+ */
+void configure_psd_1_test_mode(u8 addr, u8 enable){
+	DEBUG_LCD_PRINT_LOCATION("In PSD 1 TEST Mode")
+
+	u8 subchannel;
+
+	if (enable == 1){
+
+		subchannel = addr & 0x3;
+		addr = addr >> 2;
+		DEBUG_LCD_PRINT_NUMBER("address: ", addr)
+		write_gpio_port(PSD_MISC_PORT, 1, PSD_SEL_EXT_ADDR_1, HIGH) ;
 		write_gpio_port(PSD_ADDR_PORT, 5, PSD1_CHAN_ADDR_OUT_0, addr);
 		write_gpio_port(PSD_MISC_PORT, 2, PSD_SC0_1, subchannel);
 	}
 
 
-	write_gpio_port(PSD_MISC_PORT, 1, PSD_TEST_MODE_INT_0, enable);
-	write_gpio_port(PSD_MISC_PORT, 1, PSD_SEL_EXT_ADDR_0, enable) ;
+	write_gpio_port(PSD_MISC_PORT, 1, PSD_TEST_MODE_INT_1, enable);
+	write_gpio_port(PSD_MISC_PORT, 1, PSD_SEL_EXT_ADDR_1, enable) ;
+
+}
+
+
+
+
+/* *****************************************************************
+// Delay Configuration
+// *****************************************************************
+ *
+ * Configures all the delay chips on the chipboard, segments the
+ * incoming data and calls write_delay_chip() to implement the per
+ * chip configuration.
+ *
+ * Expects 18 bytes of configuration data.
+ *
+   ***************************************************************** */
+void configure_delay_chips(u8 *buff){
+
+		u8 		dlyVal ;
+		int chip_num;
+
+		for (chip_num = 0; chip_num < 6; chip_num++) {
+				dlyVal = buff[(3 * chip_num)] | (1 << 5 );			// Red channel i.e. channel 1
+				write_delay_chip(chip_num, dlyVal) ;
+				dlyVal = buff[(3 * chip_num) + 1] | (2 << 5) ;    	// Green channel i.e. channel 2
+				write_delay_chip(chip_num, dlyVal) ;
+				dlyVal = buff[(3 * chip_num) + 2] | (3 << 5 );    	// Blue channel i.e. channel 3
+				write_delay_chip(chip_num, dlyVal) ;
+		} // end for-loop
 
 }
 
@@ -675,13 +753,20 @@ void configure_psd_0_test_mode(u8 addr, u8 enable){
 
 
 
-// *****************************************************************S
-// Configure the delay chips
-// chip_num :  delay chip (0 - 5)
-// delay_data : 0 a b v w x y z (see datasheet)
-// *****************************************************************
 
-void configure_delay_chips(u8 chip_num, u8 delay_data) {
+/* *****************************************************************
+// Delay IC Configuration low level implementation
+// *****************************************************************
+ *
+ * Implements the configuration of a single delay chip on the
+ * chipboard.
+ *
+ * chip_num :  delay chip (0 - 5)
+// delay_data : 0 a b v w x y z (see datasheet)
+ *
+   ***************************************************************** */
+
+void write_delay_chip(u8 chip_num, u8 delay_data) {
     u32     ena_val ;
     u32		clk_val ;
     u32		data_val ;
@@ -767,7 +852,7 @@ void	write_mux(u8 data) {
  * 	The LTC1660 DAC requires 4 address bits[a3-a0] followed by 10 data bits[d9-d0] representing voltage setting for the DAC channel.
  * 	+ 2 don't care bits to align the word to its 16 bit shit register.
  *
- * 	MSB is shifted first for both address and data. Data is latched by LTC1660 on the rising edge and sifted out on falling edge
+ * 	MSB is shifted first for both address and data. Data is  latched by LTC1660 on the rising edge and sifted out on falling edge
  * 	of the SCK.
  *
  * 	Data Word: [a3 a2 a1 a0| d9 d8 d7 d6| d5 d4 d3 d2| d1 d0 x1 x0]
@@ -841,7 +926,123 @@ void	write_dac(u16 data) {
 	dac_ld = HIGH;
 	write_gpio_port(DAC_OUT_PORT, 1, DAC_LD, dac_ld) ;
 
-	DEBUG_LCD_PRINT_LOCATION("In write_dac")
-
 	return ;
 }
+
+
+
+
+
+
+
+
+
+/*
+// **********************************************
+ * 	TDC7200 uBlaze Debug implementation
+ * **********************************************
+
+
+void write_tdc(u16 data){
+
+	u8 tdc_sclk;
+	u8 tdc_csb;
+	u8 tdc_en;
+	u8 tdc_sdin;
+	u8 value;
+
+	//start state
+	tdc_sclk = LOW;
+	tdc_sdin = LOW;
+	tdc_en = HIGH;
+	tdc_csb = HIGH;
+
+
+	//init state mask
+	value = (tdc_csb << 3) | (tdc_en << 2) | (tdc_sdin << 1) | (tdc_sclk)
+
+	write_gpio_port(TDC_PORT, 4, TDC_SCLK_FROM_MICRO, value) ;
+
+	// Pull CSB low
+	write_gpio_port(TDC_PORT, 1, TDC_CSB_FROM_MICRO, LOW) ;
+
+	for (i = 15; i >= 0; i--){
+
+
+			tdc_sdin = ( data & (1 << i) ) >> i;
+			tdc_sclk = LOW;
+
+			//CLK is set low, data pushed out
+			value = (tdc_sdin << 1) | (tdc_sclk) ;
+			write_gpio_port(TDC_PORT, 2, TDC_SCLK_FROM_MICRO, value) ;
+
+			//CLK is set high, data latched by TDC
+			tdc_sclk = HIGH;
+			write_gpio_port(TDC_PORT, 1, TDC_SCLK_FROM_MICRO, tdc_sclk) ;
+
+		}
+
+	//PULL chip select High
+	write_gpio_port(TDC_PORT, 1, TDC_CSB_FROM_MICRO, HIGH) ;
+
+}
+
+
+u32 read_tdc(u8 addr, int num_bytes){
+
+	u8 tdc_sclk;
+	u8 tdc_csb;
+	u8 tdc_en;
+	u8 tdc_sdin;
+	u8 tdc_sdout;
+	u8 value;
+	u32 data = 0;
+	//start state
+	tdc_sclk = LOW;
+	tdc_sdin = LOW;
+	tdc_en = HIGH;
+	tdc_csb = HIGH;
+	tdc_sdout = LOW;
+
+	int read_cycles = num_bytes*8 - 1;
+
+
+	// Pull CSB low
+	write_gpio_port(TDC_PORT, 1, TDC_CSB_FROM_MICRO, LOW) ;
+	for (i = 7; i >= 0; i--){
+
+
+				tdc_sdin = ( addr & (1 << i) ) >> i;
+				tdc_sclk = LOW;
+
+				//CLK is set low, data pushed out
+				value = (tdc_sdin << 1) | (tdc_sclk) ;
+				write_gpio_port(TDC_PORT, 2, TDC_SCLK_FROM_MICRO, value) ;
+
+				//CLK is set high, data latched by TDC
+				tdc_sclk = HIGH;
+				write_gpio_port(TDC_PORT, 1, TDC_SCLK_FROM_MICRO, tdc_sclk) ;
+
+			}
+
+
+	for (i = read_cycles; i >= 0; i--){
+
+				tdc_sclk = LOW;
+				//CLK is set low, data pushed out
+				write_gpio_port(TDC_PORT, 1, TDC_SCLK_FROM_MICRO, tdc_sclk) ;
+				//CLK is set high, data latched by uBlaze
+				tdc_sclk = HIGH;
+				write_gpio_port(TDC_PORT, 1, TDC_SCLK_FROM_MICRO, tdc_sclk) ;
+
+				value = (u8) read_gpio_port(TDC_PORT, 1, TDC_DOUT_FROM_MICRO);
+				data = ((value & 1) << i) | data  ;
+
+			}
+
+	//PULL chip select High
+	write_gpio_port(TDC_PORT, 1, TDC_CSB_FROM_MICRO, HIGH) ;
+
+	return data;
+}
+*/
