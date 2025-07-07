@@ -21,6 +21,8 @@ static const Command cmd_command_table[] = {
 	{"DAC:", CONFIG_DAC},
 	{"TDC:", CONFIG_TDC},
 	{"RST:", RESET},
+	{"ACQ:", ACQ_MODE},
+	{"VER:", GET_BOARD_VERSION},
 };
 
 /* **************************
@@ -50,9 +52,22 @@ static const PSDCommand psd_command_table[] = {
 	{"GEN:", PSD_GLOBAL_ENABLE_TKN}
 };
 
+
+/* **************************
+ * MUX Sub command  table
+ * **************************
+ */
+static const MUXCommand mux_command_table[] = {
+    {"ORO:", OR_MUX},
+    {"AMP:", AMP_MUX},
+    {"CFD:", CFD_MUX},
+    {"INT:", INTX_MUX}
+};
+
 const int num_cmd_commands = sizeof(cmd_command_table) / sizeof(Command);
 const int num_cfd_commands = sizeof(cfd_command_table) / sizeof(CFDCommand);
 const int num_psd_commands = sizeof(psd_command_table) / sizeof(PSDCommand);
+const int num_mux_commands = sizeof(mux_command_table) / sizeof(MUXCommand);
 const int command_length = 4; // Commands are 4 characters long
 
 
@@ -129,7 +144,7 @@ void	top_control_flow() {
        	    						lcd_print_str(LCDstr) ;
        	    					}
        							uart_send_byte(ACK) ;
-
+       							xil_printf("Getting board id %d \r\n", get_board_id()) ;
        							uart_send_byte(get_board_id());
 
     							break ;
@@ -140,16 +155,9 @@ void	top_control_flow() {
 								break ;
 
 
-       		case CONFIG_MUX : buff = &uartStr[4] ;
-       						  numBytes = str_to_bytes(buff) ;
-       						  DEBUG_LCD_PRINT_CONFIG("Config MUX command:", numBytes);
-       						  if (numBytes == 1) {					// 1 byte really 5 bit config data
-       							  	write_mux(buff[0]);
-									uart_send_byte(ACK) ;
-       						  } else {
-       							  uart_send_byte(NAK) ;
-       						  }
-       						  break ;
+       		case CONFIG_MUX : 	buff = &uartStr[8] ; 	//data field (if any) starts at uartStr[8] past MUX:_ _ _:data field
+       							mux_control_flow(buff);
+       							break ;
 
        		case CONFIG_DAC : buff = &uartStr[4] ;
 
@@ -165,6 +173,28 @@ void	top_control_flow() {
 									  uart_send_byte(NAK) ;
 							  } // end if-then-else
 							  break ;
+
+       		case ACQ_MODE :  buff = &uartStr[4] ;
+							 numBytes = str_to_bytes(buff) ;
+
+							 if (numBytes == 1) {					// 1 byte really 1 bit config data
+									set_mode(buff[0]);
+									uart_send_byte(ACK) ;
+							 } else {
+								  uart_send_byte(NAK) ;
+							 }
+							 break ;
+
+       		case GET_BOARD_VERSION :	if (useLCD) {
+       		       	    						lcd_set_cursor(0,0) ;
+       		       	    						lite_sprintf(LCDstr, "Firmware Version: %s", PROJECT_VERSION ) ;
+       		       	    						lcd_print_str(LCDstr) ;
+       		       	    					}
+       		       							uart_send_byte(ACK) ;
+       		       							xil_printf("Firmware Version: %s \r\n", PROJECT_VERSION) ;
+       		       							uart_send_str(PROJECT_VERSION, 6);
+
+       		    							break ;
 
        		default :	uart_send_byte(NAK) ;
 						break ;
@@ -205,7 +235,7 @@ void cfd_control_flow(u8 *buff){
 
 		case RESET_CFD :  	numBytes = str_to_bytes(buff) ;			// number of hex bytes it should return
 							DEBUG_LCD_PRINT_STR("In RESET CFD", buff)
-							if (numBytes == 0) {					// 2 bytes {addr/mode, data}
+							if (numBytes == 0) {
 							cfd_reset();
 							DEBUG_LCD_PRINT_STR("CFD RESET", buff)
 							uart_send_byte(ACK) ;
@@ -311,12 +341,96 @@ void psd_control_flow(u8 *buff){
 							}
 							break;
 
+		case RESET_PSD : numBytes = str_to_bytes(buff) ;		// number of hex bytes it should return
+						DEBUG_LCD_PRINT_LOCATION("PSD RST");
+						if (numBytes == 0) {	// RESET ALL
+							psd_reset_all();
+							xil_printf("PSD chips Reset ALL \r\n") ;
+							uart_send_byte(ACK) ;
+						} else if (numBytes == 1) {		// 1bit(LSB) in 1 byte, high- pulse FORCE RESET, low- pulse PSD_RESET(digital)
+							psd_reset(buff[0]);
+							uart_send_byte(ACK) ;
+						} else {
+							uart_send_byte(NAK) ;
+						}
+						break;
+
 		default:	uart_send_byte(NAK) ;
 					break ;
 	}
 }
 
 
+
+
+/* *****************************************************************
+ * mux_control_flow(u8 *buff)
+ *
+ * Handles the control flow for any MUX commands
+ * *****************************************************************
+ */
+void mux_control_flow(u8 *buff){
+
+	enum mux_tokens mux_token = get_mux_token();
+
+	switch  (mux_token){
+
+		case AMP_MUX :  	numBytes = str_to_bytes(buff) ;			// number of hex bytes it should return
+
+						if (numBytes == 1) {					// 1 byte really 5 bit config data
+							write_mux(buff[0]);
+							xil_printf("Preamp MUX configured \r\n");
+							uart_send_byte(ACK) ;
+						} else {
+							xil_printf("Command ERROR: MUX:AMP: - Incorrect Data length  \r\n");
+							uart_send_byte(NAK) ;
+					  }
+					  break ;
+
+		case OR_MUX :  	numBytes = str_to_bytes(buff) ;			// number of hex bytes it should return
+
+								if (numBytes == 1) {					// 1 byte really 2 bit config data
+									write_or_mux(buff[0]);
+									xil_printf("OR MUX configured %d \r\n", buff[0]);
+									uart_send_byte(ACK) ;
+								} else {
+									xil_printf("Command ERROR: MUX:AMP: - Incorrect Data length  \r\n");
+									uart_send_byte(NAK) ;
+							  }
+							  break ;
+
+		case CFD_MUX :  	numBytes = str_to_bytes(buff) ;			// number of hex bytes it should return
+
+							if (numBytes == 1) {					// 1 byte really 1 bit config data
+								write_cfd_mux(buff[0]);
+								xil_printf("CFD out MUX configured \r\n");
+								uart_send_byte(ACK) ;
+							} else {
+								xil_printf("Command ERROR: MUX:CFD: - Incorrect Data length  \r\n");
+								uart_send_byte(NAK) ;
+						  }
+						  break ;
+
+		case INTX_MUX :  	numBytes = str_to_bytes(buff) ;			// number of hex bytes it should return
+
+							if (numBytes == 1) {					// 1 byte really 1 bit config data
+								write_intx_mux(buff[0]);
+								xil_printf("INTX out MUX configured \r\n");
+								uart_send_byte(ACK) ;
+							} else {
+								xil_printf("Command ERROR: MUX:INT: - Incorrect Data length  \r\n");
+								uart_send_byte(NAK) ;
+						  }
+						  break ;
+
+
+
+		default:	uart_send_byte(NAK) ;
+					xil_printf("Command ERROR: Unrecognized MUX command.   \r\n");
+					break ;
+	}
+
+}
 
 
 
@@ -367,6 +481,23 @@ enum cfd_tokens get_cfd_token() {
 		}
 	}
 	return ERROR_CFD;
+
+}
+
+/*
+ * Processes the next three characters to return the CFD config sub type
+ */
+enum mux_tokens get_mux_token() {
+
+	int		i ;
+
+	for (i = 0; i < num_mux_commands; i++) {
+		// Compare the command string with the corresponding section of uartStr
+		if (compare_strings((const char *)&uartStr[4], mux_command_table[i].command, command_length)) {
+			return mux_command_table[i].token;
+		}
+	}
+	return ERROR_MUX;
 
 }
 

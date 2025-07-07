@@ -19,9 +19,13 @@
 u32		gpio_in[4] ;
 u32		gpio_out[4] ;
 
+
+// acquisition_mode state - State of the chip board acquisition mode output to picoblaze
+bool acquisition_mode = false;
+
 // Is the LCD module connected????
 
-bool	useLCD = true ;
+bool	useLCD = false ;
 
 // Choose if we want to run self tests
 // FifoTest should NOT be made true
@@ -61,7 +65,6 @@ int main() {
 
    init_uart() ;
    xil_printf("PSD_FPGA %s \r\n", PROJECT_VERSION) ;
-
 // Init timer/counter
 
 	init_timer() ;
@@ -111,22 +114,26 @@ int main() {
 	int event_cntr = 1 ;
 	int time_cntr = 1 ;
 	
-	
+	xil_printf("Debug: Starting main loop \r\n") ;
     while (true) {
  
     	//time_1 = XTmrCtr_GetTimerCounterReg(TMRCTR_BASEADDR, TIMER_COUNTER_0);	
     	if ( isConfigMode() ) {
     		configHandler() ;
+    		xil_printf("Debug: out of config handler \r\n") ;
     	}
-    	if ( isEventMode() || fifo_occupancy_flag) { 		
+
+
+    	if (acquisition_mode && ( isEventMode() || fifo_occupancy_flag)) {
         	eventHandler() ;
 			event_cntr++ ;
 			xil_printf("Event # -> %d\r\n", event_cntr);
 			xil_printf("Fifo Occupancy: %d\r\n", fifo_occupancy_flag);
+			xil_printf("Debug: out of event mode \r\n") ;
     	}
     		
     	
-    	
+
 		if (useLCD && (0)) {
 				int fifo_occupancy_count = (int) XLlFifo_iRxOccupancy(&FifoInstance);
 				lcd_set_cursor(2,0) ;

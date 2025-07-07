@@ -35,10 +35,10 @@ GPIO,Dir,Bit,Nickname,Verilog Signal,Comment
 ,,,,,
 ,,,,,
 0,out,0,>,or_sel[0],2-bit code used to select which OR we use
-0,out,1,>,or_sel[1],00 is PSD0 OR ; 01 is PSD1 OR ; 11 for both PSD Ors; 10 is the CFD chip OR
+0,out,1,>,or_sel[1],00 is PSD0 OR   01 is PSD1 OR   11 for both PSD Ors  10 is the CFD chip OR
 0,out,2,>,cfd_out_sel,Select cfd output from either 0- PSD0 or 1– PSD1
 0,out,3,>,psd_intx_out_sel,Route out intx from either PSD 0 or PSD1 to host
-,,,,,
+0,out,4,>,acquisition_mode,signal from ublaze to switch to acquisition mode (active high) Prince Jun 26- this is to ensure chipboard always boots into microblaze control. 
 ,,,,,
 1,in,0,psd0_chan_addr_in_0,0,PSD 0 channel address input bit 0
 1,in,1,psd0_chan_addr_in_1,0,PSD 0 channel address input bit 1

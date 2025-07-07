@@ -64,6 +64,7 @@
 // Global
 
 extern	u8 	uartStr[256] ;
+extern  bool acquisition_mode;
 
 // Some general defines
 
@@ -91,6 +92,8 @@ enum 	cfd_tokens get_cfd_token() ;
 bool	isConfigMode() ;
 void	configHandler() ;
 
+void 	set_mode(u8 mode);
+
 void	configure_psd_chips(u8 *psd_config_data) ;
 void  	configure_psd_0_dac(u8 data, u8 addr);
 void  	configure_psd_1_dac(u8 data, u8 addr);
@@ -104,12 +107,17 @@ void 	configure_psd_trigger_mode(u8 data);
 void 	configure_psd_0_test_mode(u8 addr, u8 enable);
 void 	configure_psd_1_test_mode(u8 addr, u8 enable);
 void	psd_global_enable(u8 value);
+void	psd_reset_all(void);
+void	psd_reset(u8 value);
 
 
-void configure_delay_chips(u8 *buff);
+void 	configure_delay_chips(u8 *buff);
 void	write_delay_chip(u8 chip_num, u8 delay_data) ;
 
 void	write_mux(u8 data) ;
+void	write_intx_mux(u8 data);
+void	write_or_mux(u8 data);
+void	write_cfd_mux(u8 data);
 void	write_dac(u16 data) ;
 
 void	write_tdc(u16 data) ;

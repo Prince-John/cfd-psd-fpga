@@ -31,6 +31,24 @@ void init_uart(void) {
 }
 
 // ********************************************************
+// Send a str
+// ********************************************************
+
+void uart_send_str(char* text, int size) {
+
+	u8 byte = 0x00;
+
+	for (int i = 0; i < size; i++){
+		byte = text[i];
+		XUartNs550_SendByte(UART_BASEADDR, byte);
+	}
+	XUartNs550_SendByte(UART_BASEADDR, 0x00);
+
+	return ;
+}
+
+
+// ********************************************************
 // Send a byte
 // ********************************************************
 
