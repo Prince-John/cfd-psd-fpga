@@ -163,9 +163,10 @@ module psd_fpga_top(
 // by or'ing the two PSD output ORs
 
   //  assign  take_event_micro = take_event ;
-    assign  take_event_micro = psd_or_out_0 | psd_or_out_1 ;
-    
-    assign  pico_in_control = take_event_micro | led[1] ;          
+    assign  take_event_micro = (acquisition_mode == 1'b1) ? (psd_or_out_0 | psd_or_out_1) : 1'b0  ;
+
+// Prince Jun 26, this lets the microblaze to remain in control on start up even if take event is high. Prevents a deadlock state. 
+    assign  pico_in_control = (acquisition_mode == 1'b1) ? ( take_event_micro | led[1] ) : 1'b0 ;          
 //  assign  pico_in_control = take_event ;
 
 // ******************************** 
@@ -210,8 +211,9 @@ module psd_fpga_top(
 // There should be an external pull-up on busy_out_l line
 // ****************************************************** 
 
-// TODO: For PCB rev 2 and backplane rev 1 no pull up exists, we are driving the busy out line high. Change this for new rev version. 
-    assign  busy_out_l = (led[1] | busy_out_micro) ? 1'b0 : 1'b1 ;
+// Note from PCB rev 2 and backplane rev 1 no pull up exists, we are driving the busy out line high. Change this for new rev version. 
+// Changed may 19 for rev 3 to correct version, busy_out_l is either pulled low or tri-stated. -Prince
+    assign  busy_out_l = (led[1] | busy_out_micro) ? 1'b0 : 1'bz ;
    
 // *****************************************************************  
 // Create the buses we need to connect to PicoBlaze input ports
@@ -334,7 +336,7 @@ module psd_fpga_top(
 
 // **********************************************************
     assign  psd_glob_ena = (pico_in_control == 1'b1) ? psd_glob_ena_from_pico : psd_global_enable_from_micro ; // output from microblaze connected to FPGA pin on JB2 connected to PSD chips
-    assign  glob_ena = (pico_in_control == 1'b1) ? psd_glob_ena_from_pico : psd_global_enable_from_micro; // output from microblaze connected to FPGA pin on JB3 TEMP WORKAROUND for REV2
+//  assign  glob_ena = (pico_in_control == 1'b1) ? psd_glob_ena_from_pico : psd_global_enable_from_micro; // output from microblaze connected to FPGA pin on JB3 TEMP WORKAROUND for REV2; May 19 - glob_ena is an input now -
     assign  glob_ena_micro = (pico_in_control == 1'b1) ? psd_glob_ena_from_pico : psd_global_enable_from_micro ;// output from microblaze connected to input to microblaze. 
     
     
@@ -344,8 +346,17 @@ module psd_fpga_top(
 //  DEBUG FLAGS AND GPIO Routing - Assigned only for debugging 
 // *************************************************************************     
      
-    assign debug_gpio[0] = tlast;
-    assign debug_gpio[6:1] = debug_flags_from_pico[5:0]; // connecting 6 debug flags from pico, inside pico they are controlled by led_reg[7:2] - Prince, March 30
+    //assign debug_gpio[0] = tlast;
+    //assign debug_gpio[6:1] = debug_flags_from_pico[5:0]; // connecting 6 debug flags from pico, inside pico they are controlled by led_reg[7:2] - Prince, March 30
+    
+//  ****** Routing Digital signals that go to the backplane NIM translators ******
+
+    assign debug_gpio[0] = or_connect;  
+    assign debug_gpio[1] = cfd_out;  
+    assign debug_gpio[2] = intx_out; 
+    assign debug_gpio[3] = (led[1] | busy_out_micro) ? 1'b0 : 1'b1 ;
+    
+    // busy_out_l but it drives it high since it is exposed as a debug GPIO
         
 // *************************************************************************
 //  Temporary fix for rev2 pcb: Routing 10 MHz Clk to the TDC7200 clock net 

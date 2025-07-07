@@ -48,353 +48,8 @@ void	configHandler() {
 
 	top_control_flow();
 
-
-	/*
-
-// Number of bytes returned from str_to_bytes()
-
-	int		numBytes ;
-
-// Pointer to u8 data
-
-	u8		*buff ;
-
-// Value (a byte) we want to transmit to delay chip
-// delay_data : 0 a b v w x y z (see datasheet)
-// Host sends us a byte with v w x y z
-// We'll tack on the channel info i.e. (a b) here
-// in command handler
-
-	u8 		dlyVal ;
-
-
-
-//u32 	tdc_time;
-
-// Token representing which command was received
-
-	enum	cmd_tokens token ;
-	enum	psd_tokens psd_token ;
-	enum	cfd_tokens cfd_token ;
-
-// Use when we configure the delay chips
-
-	u8	chip_num ;
-
-// Wait for configuration commands from the host
-// Exit the do-loop when we receive a ETX from Host
-// ETX says leave configuration mode
-
-    do {
-    	numBytes = uart_get_str() ;
-
-// Handle some "special" cases (2 byte strings are special, second byte is NULL)
-
-    	if ( (numBytes == 2) || (numBytes == 1) ){
-    		switch (uartStr[0]) {
-    			case STX : 	uart_send_byte(NAK) ; // Shouldn't see another STX so NAK
-    						return ;
-    			case ETX :  uart_send_byte(ACK) ;  // Leave config mode
-    						DEBUG_LCD_PRINT_LOCATION("Stand by for event!")
-    						return ;
-    			default :	uart_send_byte(NAK) ;  // ???? so send NAK
-    						DEBUG_LCD_PRINT_LOCATION("Invalid Command")
-    						break ;
-    		} // end switch
-    	} // end if
-
-// So we think we have a configuration command from the host!
-// Analyze string and get a token telling us what we need to do
-
-    	token = get_token() ;
-
-// When we return, data field (if any) starts at uartStr[4]
-
-    	switch (token) {
-
-// Configure delay ICs
-// Configure the delay chips (For each chip we need to load the 3 channels: R G B
-// chip_num :  delay chip (0 - 5)
-// delay_data : 0 a b v w x y z (see datasheet)
-// Host is sending us the 5-bit value {v w x y z}
-
-    		case CONFIG_DELAY :	buff = &uartStr[4] ;			// string past the :
-    			    			numBytes = str_to_bytes(buff) ;		// number of hex bytes
-    			    			if (numBytes == 18) {				// Need 18 bytes to configure delay ICs
-    	   							for (chip_num = 0; chip_num < 6; chip_num++) {
-    	   								dlyVal = buff[(3 * chip_num)] | (1 << 5 );			// Red channel i.e. channel 1
-    	    							write_delay_chip(chip_num, dlyVal) ;
-    	   								dlyVal = buff[(3 * chip_num) + 1] | (2 << 5) ;    	// Green channel i.e. channel 2
-    	    							write_delay_chip(chip_num, dlyVal) ;
-    	   								dlyVal = buff[(3 * chip_num) + 2] | (3 << 5 );    	// Blue channel i.e. channel 3
-    	    							write_delay_chip(chip_num, dlyVal) ;
-    			    				} // end for-loop
-    	    						uart_send_byte(ACK) ;
-    			    			} else {
-    			    				uart_send_byte(NAK) ;
-    			    			} // end if-then-else
-    							break ;
-
-// Configure PSD serial register
-
-    		case CONFIG_PSD :	buff = &uartStr[8] ;  			// 2x 3 ascii character command plus the :
-
-    							psd_token = get_psd_token();
-
-    							DEBUG_LCD_PRINT_STR("In PSD ctrl", buff)
-
-    							switch  (psd_token){
-
-									case SERIAL_REG :	numBytes = str_to_bytes(buff) ;		// number of hex bytes it should return
-														if (numBytes == 12) {				// Takes 12 bytes to configure both PSD chips
-															configure_psd_chips(buff) ;
-															uart_send_byte(ACK) ;
-															break;
-														} else {
-															uart_send_byte(NAK) ;
-															break;
-														}
-
-									case OFFSET_DAC_0 : numBytes = str_to_bytes(buff) ;		// number of hex bytes it should return
-
-														if (numBytes == 2) {				// Takes 2 bytes to configure offset DAC
-															configure_psd_0_dac(buff[0], buff[1]) ;
-															uart_send_byte(ACK) ;
-															break;
-														} else {
-															uart_send_byte(NAK) ;
-															break;
-														}
-									case OFFSET_DAC_1 : numBytes = str_to_bytes(buff) ;		// number of hex bytes it should return
-														if (numBytes == 2) {				// Takes 2 bytes to configure offset DAC
-															configure_psd_1_dac(buff[0], buff[1]) ;
-															uart_send_byte(ACK) ;
-															break;
-														} else {
-															uart_send_byte(NAK) ;
-															break;
-														}
-									case TEST_MODE_0 : numBytes = str_to_bytes(buff) ;		// number of hex bytes it should return
-									DEBUG_LCD_PRINT_LOCATION("In Test Mode PSD 0");
-														if (numBytes == 2) {				// Takes 2 byte to configure test mode
-															configure_psd_0_test_mode(buff[0], buff[1]);
-															uart_send_byte(ACK) ;
-															break;
-														} else {
-															uart_send_byte(NAK) ;
-															break;
-														}
-									case TEST_MODE_1 : numBytes = str_to_bytes(buff) ;		// number of hex bytes it should return
-									DEBUG_LCD_PRINT_LOCATION("In Test Mode PSD 1");
-														if (numBytes == 2) {				// Takes 2 byte to configure test mode
-															configure_psd_1_test_mode(buff[0], buff[1]);
-															uart_send_byte(ACK) ;
-															break;
-														} else {
-															uart_send_byte(NAK) ;
-															break;
-														}
-									case TRIGGER_MODE : numBytes = str_to_bytes(buff) ;		// number of hex bytes it should return
-
-														if (numBytes == 1) {				// Takes 1 byte to configure trigger mode
-															configure_psd_trigger_mode(buff[0]);
-															uart_send_byte(ACK) ;
-															break;
-														} else {
-															uart_send_byte(NAK) ;
-															break;
-														}
-									case PSD_GLOBAL_ENABLE_TKN : numBytes = str_to_bytes(buff) ;		// number of hex bytes it should return
-									DEBUG_LCD_PRINT_LOCATION("PSD GLOBAL ENABLE");
-														if (numBytes == 1) {				// 1 bit in 1 byte high or low
-															psd_global_enable(buff[0]);
-															uart_send_byte(ACK) ;
-															break;
-														} else {
-															uart_send_byte(NAK) ;
-															break;
-														}
-
-									default:	uart_send_byte(NAK) ;
-    								    		break ;
-    							}
-    							break ;
-
-			// Get board ID
-
-       		case GET_BOARD_ID :	if (useLCD) {
-
-       	    						lcd_set_cursor(0,0) ;
-       	    						lite_sprintf(LCDstr, "Board ID: %d", get_board_id() ) ;
-       	    						lcd_print_str(LCDstr) ;
-       	    					}
-    							uart_send_byte(ACK) ;
-    							break ;
-
-// Write to CFD register
-
-       		case CONFIG_CFD :	buff = &uartStr[8] ;  			// 2x 3 ascii character command plus the :
-
-						cfd_token = get_cfd_token();
-
-						DEBUG_LCD_PRINT_STR("In CFD ctrl", buff)
-
-						switch  (cfd_token){
-
-							case WRITE_REG :  	numBytes = str_to_bytes(buff) ;			// number of hex bytes it should return
-												DEBUG_LCD_PRINT_CONFIG("In WRT REG, ", numBytes)
-												if (numBytes == 2) {					// 2 bytes {addr/mode, data}
-													write_cfd_reg(buff[0], buff[1]) ;
-													uart_send_byte(ACK) ;
-												} else {
-													uart_send_byte(NAK) ;
-												} // end if-then-else
-												break ;
-
-							case RESET_CFD :  	numBytes = str_to_bytes(buff) ;			// number of hex bytes it should return
-												DEBUG_LCD_PRINT_STR("In RESET CFD", buff)
-												if (numBytes == 0) {					// 2 bytes {addr/mode, data}
-												cfd_reset();
-												DEBUG_LCD_PRINT_STR("CFD RESET", buff)
-												uart_send_byte(ACK) ;
-												} else {
-												uart_send_byte(NAK) ;
-												} // end if-then-else
-												break ;
-
-							case CFD_GLOBAL_ENABLE :  	numBytes = str_to_bytes(buff) ;			// number of hex bytes it should return
-												DEBUG_LCD_PRINT_STR("In GLOBAL_EN CFD", buff)
-												if (numBytes == 1) {					// 1 bit in 1 byte high or low
-												cfd_global_enable(buff[0]);
-												uart_send_byte(ACK) ;
-												} else {
-												uart_send_byte(NAK) ;
-												} // end if-then-else
-												break ;
-
-							default:	uart_send_byte(NAK) ;
-										break ;
-						}
-						break ;
-
-			// Configure AMUX Channel
-
-       		case CONFIG_MUX : buff = &uartStr[4] ;			// string past the :
-       						  numBytes = str_to_bytes(buff) ;		// number of hex bytes
-
-       						  DEBUG_LCD_PRINT_CONFIG("Config MUX command:", numBytes);
-       						  if (numBytes == 1) {					// 1 byte really 5 bit config data
-
-       							  	write_mux(buff[0]);
-									uart_send_byte(ACK) ;
-
-       						  } else {
-       							  uart_send_byte(NAK) ;
-       						  } // end if-then-else
-       						  break ;
-
-       		case CONFIG_DAC : buff = &uartStr[4] ;
-
-       						  numBytes = str_to_bytes(buff) ;		// number of hex bytes
-       						  u16 data = buff[0]<<8 | buff[1];
-
-							  DEBUG_LCD_PRINT_CONFIG("Config DAC command:", numBytes);
-
-							  if (numBytes == 2) {					// 2 byte config word
-
-									write_dac(data);
-									uart_send_byte(ACK) ;
-									 break ;
-							  } else {
-									  uart_send_byte(NAK) ;
-							  } // end if-then-else
-								  break ;
-							// Couldn't understand or cannot do command
-							// Send back negative acknowledge
-
-       		case CONFIG_TDC : 			buff = &uartStr[4] ;			// string past the :
-       		       						numBytes = str_to_bytes(buff) ;		// number of hex bytes
-
-
-       		       						if (numBytes == 1) {					// 1 byte really 5 bit config data
-       		       						DEBUG_LCD_PRINT_CONFIG("TDC DEBUG READ:", numBytes);
-
-       		       							  	tdc_time = read_tdc(buff[0]);
-       		       							  	data = (tdc_time & 0xff0000);
-       		       							  	uart_send_byte( (tdc_time & 0xff0000);
-       											uart_send_byte(ACK) ;
-
-       		       						} else {
-       		       							  uart_send_byte(NAK) ;
-       		       						} // end if-then-else
-       		       						break ;
-
-    		default :			uart_send_byte(NAK) ;
-    							break ;
-
-    	} // end switch
-
-    } while (true) ; // end do-while loop
-
-// Not really an infinite loop, we exit when ETX comes in
-*/
-
 	return ;
 }
-
-/*
-
-// *****************************************************************
-// get_token() takes the global string, uartStr, and returns a token
-// ******************************************************************
-enum cmd_tokens get_token() {
-	int		i ;
-
-	for (i = 0; i < num_cmd_commands; i++) {
-		// Compare the command string with the corresponding section of uartStr
-		if (compare_strings((const char *)&uartStr[0], cmd_command_table[i].command, command_length)) {
-			return cmd_command_table[i].token;
-		}
-	}
-
-	return ERROR;
-}
-
-
-
- * Processes the next three characters to return the PSD config sub type
-
-enum psd_tokens get_psd_token() {
-	int		i ;
-
-	for (i = 0; i < num_psd_commands; i++) {
-		// Compare the command string with the corresponding section of uartStr
-		if (compare_strings((const char *)&uartStr[4], psd_command_table[i].command, command_length)) {
-			return psd_command_table[i].token;
-		}
-	}
-	return ERROR_PSD;
-}
-
-
-
- * Processes the next three characters to return the CFD config sub type
-
-enum cfd_tokens get_cfd_token() {
-
-	int		i ;
-
-	for (i = 0; i < num_cfd_commands; i++) {
-		// Compare the command string with the corresponding section of uartStr
-		if (compare_strings((const char *)&uartStr[4], cfd_command_table[i].command, command_length)) {
-			return cfd_command_table[i].token;
-		}
-	}
-	return ERROR_CFD;
-
-}
-*/
-
 
 
 // ******************************************************************************
@@ -406,6 +61,37 @@ u8	get_board_id() {
 	board_id = (u8) read_gpio_port(BOARD_ID_PORT, 6, BOARD_ID_0) ;
 	return board_id ;
 }
+
+
+
+/*
+// **********************************************
+ * 	Chipboard Acquisition Mode Configuration
+ * **********************************************
+ * This routine updates the global board state flag and writes to the
+ * GPIO line to set FPGA hardware into acquisition mode.
+ *
+ * Input u8 mode: only the LSB is valid, 1 - acquisition mode
+ */
+void 	set_mode(u8 mode){
+
+	if (mode == 1){
+		xil_printf("Chipboard in Acquisition Mode! \r\n") ;
+		acquisition_mode = true;
+		write_gpio_port(TAKE_EVENT_PORT, 1, ACQUISITION_MODE, HIGH) ;
+	}
+	else{
+		xil_printf("Chipboard out of Acquisition Mode! \r\n") ;
+		acquisition_mode = false;
+		write_gpio_port(TAKE_EVENT_PORT, 1, ACQUISITION_MODE, LOW) ;
+	}
+	return;
+}
+
+
+
+
+
 
 // ***************************************************
 // Routine to control the cfd_write line
@@ -437,7 +123,7 @@ void	cfd_strobe(u8 value) {
 
 // ***************************************************
 // Routine to reset and hold the cfd reset in correct state.
-// CFD_rese is low active reset
+// CFD_reset is low active reset
 // *****************************************************
 void 	cfd_reset(){
 	write_gpio_port(CFD_PORT, 1, CFD_RESET, HIGH) ;
@@ -627,6 +313,8 @@ void configure_psd_trigger_mode(u8 data){
 }
 
 // ***************************************************
+//	PSD global_enable
+// ***************************************************
 // Routine to control the PSD global_enable line
 // Value should be either LOW or HIGH
 // TODO: This is a bodge for PCB Rev 2 routing, fix it properly at some point.
@@ -637,8 +325,78 @@ void	psd_global_enable(u8 value) {
 }
 
 
+// ***************************************************
+//	PSD Digital Reset
+// ***************************************************
+// Routine to reset PSD digital circuits.
+// PSD_RESET is high? active reset
+// *****************************************************
+void 	psd_digital_reset(){
+	write_gpio_port(PSD_ADDR_PORT, 1, PSD_RESET, LOW) ;
+	usleep(1) ;
+	write_gpio_port(PSD_ADDR_PORT, 1, PSD_RESET, HIGH) ;
+	usleep(100) ;
+	write_gpio_port(PSD_ADDR_PORT, 1, PSD_RESET, LOW) ;
+	return;
+}
 
 
+// ***************************************************
+// PSD Force Reset
+// ***************************************************
+// Routine to reset PSD hit registers circuits.
+// PSD_RESET is high? active reset
+// *****************************************************
+void 	psd_force_reset(){
+	write_gpio_port(PSD_ADDR_PORT, 1, PSD_FORCE_RST, LOW) ;
+	usleep(1) ;
+	write_gpio_port(PSD_ADDR_PORT, 1, PSD_FORCE_RST, HIGH) ;
+	usleep(100) ;
+	write_gpio_port(PSD_ADDR_PORT, 1, PSD_FORCE_RST, LOW) ;
+	return;
+}
+
+
+// ***************************************************
+// PSD RESET
+// ***************************************************
+// Routine to reset PSD chips both force and digital
+// *****************************************************
+void 	psd_reset_all(){
+
+	psd_digital_reset();
+	usleep(1) ;
+	psd_force_reset();
+
+	return;
+}
+
+
+
+// ***************************************************
+// PSD RESET
+// ***************************************************
+// Routine to selectively reset PSD chips (Force / Digital)
+// if input is 1 - Force Reset only
+// if input is 0 - Digital Reset only
+// other reset both.
+// *****************************************************
+void 	psd_reset(u8 value){
+
+	if (value == 1){
+		xil_printf("PSD Force Reset \r\n") ;
+		psd_force_reset();
+	}
+	else if (value == 0){
+		xil_printf("PSD Digital Reset \r\n") ;
+		psd_digital_reset();
+	}
+	else{
+		psd_reset_all();
+		xil_printf("Could not Parse PSD reset option, RESET both! \r\n") ;
+	}
+	return;
+}
 
 
 /*
@@ -839,6 +597,61 @@ void	write_mux(u8 data) {
 	write_gpio_port(MUX_PORT, 5, MUX_EN, data) ;
 
 
+	return ;
+}
+
+
+/*
+// **********************************************
+ * 	OR Selection MUX Configuration low level implementation
+ * **********************************************
+ *
+ * 	This function takes in the bitmask to set the OR mux configuration
+ *
+ *	This multiplexer is present on the FPGA itself.
+ *
+ *   00 is PSD0 OR
+ *   01 is PSD1 OR
+ *   11 for both PSD Ors
+ *   10 is the CFD chip OR
+// *********************************************
+*/
+void	write_or_mux(u8 data) {
+	write_gpio_port(BOARD_ID_PORT, 2, OR_SEL_0, data) ;
+	return ;
+}
+
+/*
+// **********************************************
+ * 	CFD Selection MUX Configuration low level implementation
+ * **********************************************
+ *
+ * 	This function takes in the bitmask to select the CFD MUX that routes cfd generated by psd chips.
+ *
+ * 	This multiplexer is present in the FPGA itself.
+ *
+ *   Select cfd generated output from either 0- PSD0 or 1– PSD1
+// *********************************************
+*/
+void	write_cfd_mux(u8 data) {
+	write_gpio_port(BOARD_ID_PORT, 1, CFD_OUT_SEL, data) ;
+	return ;
+}
+
+/*
+// **********************************************
+ * 	INTx Selection MUX Configuration low level implementation
+ * **********************************************
+ *
+ * 	This function takes in the bitmask to select the INTx MUX that routes INTx output generated by psd chips.
+ *
+ * 	This multiplexer is present in the FPGA itself.
+ *
+ *  Route out intx from either PSD 0 or PSD1 to host
+// *********************************************
+*/
+void	write_intx_mux(u8 data) {
+	write_gpio_port(BOARD_ID_PORT, 1, PSD_INTX_OUT_SEL, data) ;
 	return ;
 }
 

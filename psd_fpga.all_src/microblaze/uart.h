@@ -102,6 +102,9 @@ int 	uart_get_str() ;
 
 void 	uart_send_byte(u8 byte) ;
 
+// Sends (size) bytes of ASCII sting back to the host. Unsafe does not check buffer bounds.
+void uart_send_str(char* text, int size) ;
+
 // Initialize the UART
 
 void 	init_uart(void) ;

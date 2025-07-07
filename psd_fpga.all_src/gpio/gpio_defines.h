@@ -2,8 +2,8 @@
 // *******************************************************
 // This header files creates defines for the gpio bits   
 // The file is AUTO-GENERATED, DO NOT MODIFY!!!   
-// Timestamp:  			Sun Mar 23 21:26:24 CDT 2025
-// TCL Code Version:    	v0.0.7 released at	2025-01-27 20:45:56
+// Timestamp:  			Thu Jun 26 15:39:29 CDT 2025
+// TCL Code Version:    	v0.2.0 released at	2025-05-19 16:56:57
 // *******************************************************
 
 // GPIO INPUT Port 0 -> Board ID bit 0 (input pin)
@@ -42,7 +42,7 @@
 // GPIO OUTPUT Port 0 -> 2-bit code used to select which OR we use
 #define	OR_SEL_0	0
 
-// GPIO OUTPUT Port 0 -> 00 is PSD0 OR ; 01 is PSD1 OR ; 11 for both PSD Ors; 10 is the CFD chip OR
+// GPIO OUTPUT Port 0 -> 00 is PSD0 OR   01 is PSD1 OR   11 for both PSD Ors  10 is the CFD chip OR
 #define	OR_SEL_1	1
 
 // GPIO OUTPUT Port 0 -> Select cfd output from either 0- PSD0 or 1– PSD1
@@ -50,6 +50,9 @@
 
 // GPIO OUTPUT Port 0 -> Route out intx from either PSD 0 or PSD1 to host
 #define	PSD_INTX_OUT_SEL	3
+
+// GPIO OUTPUT Port 0 -> signal from ublaze to switch to acquisition mode (active high) Prince Jun 26- this is to ensure chipboard always boots into microblaze control. 
+#define	ACQUISITION_MODE	4
 
 // GPIO INPUT Port 1 -> PSD 0 channel address input bit 0
 #define	PSD0_CHAN_ADDR_IN_0	0

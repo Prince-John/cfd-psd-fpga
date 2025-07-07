@@ -2,8 +2,8 @@
 // ********************************************************
 // This header file creates wires and assigns for gpio bits
 // The file is AUTO-GENERATED, DO NOT MODIFY!!!   
-// Timestamp:  		  Sun Mar 23 21:26:24 CDT 2025
-// TCL Code Version:    v0.0.7 released at	2025-01-27 20:45:56
+// Timestamp:  		  Thu Jun 26 15:39:29 CDT 2025
+// TCL Code Version:    v0.2.0 released at	2025-05-19 16:56:57
 // ********************************************************
 
 	assign	gpio0_in[BOARD_ID_0] = board_id[0] ;
@@ -42,6 +42,7 @@
 	assign	or_sel[1] = gpio0_out[OR_SEL_1] ;
 	assign	cfd_out_sel = gpio0_out[CFD_OUT_SEL] ;
 	assign	psd_intx_out_sel = gpio0_out[PSD_INTX_OUT_SEL] ;
+	assign	acquisition_mode = gpio0_out[ACQUISITION_MODE] ;
 	assign	gpio1_in[PSD0_CHAN_ADDR_IN_0] = 0 ;
 	assign	gpio1_in[PSD0_CHAN_ADDR_IN_1] = 0 ;
 	assign	gpio1_in[PSD0_CHAN_ADDR_IN_2] = 0 ;
