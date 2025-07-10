@@ -1,5 +1,5 @@
 #
-# This is an example README file
+# WashU CFD-PSD Chipboard FPGA bulid Files 
 # 
 
 Author: 	gle
