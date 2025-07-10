@@ -167,7 +167,7 @@ void	write_cfd_reg(u8 addr_mode, u8 data) {
 // Load the two PSD chips
 // Each psd register is 48 bits wide
 // 96 serial clocks
-// Least significant bit goes in first
+// As of v0.3.1 MSB is shifted in first. ** This maintains compatibility with all previous versions of the configuration software ** -change July 9 '25 - Prince
 // Put data out on falling edge of clock
 // PSD chip latches data on rising edge
 // *********************************
@@ -184,10 +184,13 @@ void  configure_psd_chips(u8 *psd_config_data) {
 // 2-bit field {psd_sclk, psd_sin}
 // (1 << j) is mask to pick of the jth bit
 
+
     for (i = 0; i < 12 ; i++) {
         byte = (u32) psd_config_data[i] ;
-        for (j = 0 ; j < 8 ; j++) {
+
+        for (j = 7 ; j >= 0 ; j--) {
         	psd_sin = (byte & (1 << j)) >> j ;
+
         	psd_sclk = LOW ;
            	value = (psd_sclk << 1) | psd_sin ;
             write_gpio_port(PSD_SERIAL_CONFIG_OUT_PORT, 2, PSD_SIN, value) ;
@@ -195,6 +198,7 @@ void  configure_psd_chips(u8 *psd_config_data) {
            	value = (psd_sclk << 1) | psd_sin ;
             write_gpio_port(PSD_SERIAL_CONFIG_OUT_PORT, 2, PSD_SIN, value) ;
         }
+
     }
     return ;
 
@@ -458,7 +462,7 @@ void configure_psd_0_test_mode(u8 addr, u8 enable){
  */
 void configure_psd_1_test_mode(u8 addr, u8 enable){
 	DEBUG_LCD_PRINT_LOCATION("In PSD 1 TEST Mode")
-
+	xil_printf("Control Flow Debug: PSD 1 TEST MODE with address: %d", addr);
 	u8 subchannel;
 
 	if (enable == 1){
@@ -473,7 +477,7 @@ void configure_psd_1_test_mode(u8 addr, u8 enable){
 
 
 	write_gpio_port(PSD_MISC_PORT, 1, PSD_TEST_MODE_INT_1, enable);
-	write_gpio_port(PSD_MISC_PORT, 1, PSD_SEL_EXT_ADDR_1, enable) ;
+	//write_gpio_port(PSD_MISC_PORT, 1, PSD_SEL_EXT_ADDR_1, enable) ;
 
 }
 

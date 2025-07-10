@@ -58,7 +58,7 @@ psd_fpga.all_src/vitis_project/
 psd_fpga.all_src/python/__pycache__/*
 
 #Ignore version headers
-psd_fpga.all_src/microblaze.beta/version.h
+psd_fpga.all_src/microblaze/version.h
 
 
 *.launch

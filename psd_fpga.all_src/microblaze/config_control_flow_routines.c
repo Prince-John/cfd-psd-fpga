@@ -200,7 +200,7 @@ void	top_control_flow() {
 						break ;
 
     	} // end switch
-
+    	usleep(200) ;
     } while (true) ; // end do-while loop
 
 // Not really an infinite loop, we exit when ETX comes in
