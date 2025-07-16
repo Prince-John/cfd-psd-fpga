@@ -62,18 +62,18 @@ import serial
 
 # Importing the required module for plotting
 
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 
 # So we can get environment variable info
 
 import os
-from plotting_utils import HistogramPlotter
+#from plotting_utils import HistogramPlotter
 
 ################################
 # Plotting 
 ################################
 
-plotter = HistogramPlotter(bin_size = 100)
+#plotter = HistogramPlotter(bin_size = 100)
 
 
 
@@ -119,9 +119,9 @@ def process_event(event_packet_len, event_packet, event_counter) :
     for k in range(7, event_packet_len, 9) :
         addr = event_packet[k]
         print(f"...... Channel -> {addr}")
-        plotter.adc_data[0].append(bytes_to_adc(event_packet[k+1], event_packet[k+2], 'A'))
-        plotter.adc_data[1].append(bytes_to_adc(event_packet[k+3], event_packet[k+4], 'B'))
-        plotter.adc_data[2].append(bytes_to_adc(event_packet[k+5], event_packet[k+6], 'C'))
+        bytes_to_adc(event_packet[k+1], event_packet[k+2], 'A')
+        bytes_to_adc(event_packet[k+3], event_packet[k+4], 'B')
+        bytes_to_adc(event_packet[k+5], event_packet[k+6], 'C')
         bytes_to_adc(event_packet[k+7], event_packet[k+8], 'T')     
         
         

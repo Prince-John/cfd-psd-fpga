@@ -20,6 +20,7 @@ u32		gpio_in[4] ;
 u32		gpio_out[4] ;
 
 
+
 // acquisition_mode state - State of the chip board acquisition mode output to picoblaze
 bool acquisition_mode = false;
 
@@ -46,6 +47,12 @@ char    LCDstr[80] ;
 // Global string variable
 
 u8		uartStr[256] ;
+
+// Global event number
+u32 event_number ;
+
+// Global Chipboard Id
+int board_id;
 
 // *******************************************************************
 // Picoblaze will send data back to ublaze via streaming FIFO

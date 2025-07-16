@@ -44,18 +44,50 @@
 
 #include 	<sleep.h>
 
-// Define the byte locations in data packet array where data must be
+// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+// If time1 < TIME1_THRESHOLD then use TIME2
+// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-#define		BOARD_ID	0
+#define		TIME1_THRESHOLD		400
 
-// Next six locations contain the timestamp counter (Little Endian)
+// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+// INTB goes low a fixed number of clock cycles after common stop
+// We would like to adjust timestamp to account for this
+// I am just guessing at this point.  We will need to measure this.
+// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-#define		TSTAMP_LOW	1
-#define		TSTAMP_HIGH	4
+#define		TIME1_OS		1
+#define		TIME2_OS		TIME1_OS + 1
+
+// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+// Define the byte locations in ordinary data packet array
+// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+#define		BOARD_ID		0
+
+// Next 4 locations contain the 32-bit event number (Little Endian)
+
+#define		EVENT_NUMBER 	1
 
 // Start of ADC data
 
-#define		ADC_OS		7
+#define		ADC_OS			5
+
+// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+// Define the byte locations in special data packet array
+// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+// Board id is 1 byte
+// Event number is 4 bytes
+// 7 bytes for timestamp counter (56 bits)
+// Upper 44 bits is the integer part
+// lower 12 bits is the fractional part
+
+#define		TSTAMP			5
+
+// Length of tstamp special packet
+
+#define		TSTAMP_PACKET_LEN	12
 
 // *****************************************
 // Some defines we need for the FIFO
@@ -72,7 +104,7 @@
 #define 	MAX_PACKET_LEN 			60
 #define 	NO_OF_PACKETS 			1
 #define 	MAX_DATA_BUFFER_SIZE 	(NO_OF_PACKETS * MAX_PACKET_LEN)
-#define		MAX_PACKET_BYTE_SIZE	MAX_DATA_BUFFER_SIZE * FIFO_WORD_SIZE
+#define		MAX_PACKET_BYTE_SIZE	200
 
 // ***********************************************
 // Variables defined elsewhere
@@ -82,6 +114,14 @@ extern	XLlFifo 		FifoInstance;
 extern	u32 			DestinationBuffer[MAX_DATA_BUFFER_SIZE];
 extern	XLlFifo_Config 	*Config ;
 
+// Global variable to keep track of the board's number
+
+extern	int				board_id ;
+
+// Global variable to keep track of event number
+
+extern	u32				event_number ;
+
 // ^^^^^^^^^^^^^^^^^^^
 // Functions
 // ^^^^^^^^^^^^^^^^^^^
@@ -89,6 +129,10 @@ extern	XLlFifo_Config 	*Config ;
 // Polls the take_event line
 
 bool	isEventMode() ;
+
+// Routine to take TDC7200 data and compute TOF values
+
+unsigned long long 	calculate_timestamp(unsigned long long timestamp, u32 time1, u32 time2, u32 cal1, u32 cal2) ;
 
 // Handles the nuclear physics event
 
@@ -109,5 +153,9 @@ int	init_fifo() ;
 // Routine to get data from the FIFO
 
 int get_packet (XLlFifo *InstancePtr, u32* DestinationAddr)  ;
+
+// Routine to send packet back to host
+
+void send_packet(int packet_len, u8 *data_packet) ;
 
 #endif /* SRC_EVENT_H_ */
