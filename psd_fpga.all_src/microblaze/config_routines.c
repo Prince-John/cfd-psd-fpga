@@ -57,7 +57,6 @@ void	configHandler() {
 // ******************************************************************************
 
 u8	get_board_id() {
-	u8		board_id ;
 	board_id = (u8) read_gpio_port(BOARD_ID_PORT, 6, BOARD_ID_0) ;
 	return board_id ;
 }
@@ -437,7 +436,7 @@ void configure_psd_0_test_mode(u8 addr, u8 enable){
 
 
 	write_gpio_port(PSD_MISC_PORT, 1, PSD_TEST_MODE_INT_0, enable);
-	//write_gpio_port(PSD_MISC_PORT, 1, PSD_SEL_EXT_ADDR_0, enable) ;
+	write_gpio_port(PSD_MISC_PORT, 1, PSD_SEL_EXT_ADDR_0, enable) ;
 
 }
 

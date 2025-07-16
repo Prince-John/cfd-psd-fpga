@@ -65,6 +65,7 @@
 
 extern	u8 	uartStr[256] ;
 extern  bool acquisition_mode;
+extern 	int board_id;
 
 // Some general defines
 

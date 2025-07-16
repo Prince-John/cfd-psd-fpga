@@ -69,8 +69,8 @@ print("Python program starting.")
 print('device env set', os.environ.get('PSD_UART_0'))
 print("Press <CTL-C> to exit ...\n")
       
-uart = os.environ.get('PSD_UART_0')
-ser = serial.Serial('/dev/ttyUSB2')
+#uart = os.environ.get('PSD_UART_0')
+ser = serial.Serial('/dev/ttyUSB0')
 ser.baudrate = 3000000
 ser.flushInput() 
 ser.flushOutput() 

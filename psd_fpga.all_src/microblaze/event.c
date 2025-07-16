@@ -11,24 +11,19 @@
 // ***************************************
 
 #include  "event.h"
-#include "timer.h"
-
-extern int fifo_occupancy_flag; 
 
 // ********************************************************
 // Check the take event input to see if take_event is high.
 // For time being, just assume take event is always high
 // *******************************************************
+extern int fifo_occupancy_flag;
 
 bool	isEventMode() {
-	
 	if (read_gpio_port(TAKE_EVENT_PORT, 1, TAKE_EVENT)) {
 		return true ;
 	} else {
 		return false ;
 	}
-	
-	
 }
 
 // ********************************************************
@@ -137,55 +132,87 @@ int		init_fifo() {
 //
 // **********************************************************
 
-int old_get_packet (XLlFifo *InstancePtr, u32* buffer) {
+int get_packet (XLlFifo *InstancePtr, u32* buffer) {
 	int 	i;
 	u32 	RxWord ;
 	u32		ReceiveLength ;
+	u32		occupancy ;
 
 	ReceiveLength = 0 ;
-	if (XLlFifo_iRxOccupancy(InstancePtr)) {
+	occupancy = XLlFifo_iRxOccupancy(InstancePtr) ;
+	if (occupancy) {
 		ReceiveLength = (XLlFifo_iRxGetLen(InstancePtr)) / FIFO_WORD_SIZE ;
 		for (i=0; i < ReceiveLength; i++) {
 			RxWord = XLlFifo_RxGetWord(InstancePtr);
 			*(buffer+i) = RxWord;
 		} // end for
 	} // end if
+
+//	if ((occupancy != 0) && (occupancy != 6)) {
+//		while (1) { } ;
+//	}
+
 	return ((int) ReceiveLength) ;
 }
 
-int get_packet(XLlFifo *InstancePtr, u32* buffer) {
-    u32 i;
-    u32 RxWord;
-    u32 ReceiveLength;
+// **********************************************
+// Routine to transmit data packet back to host
+// *************************************************
 
-    // Check if at least one frame is available
-    if (!XLlFifo_iRxOccupancy(InstancePtr)) {
-        return 0;
-    }
+void send_packet(int packet_len, u8 *data_packet) {
+	u8		cobs_packet[MAX_PACKET_BYTE_SIZE + 2] ;
+	int		cobs_packet_len ;
+	int		i ;
 
-    // Read frame length (in words)
-    ReceiveLength = XLlFifo_iRxGetLen(InstancePtr) / FIFO_WORD_SIZE;
+	cobs_packet_len = cobsEncode(data_packet, packet_len, cobs_packet) ;
+	cobs_packet[cobs_packet_len] = 0x00 ;
+	for (i = 0 ; i  <= cobs_packet_len ; i++) {
+	    	XUartNs550_SendByte(UART_BASEADDR, cobs_packet[i]);
+	} // end for
 
-    for (i = 0; i < ReceiveLength; i++) {
-        RxWord = XLlFifo_RxGetWord(InstancePtr);
-        buffer[i] = RxWord;
-    }
-
-    // Make sure the packet was actually complete
-    if (!XLlFifo_IsRxDone(InstancePtr)) {
-        xil_printf("Warning: Incomplete packet read!\n\r");
-        return -1;
-    }
-    
-    return (int)ReceiveLength;
-}
-
-
-
-
+} // sendPacket()
 
 // **********************************************
-// New event handler
+// Compute the complete timestamp
+// Integer part is 44 bits from timestamp counter
+// Fractional part is 12 bits that we will compute
+// Implied binary point is 12 places in from right
+// To compute time in python code
+// Divide the timestamp by 2 ** 12 (4096) and then
+// multiply by period of 10 MHz clock i.e. 100 ns
+// *************************************************
+
+unsigned long long create_timestamp(unsigned long long timestamp, u32 time1, u32 time2, u32 cal1, u32 cal2) {
+	unsigned long long		calCount ;
+	unsigned long long		tof, frac_part ;
+
+// Compute difference between the two calibration values
+
+	calCount = cal2 - cal1 ;
+
+// Need to decide whether to use TIME1 or TIME2
+// If time1 < 350 (TIME1_THRESHOLD) we are too close to next rising edge so use time2
+// Rounding when I do divide .... should probably round
+// Will worry about this later!
+
+	if (time1 < TIME1_THRESHOLD) {
+		tof = (time2 << 12) / calCount ;
+		frac_part = calCount - tof ;
+		timestamp = timestamp - TIME2_OS ;
+	} else {
+		tof = (time1 << 12) / calCount ;
+		frac_part = calCount - tof ;
+		timestamp = timestamp - TIME1_OS ;
+	} // end if-then-else
+
+	timestamp = (timestamp << 12) | (frac_part & 0x00000fff) ;
+
+	return timestamp ;
+}
+
+// **********************************************
+// Event handler
+// board_id and event_number are global variables
 // *************************************************
 
 void eventHandler(void) {
@@ -195,155 +222,173 @@ void eventHandler(void) {
 	u8		data_packet[MAX_PACKET_BYTE_SIZE] ;
 	int		packet_len ;
 
-// Data packet after being COBS encoded
+// Array to hold special packet for full timestamp
+// For time being sending TIME1, TIME2, CALIB1, CALIB2
+// Later will use these to compute 12-bit fractional part
+// and send that!
 
-	u8		cobs_packet[MAX_PACKET_BYTE_SIZE + 2] ;
-	int		cobs_packet_len ;
+	u8		tstamp_data_packet[TSTAMP_PACKET_LEN] ;
+	int		tstamp_packet_len = TSTAMP_PACKET_LEN ;
 
 // Get a packet from the custom logic block
 // DestinationBuffer contains 32-bit words (4-bytes per word)
 
 	int		packet_word_len ;
-
 	packet_word_len = get_packet(&FifoInstance, DestinationBuffer) ;
-	
-	
-	
+
+// If nothing in the FIFO then just return
+// Increment the global variable event_number each time
+// the event handler is called
+
+	if (packet_word_len == 0) {
+		return ;
+	} else {
+		event_number++ ;
+	} // end if-else
 
 // Go through the Destination Buffer to build event
 // Data tag will tell us what kind of data we have
 
-	u32		word ;
-	u8		data_tag ;
-	u8		data_type ;
-	u8		data_subtype ;
-	int		adc_lower ;
+	u32					word ;
+	u8					data_tag, data_type, data_subtype ;
+	u8					*byte_ptr ;
+
+	u32					tstamp_low, tstamp_high ;
+	u32					time1, time2, cal1, cal2 ;
+	unsigned long long	tstamp ;
 
 // Keep track of channel count
 
 	int		chan_cnt = 0 ;
+	int		adc_lower ;
+
+	tstamp_low = 0 ;
+	tstamp_high = 0 ;
+	time1 = 0 ;
+	time2 = 0 ;
+	cal1 = 0 ;
+	cal2 = 0 ;
 
 // Go through FIFO data one word at a time
-// Board 0 is NOT currently supported
+// board_id is global variable set in the main.c
+// Microblaze by default uses LITTLE ENDIAN
+// Use this fact to access bytes correctly
+// along with pointer arithmetic!
 
 	for (int i = 0; i < packet_word_len; i++) {
+
+// Go through and process each 32-bit word in the FIFO buffer
+
 		word = DestinationBuffer[i] ;
-		data_tag = (word >> 24) & 0xff ;
+		byte_ptr = (u8 *) &word ;
+		data_tag = (word >> 24)  ;
 		data_type = (data_tag >> 6) & 0x03 ;
 		data_subtype = (data_tag >> 4) & 0x03 ;
+
+// We have 4 different types of data (adc, time counter, tdc time data, tdc cal data)
+
 		switch (data_type) {
-			case 0 :	data_packet[BOARD_ID] = (word >> 16) & 0xff ;
-						data_packet[ADC_OS + 9 * chan_cnt]=  data_tag & 0x0f  ;
+			case 0 :	data_packet[ADC_OS + 9 * chan_cnt]=  data_tag & 0x0f  ;
 						adc_lower = ADC_OS + (9 * chan_cnt) + (2 * data_subtype) + 1 ;
-						data_packet[adc_lower] = word & 0xff ;
-						data_packet[adc_lower + 1] = (word >> 8) & 0xff ;
+						data_packet[adc_lower] = *(byte_ptr) ;
+						data_packet[adc_lower + 1] = *(byte_ptr + 1);
 						if (data_subtype == 3) chan_cnt++ ; 	// increment channel count
 						break ;  // adc data
 
-			case 1 :	if (data_subtype == 0) {
-							data_packet[TSTAMP_LOW] = word & 0xff ;
-							data_packet[TSTAMP_LOW + 1] = (word >> 8) & 0xff ;
-							data_packet[TSTAMP_LOW + 2] = (word >> 16) & 0xff ;
-						} else {
-							data_packet[TSTAMP_HIGH] = word & 0xff ;
-							data_packet[TSTAMP_HIGH + 1] = (word >> 8) & 0xff ;
-							data_packet[TSTAMP_HIGH + 2] = (word >> 16) & 0xff ;
-						}
-						break ;	// timestamp data
+			case 1 :	if (board_id == 0) {
+							if (data_subtype == 0) {
+								tstamp_low = word ;
+							} else {
+								tstamp_high = word ;
+							} // end if-the-else
+						} // end if
+						break ;	// timestamp counter data
 
-			case 2 :	break ;	// TIME1 or TIME2 data
+			case 2 :	if (board_id == 0) {
+							if (data_subtype == 1) {
+								time1 = word & 0x007fffff ;
+							} else {
+								time2 = word  & 0x007fffff ;
+							} // end if-then-else
+						}  // end if
+						break ;	// TIME1 or TIME2 data
 
-			case 3 :	break ;	// CAL1 or CAL2 data
+			case 3 :	if (board_id == 0) {
+							if (data_subtype == 1) {
+								cal1 = word & 0x007fffff ;
+							} else {
+								cal2 = word & 0x007fffff ;
+							} // end if-then-else
+						} // end if
+						break ;	// CALIB1 or CALIB2 data
 		} // end switch
 	} // end for
 
-// We'll COBS encode the data_packet and then send the COBS encoded packet data out UART
-	
-	packet_len = 7 + 9 * chan_cnt ;
-	
-	if (packet_word_len > 0) {
-		cobs_packet_len = cobsEncode(data_packet, packet_len, cobs_packet) ;
-		cobs_packet[cobs_packet_len] = 0x00 ;
-		int		i ;
-		for (i = 0 ; i  <= cobs_packet_len ; i++) {
-	    	XUartNs550_SendByte(UART_BASEADDR, cobs_packet[i]);
-		} // end for
+// ORDINARY packet
+
+	if (chan_cnt != 0) {
+		data_packet[board_id] = board_id ;
+		byte_ptr = (u8 *) &event_number;
+		data_packet[EVENT_NUMBER] = *(byte_ptr) ;
+		data_packet[EVENT_NUMBER + 1] = *(byte_ptr + 1) ;
+		data_packet[EVENT_NUMBER + 2] = *(byte_ptr + 2) ;
+		data_packet[EVENT_NUMBER + 3] = *(byte_ptr + 3) ;
+
+// Send the packet back to the host
+
+		packet_len = ADC_OS + 9 * chan_cnt  ;
+		send_packet(packet_len, data_packet) ;
+
 	} // end if
 
-// Clear the FIFO before we continue
+// Check to see if this is board 0
+// "SPECIAL" time packet
 
-	//XLlFifo_IntClear(&FifoInstance,0xffffffff);
+	if (board_id == 0) {
 
-	
-	fifo_occupancy_flag = XLlFifo_iRxOccupancy(&FifoInstance);
-	
+// Insert the board id
+
+		tstamp_data_packet[BOARD_ID] = 0xff ;
+
+// Insert the event number (4 bytes)
+
+		byte_ptr = (u8 *) &event_number ;
+		tstamp_data_packet[EVENT_NUMBER] = *(byte_ptr) ;
+		tstamp_data_packet[EVENT_NUMBER + 1] = *(byte_ptr + 1) ;
+		tstamp_data_packet[EVENT_NUMBER + 2] = *(byte_ptr + 2) ;
+		tstamp_data_packet[EVENT_NUMBER + 3] = *(byte_ptr + 3) ;
+
+// Create the integer part of the timestamp
+
+		tstamp = ((tstamp_high & 0x00ffffff) << 24) | (tstamp_low & 0x00ffffff) ;
+
+// Calculate the complete timestamp (integer part + fractional part)
+// Integer part comes from the timestamp counter while fractional part
+// is computed using TDC7200 data
+
+		tstamp = create_timestamp(tstamp, time1, time2, cal1, cal2) ;
+
+// Insert the complete timestamp (7 bytes long) into the packet
+
+		byte_ptr = (u8 *) &tstamp  ;
+		tstamp_data_packet[TSTAMP] =  *(byte_ptr);
+		tstamp_data_packet[TSTAMP + 1] =  *(byte_ptr + 1) ;
+		tstamp_data_packet[TSTAMP + 2] =  *(byte_ptr + 2) ;
+		tstamp_data_packet[TSTAMP + 3] =  *(byte_ptr + 3) ;
+		tstamp_data_packet[TSTAMP + 4] =  *(byte_ptr + 4) ;
+		tstamp_data_packet[TSTAMP + 5] =  *(byte_ptr + 5) ;
+		tstamp_data_packet[TSTAMP + 6] =  *(byte_ptr + 6) ;
+
+// Send the packet back to host
+
+		send_packet(tstamp_packet_len, tstamp_data_packet) ;
+
+	} // end if
+
 // Don't leave this eventHandler until take_event goes low
-	while (isEventMode()){
-		//eventHandler();
-		usleep(100) ;
-	}
-
-} // end eventHandlerNew
-
-
-
-
-// **********************************************
-// Event handler (Old)
-// *************************************************
-
-/*
- 
-	void eventHandlerOld(void) {
-	
-	// Data packet
-	
-		u8		data_packet[MAX_PACKET_BYTE_SIZE] ;
-	
-	// Data packet after being COBS encoded
-	
-		u8		cobs_packet[MAX_PACKET_BYTE_SIZE + 2] ;
-	
-	// Length of packet in words
-	
-		int		packet_word_len ;
-	
-	// Length of packet in bytes
-	
-		int		packet_len ;
-	
-	// Length of packet after being COBS encoded
-	
-		int		cobs_packet_len ;
-	
-	// Get a packet from the custom logic block
-	// DestinationBuffer contains 32-bit words (4-bytes per word)
-	
-		packet_word_len = get_packet(&FifoInstance, DestinationBuffer) ;
-	
-		for (int i = 0; i < packet_word_len; i++) {
-			data_packet[4 * i] = (DestinationBuffer[i] >> 24) & 0xFF;
-			data_packet[4 * i + 1] = (DestinationBuffer[i] >> 16) & 0xFF;
-			data_packet[4 * i + 2] = (DestinationBuffer[i] >> 8) & 0xFF;
-			data_packet[4 * i + 3] = DestinationBuffer[i] & 0xFF;
-		}
-		packet_len = 4 * packet_word_len ;
-		if (packet_len != 0) {
-			cobs_packet_len = cobsEncode(data_packet, packet_len, cobs_packet) ;
-			cobs_packet[cobs_packet_len] = 0x00 ;
-			int		i ;
-			for (i = 0 ; i  <= cobs_packet_len ; i++) {
-				XUartNs550_SendByte(UART_BASEADDR, cobs_packet[i]);
-			} // end for
-		} // end if
-	
-	// Don't leave this eventHandler until take_event goes low
-	
-		while (isEventMode()){
-			//eventHandler();
-			usleep(100) ;
-		} ;
-		
+	fifo_occupancy_flag = XLlFifo_iRxOccupancy(&FifoInstance);
+	while (isEventMode()){ } ;
 
 } // end eventHandler
-*/
+
+
