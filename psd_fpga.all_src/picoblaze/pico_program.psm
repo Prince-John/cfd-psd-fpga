@@ -1175,11 +1175,11 @@ get_event:
 .or1:		compare		psd_or_reg, 00
 			jump		Z, .done	
 			compare		psd_or_reg, 01
-			jump		Z, .psd0
+			jump		Z, .psd0 
 			compare		psd_or_reg, 02
 			jump		Z, .psd1
 			compare		psd_or_reg, 03
-			jump		Z, .both
+			jump		Z, .both 
 ;
 ; Should never happen ... if it does then hang
 ; Both LEDs will be on and PicoBlaze will be
