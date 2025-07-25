@@ -237,6 +237,9 @@ void eventHandler(void) {
 						adc_lower = ADC_OS + (9 * chan_cnt) + (2 * data_subtype) + 1 ;
 						data_packet[adc_lower] = word & 0xff ;
 						data_packet[adc_lower + 1] = (word >> 8) & 0xff ;
+						// Debug Print for ADC values.
+						xil_printf("channel: %d \r\n", chan_cnt);
+						xil_printf("ADC: %d, Data upper byte: %x, lower byte: %x \r\n", data_subtype, data_packet[adc_lower+1], data_packet[adc_lower]);
 						if (data_subtype == 3) chan_cnt++ ; 	// increment channel count
 						break ;  // adc data
 
