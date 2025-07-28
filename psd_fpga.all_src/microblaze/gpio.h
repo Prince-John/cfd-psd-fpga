@@ -58,7 +58,11 @@ extern		u32         gpio_out[4] ;
 // &&&&&&&&&&&&&&&&&&&&&&&&&&
 
 void 	write_gpio_port(int gpio_number, u32 field_width, int bit0, u32 value) ;
+u32 	read_gpio_output_state(int gpio_number, u32 field_width, int bit0);
+
 u32 	read_gpio_port(int gpio_number, u32 field_width, int bit0) ;
+u32 	read_gpio_input_state(int gpio_number, u32 field_width, int bit0);
+
 void    init_gpio(void) ;
 
 #endif /* SRC_GPIO_H_ */
