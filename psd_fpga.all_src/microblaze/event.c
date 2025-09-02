@@ -289,6 +289,7 @@ void eventHandler(void) {
 
 		switch (data_type) {
 			case 0 :	data_packet[ADC_OS + 9 * chan_cnt]=  data_tag & 0x0f  ;
+
 						adc_lower = ADC_OS + (9 * chan_cnt) + (2 * data_subtype) + 1 ;
 						data_packet[adc_lower] = *(byte_ptr) ;
 						data_packet[adc_lower + 1] = *(byte_ptr + 1);
@@ -327,7 +328,7 @@ void eventHandler(void) {
 // ORDINARY packet
 
 	if (chan_cnt != 0) {
-		data_packet[board_id] = board_id ;
+		data_packet[BOARD_ID] = board_id ;
 		byte_ptr = (u8 *) &event_number;
 		data_packet[EVENT_NUMBER] = *(byte_ptr) ;
 		data_packet[EVENT_NUMBER + 1] = *(byte_ptr + 1) ;

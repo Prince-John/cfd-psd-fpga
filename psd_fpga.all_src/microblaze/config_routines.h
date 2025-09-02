@@ -66,6 +66,7 @@
 extern	u8 	uartStr[256] ;
 extern  bool acquisition_mode;
 extern 	int board_id;
+extern		u32         gpio_out[4] ;
 
 // Some general defines
 

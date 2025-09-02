@@ -132,25 +132,13 @@ int main() {
 
 
     	if (acquisition_mode && ( isEventMode() || fifo_occupancy_flag)) {
-        	eventHandler() ;
-			event_cntr++ ;
-			xil_printf("Event # -> %d\r\n", event_cntr);
+    		xil_printf("Event # -> %d\r\n", event_number);
+    		eventHandler() ;
+
 			xil_printf("Fifo Occupancy: %d\r\n", fifo_occupancy_flag);
 			xil_printf("Debug: out of event mode \r\n") ;
     	}
     		
-    	
-
-		if (useLCD && (0)) {
-				int fifo_occupancy_count = (int) XLlFifo_iRxOccupancy(&FifoInstance);
-				lcd_set_cursor(2,0) ;
-				lite_sprintf(LCDstr, "Event # -> %d", event_cntr) ;
-				lcd_print_str(LCDstr) ;
-				lite_sprintf(LCDstr, "Fifo count: %d          ",fifo_occupancy_count);
-				lcd_set_cursor(3,0) ;
-				lcd_print_str(LCDstr) ;
-				time_cntr = time_cntr  + event_cntr*0.5; 
-			} 
     	
     	/*
     	time_2 = XTmrCtr_GetTimerCounterReg(TMRCTR_BASEADDR, TIMER_COUNTER_0);

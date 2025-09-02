@@ -130,10 +130,79 @@ u32 read_gpio_port(int gpio_number, u32 field_width, int bit0) {
     return gpio_value ;
 }
 
-// ************************************
-// Routine to initialize gpio
-// Clear the global GPIO variables
-// ************************************
+
+/* **********************************************************************
+ * u32 read_gpio_output_state(int gpio_number, u32 field_width, int bit0)
+ * **********************************************************************
+ *
+ * Reads the GPIO state variable and returns the bit masked value with
+ * the same function argument structure as the actual GPIO port functions.
+ *
+ */
+u32 read_gpio_output_state(int gpio_number, u32 field_width, int bit0){
+		u32 gpio_value;
+		int	mask ;
+		int j ;
+	// Read the gpio value from the state variable.
+		gpio_value = gpio_out[gpio_number];
+
+	// If the field width is 32 bits, then return entire register
+
+	    if ( field_width == 32 ) {
+	    	return gpio_value ;
+	    }
+
+	// Else build the mask
+
+	    mask = 0 ;
+	    for (j = bit0 ; j < (bit0 + field_width) ; j++) mask |= (1 << j) ;
+	    gpio_value &= mask ;
+
+	// Shift it down so right centered in the u32
+
+	    gpio_value = (gpio_value >> bit0) ;
+
+	    return gpio_value ;
+}
+
+
+/* **********************************************************************
+ * u32 read_gpio_input_state(int gpio_number, u32 field_width, int bit0)
+ * **********************************************************************
+ * !!!! USE with CAUTION !!! - This can have stale values, Does not reflect actual GPIO wire state.
+ *
+ * Reads the GPIO state variable and returns the bit masked value with
+ * the same function argument structure as the actual GPIO port functions.
+ *
+ */
+u32 read_gpio_input_state(int gpio_number, u32 field_width, int bit0){
+		u32 gpio_value;
+		int	mask ;
+		int j ;
+	// Read the gpio value from the state variable.
+		gpio_value = gpio_out[gpio_number];
+
+	// If the field width is 32 bits, then return entire register
+
+	    if ( field_width == 32 ) {
+	    	return gpio_value ;
+	    }
+
+	// Else build the mask
+
+	    mask = 0 ;
+	    for (j = bit0 ; j < (bit0 + field_width) ; j++) mask |= (1 << j) ;
+	    gpio_value &= mask ;
+
+	// Shift it down so right centered in the u32
+
+	    gpio_value = (gpio_value >> bit0) ;
+
+	    return gpio_value ;
+}
+
+
+
 
 void    init_gpio(void) {
 	u32	gpio_value ;
@@ -155,4 +224,9 @@ void    init_gpio(void) {
 
     return ;
 }
+
+// ************************************
+// Routine to initialize gpio
+// Clear the global GPIO variables
+// ************************************
 
