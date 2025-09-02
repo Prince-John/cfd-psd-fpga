@@ -137,8 +137,8 @@ module psd_fpga_top(
 // TDC related signals
 // For initial testing on digilent board use take_event (button) for common stop
 
-//        .common_stop(common_stop),
-        .common_stop(take_event_micro),
+        .common_stop(common_stop),
+//        .common_stop(take_event_micro),
         .tdc_dout(tdc_dout),
         .tdc_intb(tdc_intb),
         .tstamp_clk(clk10),
@@ -163,7 +163,7 @@ module psd_fpga_top(
 // by or'ing the two PSD output ORs
 
   //  assign  take_event_micro = take_event ;
-    assign  take_event_micro = (acquisition_mode == 1'b1) ? (psd_or_out_0 | psd_or_out_1) : 1'b0  ;
+    assign  take_event_micro = (acquisition_mode == 1'b1) ? or_connect : 1'b0  ;
 
 // Prince Jun 26, this lets the microblaze to remain in control on start up even if take event is high. Prevents a deadlock state. 
     assign  pico_in_control = (acquisition_mode == 1'b1) ? ( take_event_micro | led[1] ) : 1'b0 ;          
@@ -355,6 +355,8 @@ module psd_fpga_top(
     assign debug_gpio[1] = cfd_out;  
     assign debug_gpio[2] = intx_out; 
     assign debug_gpio[3] = (led[1] | busy_out_micro) ? 1'b0 : 1'b1 ;
+    assign debug_gpio[6:4] = debug_flags_from_pico[2:0];
+    
     
     // busy_out_l but it drives it high since it is exposed as a debug GPIO
         

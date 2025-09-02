@@ -290,6 +290,12 @@ void  configure_psd_1_dac( u8 data, u8 addr) {
 	subchannel = addr & 0x3;
 	addr = addr >> 2;
 
+
+	u8 psd_sel_ext_address_state = read_gpio_output_state(PSD_MISC_PORT, 1, PSD_SEL_EXT_ADDR_1);
+	u8 psd_chan_addr_out_state = read_gpio_output_state(PSD_ADDR_PORT, 5, PSD1_CHAN_ADDR_OUT_0);
+	u8 psd_sub_chan_state = read_gpio_output_state(PSD_MISC_PORT, 2, PSD_SC0_1);
+
+
 	write_gpio_port(PSD_MISC_PORT, 1, PSD_SEL_EXT_ADDR_1, HIGH) ;
 
 	psd_strobe(LOW, 1);
@@ -306,7 +312,9 @@ void  configure_psd_1_dac( u8 data, u8 addr) {
 	// dac data valid
 	psd_strobe(LOW, 1);
 
-	write_gpio_port(PSD_MISC_PORT, 1, PSD_SEL_EXT_ADDR_1, LOW) ;
+	write_gpio_port(PSD_MISC_PORT, 1, PSD_SEL_EXT_ADDR_1, psd_sel_ext_address_state) ;
+	write_gpio_port(PSD_ADDR_PORT, 5, PSD1_CHAN_ADDR_OUT_0, psd_chan_addr_out_state);
+	write_gpio_port(PSD_MISC_PORT, 2, PSD_SC0_1, psd_sub_chan_state);
     return ;
 }
 

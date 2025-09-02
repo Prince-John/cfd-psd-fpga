@@ -1137,24 +1137,26 @@ sl0 op
 sl0 op
 					; Mux sel is bits 4, 5, 6 of the ADC_CTL_PORT
 			test scr1, 01  ; Test bit 0				; Bit 6 is 0 if PSD 0
+			or led_reg, 08  ; Set bit 3  			;DEBUG FLAG 1 START
+			output		led_reg, LED_PORT	;DEBUG FLAG 1
 			jump	Z, .skip
 			or op, 40  ; Set bit 6				; Bit 6 is a 1 if PSD 1
+			and led_reg,  f7  ; Clear bit 3 			;DEBUG FLAG 1
+			output		led_reg, LED_PORT	;DEBUG FLAG 1 STOP If psd 1 is signaled correctly.
+
 .skip:		output	op, ADC_CTL_PORT
 ;
 ; Correct input is now sitting on FIFO input
 ; Wait for ’tready’ signal to be active
 ;
 
-.wait_trdy:		or led_reg, 08  ; Set bit 3  			;DEBUG FLAG 1 START
-			output		led_reg, LED_PORT	;DEBUG FLAG 1
-			input		ip, STATUS_IPORT
+.wait_trdy:		input		ip, STATUS_IPORT
 
 ; Test bit 0 of STATUS_PORT (i.e. tready) ... if zero we should wait
 
 			test ip, 01  ; Test bit 0
 			jump		Z,	.wait_trdy
-			and led_reg,  f7  ; Clear bit 3 			;DEBUG FLAG 1
-			output		led_reg, LED_PORT	;DEBUG FLAG 1 STOP
+
 
 ; When FIFO is ready, send data (what we send to vaild port makes no diff)
 
@@ -1325,7 +1327,7 @@ get_event:
 
 ; Read PSD address
 
-			input		ip, PSD1_IPORT
+			input		addr_reg, PSD1_IPORT ; bugfix - prince Aug 27 - changed ip to adc_reg for PSD 1 address location.
 
 ; We need to send A, B, C, T off to FIFO
 
@@ -1431,6 +1433,7 @@ get_event:
 			output		led_reg, LED_PORT	;DEBUG FLAG 3
 			call		time_to_fifo
 
+			and led_reg,  f7  ; Clear bit 3 			;DEBUG FLAG 1
 			and led_reg,  fb  ; Clear bit 2 			;DEBUG FLAG 0
 			and led_reg,  df  ; Clear bit 5 			;DEBUG FLAG 3
 			and led_reg,  ef  ; Clear bit 4 			;DEBUG FLAG 2
