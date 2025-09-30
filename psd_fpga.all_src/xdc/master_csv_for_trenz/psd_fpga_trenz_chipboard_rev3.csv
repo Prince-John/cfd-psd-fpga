@@ -17,7 +17,7 @@ sdo_b_1	Input	R8	JB1-17	J14-6
 sdo_c_1	Input	L6	JB1-21	J14-7	
 sdo_t_1	Input	L5	JB1-23	J14-8	
 adc_sclk_0	Output	F13	JB1-32	**NA**	
-adc_sclk_1	Output	F14	JB1-34	**NA**	
+adc_sclk_1	Output	F14	JB1-34	**NA**	X
 conv_0	Output	E18	JB1-35	J11-12	
 conv_1	Output	H14	JB1-36	**NA**	
 dac_ld	Output	D18	JB1-37	J11-11	
@@ -133,5 +133,5 @@ debug_gpio[3]	BiDir	E2	JB2-52	J11-20
 debug_gpio[4]	BiDir	C2	JB2-73	J13-33	
 debug_gpio[5]	BiDir	G4	JB2-56	J13-22	
 debug_gpio[6]	BiDir	A1	JB2-77	J11-32	
-debug_gpio[7]	BiDir	H2	JB2-62	J11-23	
+adc_sclk_1	Output	H2	JB2-62	J11-23	
 delay_x2	Output	G2	JB2-64	J11-21	
