@@ -448,7 +448,7 @@
                       ; We need to initialize the timestamp stuff if we are board 0
 
                       fetch scr0, BOARD_ID
-                      ;compare 	scr0, 00
+                      compare scr0, 00
                       jump NZ, .done
 
                       ; If we are board 0, then we need to initialize the TDC7200 chip
@@ -938,11 +938,7 @@
 
                       ; DONE!
 
-               .done: or led_reg, 40                 ; Set bit 6  			;DEBUG FLAG 4 START
-                      output led_reg, LED_PORT       ;DEBUG FLAG 4
-                      output scr0, LAST_PORT
-                      and led_reg, bf                ; Clear bit 6  			;DEBUG FLAG 4
-                      output led_reg, LED_PORT       ;DEBUG FLAG 4 END
+               .done: output scr0, LAST_PORT
                       return
 
                       ; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -990,6 +986,8 @@
                       ; The AD7687 ADCs sample PSD analog outputs on the rising
                       ; edge of CONV signal
 
+                      call dly_us                    ; DEBUG put in for ADC T Tail - Prince Sep 11
+                      call dly_us                    ;
                       load adc_reg, adc_conv_mask    ; Make CONV high
                       output adc_reg, ADC_CTL_PORT
 
@@ -1137,15 +1135,11 @@
                       sl0 op
                       ; Mux sel is bits 4, 5, 6 of the ADC_CTL_PORT
 
-                      or led_reg, 08                 ; Set bit 3  			;DEBUG FLAG 1 START
-                      output led_reg, LED_PORT       ;DEBUG FLAG 1
 
                       test scr1, 01                  ; Test bit 0				; Bit 6 is 0 if PSD 0
                       jump Z, .skip
                       or op, 40                      ; Set bit 6				; Bit 6 is a 1 if PSD 1
 
-                      and led_reg, f7                ; Clear bit 3 			;DEBUG FLAG 1
-                      output led_reg, LED_PORT       ;DEBUG FLAG 1 STOP If psd 1 is signaled correctly.
 
                .skip: output op, ADC_CTL_PORT
                       ;
@@ -1161,7 +1155,7 @@
                       jump Z, .wait_trdy
 
 
-                      ; When FIFO is ready, send data (what we send to vaild port makes no diff)
+                      ; When FIFO is ready, send data (what we send to vaild port makes no diff) --Prince: How do we know that the data is ready and stable?
 
                       output op, VALID_PORT
 

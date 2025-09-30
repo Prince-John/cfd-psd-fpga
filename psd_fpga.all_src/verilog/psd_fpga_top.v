@@ -154,23 +154,54 @@ module psd_fpga_top(
         .pico_flag(debug_flags_from_pico)            
     ) ;
     
+    
+// *******************************************************
+// Creating an OR signal synced to the clock domain
+// ******************************************************
+   reg     or_sync0, or_sync ;
+    always @(posedge mclk) begin
+        or_sync0 <= cfd_or ;
+        or_sync <= or_sync0 ;
+    end      
+        
+    
 // *****************************************************************
 // Either picoblaze or microblaze must control the sel_ext_addr lines
 // Take event seems like a reasonable thing to use for pico_in_control 
-// *****************************************************************
+// ***************************************************s**************
 
 // For initial testing we will generate our own take_event
 // by or'ing the two PSD output ORs
 
   //  assign  take_event_micro = take_event ;
-    assign  take_event_micro = (acquisition_mode == 1'b1) ? or_connect : 1'b0  ;
+    assign  take_event_micro = (acquisition_mode == 1'b1) ? (or_sync && ~led[1]): 1'b0 ; 
 
-// Prince Jun 26, this lets the microblaze to remain in control on start up even if take event is high. Prevents a deadlock state. 
-    assign  pico_in_control = (acquisition_mode == 1'b1) ? ( take_event_micro | led[1] ) : 1'b0 ;          
+    // Prince Jun 26, this lets the microblaze to remain in control on start up even if take event is high. Prevents a deadlock state. 
+    //assign  pico_in_control = (acquisition_mode == 1'b1) ? ( take_event_micro | led[1] ) : 1'b0 ;          
+    reg pico_in_control_reg;
+    reg pico_busy;
+    reg pico_busy_delay;
+    
+    always @(posedge mclk) begin
+        // Register busy signal
+        pico_busy       <= led[1];
+        pico_busy_delay <= pico_busy;  // delayed version
+    
+        // Control logic
+        if ((or_sync == 1'b1) && (acquisition_mode == 1'b1)) begin
+            pico_in_control_reg <= 1'b1;  // take control when OR fires
+        end 
+        else if (pico_busy_delay && ~pico_busy) begin
+            pico_in_control_reg <= 1'b0;  // release on falling edge of busy
+        end
+    end
+
+    assign pico_in_control = pico_in_control_reg;
+    
 //  assign  pico_in_control = take_event ;
 
 // ******************************** 
-// Reset related logic
+// Reset related logics
 // ******************************** 
 
     assign  ublaze_reset = dummy_reset ;
@@ -340,8 +371,6 @@ module psd_fpga_top(
     assign  glob_ena_micro = (pico_in_control == 1'b1) ? psd_glob_ena_from_pico : psd_global_enable_from_micro ;// output from microblaze connected to input to microblaze. 
     
     
-    // tdc_clock is on the original debug_gpio[3] FPGA pin, I have now redefined the XDC but regenerating it might cause the build to fail. 
-    
 // *************************************************************************
 //  DEBUG FLAGS AND GPIO Routing - Assigned only for debugging 
 // *************************************************************************     
@@ -351,9 +380,9 @@ module psd_fpga_top(
     
 //  ****** Routing Digital signals that go to the backplane NIM translators ******
 
-    assign debug_gpio[0] = or_connect;  
-    assign debug_gpio[1] = cfd_out;  
-    assign debug_gpio[2] = intx_out; 
+    assign debug_gpio[0] = take_event_micro;  
+    assign debug_gpio[1] = pico_in_control;  
+    assign debug_gpio[2] = psd_token_out_1; 
     assign debug_gpio[3] = (led[1] | busy_out_micro) ? 1'b0 : 1'b1 ;
     assign debug_gpio[6:4] = debug_flags_from_pico[2:0];
     

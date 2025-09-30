@@ -328,6 +328,7 @@ void eventHandler(void) {
 // ORDINARY packet
 
 	if (chan_cnt != 0) {
+		//xil_printf("Channel Multiplicity -> %d, packet word length = %d \r\n", chan_cnt, packet_word_len);
 		data_packet[BOARD_ID] = board_id ;
 		byte_ptr = (u8 *) &event_number;
 		data_packet[EVENT_NUMBER] = *(byte_ptr) ;
@@ -342,10 +343,10 @@ void eventHandler(void) {
 
 	} // end if
 
-// Check to see if this is board 0
+// Check to see if this is board 255
 // "SPECIAL" time packet
 
-	if (board_id == 0) {
+	if (board_id == 255) {
 
 // Insert the board id
 

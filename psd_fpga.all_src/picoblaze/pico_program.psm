@@ -419,7 +419,7 @@ init:
 ; We need to initialize the timestamp stuff if we are board 0
 
 			fetch		scr0, BOARD_ID
-			;compare 	scr0, 00
+			compare 	scr0, 00
 			jump		NZ, .done
 
 ; If we are board 0, then we need to initialize the TDC7200 chip
@@ -909,11 +909,7 @@ time_to_fifo:
 						
 ; DONE!
 			
-.done:			setbit(led_reg, 6)  			;DEBUG FLAG 4 START
-			output		led_reg, LED_PORT	;DEBUG FLAG 4			
-			output		scr0, LAST_PORT
-			clearbit(led_reg, 6)  			;DEBUG FLAG 4 
-			output		led_reg, LED_PORT	;DEBUG FLAG 4 END	
+.done:			output		scr0, LAST_PORT
 			return
 
 ; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -958,7 +954,9 @@ adc_conv:
 ; Bring conv signals high (determined by adc_conv_mask)
 ; The AD7687 ADCs sample PSD analog outputs on the rising
 ; edge of CONV signal
-
+			
+			call		dly_us  ; DEBUG put in for ADC T Tail - Prince Sep 11
+			call		dly_us  ;
 			load		adc_reg, adc_conv_mask		; Make CONV high
 			output		adc_reg, ADC_CTL_PORT
 			
@@ -1056,7 +1054,7 @@ adc_to_fifo:
 ; A, B, C, or T (00, 01, 10, 11)
 
 			load	cnt, 00
-			
+			  
 ; Use scr1 to keep track of which PSD chip (either 0 or 1)
 ; Inspect bit 3 of ip register to see if it is PSD 0 or PSD 1
 
@@ -1087,15 +1085,11 @@ adc_to_fifo:
 			load	op, cnt				; cnt is either (00 = A, 01 = B, 10 = C, 11 = T)
 			sl0(op, 4)					; Mux sel is bits 4, 5, 6 of the ADC_CTL_PORT
 			
-			setbit(led_reg, 3)  			;DEBUG FLAG 1 START
-			output		led_reg, LED_PORT	;DEBUG FLAG 1
 			
 			testbit(scr1,0)				; Bit 6 is 0 if PSD 0
 			jump	Z, .skip
 			setbit(op, 6)				; Bit 6 is a 1 if PSD 1
 			
-			clearbit(led_reg, 3) 			;DEBUG FLAG 1
-			output		led_reg, LED_PORT	;DEBUG FLAG 1 STOP If psd 1 is signaled correctly. 
 			
 .skip:		output	op, ADC_CTL_PORT					
 ; 	
@@ -1111,7 +1105,7 @@ adc_to_fifo:
 			jump		Z,	.wait_trdy	
 			
 			
-; When FIFO is ready, send data (what we send to vaild port makes no diff)
+; When FIFO is ready, send data (what we send to vaild port makes no diff) --Prince: How do we know that the data is ready and stable?
 	
 			output		op, VALID_PORT
 	
@@ -1459,7 +1453,7 @@ nuclear:
 
 ; Wait for take_event to go INACTIVE (bit 1 of STATUS_IPORT)
 
-.wait1:		input		ip, STATUS_IPORT
+.wait1:			input		ip, STATUS_IPORT
 			testbit(ip, 1)
 			jump		NZ, .wait1
 			
