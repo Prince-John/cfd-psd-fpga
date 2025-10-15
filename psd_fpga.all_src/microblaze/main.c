@@ -131,7 +131,7 @@ int main() {
     	}
 
 
-    	if (acquisition_mode && ( isEventMode() || fifo_occupancy_flag)) {
+    	if ((acquisition_mode && isEventMode()) || fifo_occupancy_flag) {
     		xil_printf("Event # -> %d\r\n", event_number);
     		eventHandler() ;
 

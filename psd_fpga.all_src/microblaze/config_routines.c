@@ -679,6 +679,48 @@ void	write_intx_mux(u8 data) {
 
 /*
 // **********************************************
+ * 	Timestamp Selection MUX Configuration low level implementation
+ * **********************************************
+ *
+ * 	This function takes in the bitmask to select the
+ * 	Timestamp IN MUX that routes the 10MHz Timestamp clock.
+ *
+ * 	0 - internal, 1 - external
+ *
+ * 	This multiplexer is present in the FPGA itself.
+ *
+// *********************************************
+*/
+void	write_timestamp_mux(u8 data) {
+	write_gpio_port(BOARD_ID_PORT, 1, TIMESTAMP_IN_SEL, data) ;
+	return ;
+}
+
+
+
+/*
+// **********************************************
+ * 	Take Event Selection MUX Configuration low level implementation
+ * **********************************************
+ *
+ * 	This function takes in the bitmask to set the Take Event mux configuration
+ *
+ *	This multiplexer is present on the FPGA itself.
+ *s
+ *   00 is External Take event
+ *   01 is Internal Take event - CFD or delayed by 500 ns
+ *   10 is Internal Take event - CFD or delayed by 1 us
+ *   11 is Internal Take event - CFD or delayed by 2 us
+// *********************************************
+*/
+void	write_take_event_mux(u8 data) {
+	write_gpio_port(BOARD_ID_PORT, 2, TAKE_EVENT_SEL_0, data) ;
+	return ;
+}
+
+
+/*
+// **********************************************
  * 	DAC Configuration low level implementation
  * **********************************************
  * 	This function takes in the 2 byte config data and shifts it into the DAC register.

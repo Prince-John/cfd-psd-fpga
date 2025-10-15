@@ -166,7 +166,7 @@
 // *************************************************************  
 
     wire    mclk ; 
-    
+    wire    tstamp_clk_connect; // 10 MHz clock for tstamp counter, wire to multiplex between internal vs external
 // *************************************************************     
 // FIFO signals
 // *************************************************************   
@@ -239,6 +239,7 @@
 // Selects for some misc stuff
 
 	wire   [1:0] or_sel ;
+	wire   [1:0] take_event_sel ;
 	wire   cfd_out_sel  ;
 	wire   psd_intx_out_sel  ;
 	wire   force_reset_from_micro ;
