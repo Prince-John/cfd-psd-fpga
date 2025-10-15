@@ -61,7 +61,9 @@ static const MUXCommand mux_command_table[] = {
     {"ORO:", OR_MUX},
     {"AMP:", AMP_MUX},
     {"CFD:", CFD_MUX},
-    {"INT:", INTX_MUX}
+    {"INT:", INTX_MUX},
+	{"TEV:", TAKE_EVENT_MUX},
+	{"TSP:", TIMESTAMP_MUX}
 };
 
 const int num_cmd_commands = sizeof(cmd_command_table) / sizeof(Command);
@@ -415,6 +417,29 @@ void mux_control_flow(u8 *buff){
 
 							if (numBytes == 1) {					// 1 byte really 1 bit config data
 								write_intx_mux(buff[0]);
+								xil_printf("INTX out MUX configured \r\n");
+								uart_send_byte(ACK) ;
+							} else {
+								xil_printf("Command ERROR: MUX:INT: - Incorrect Data length  \r\n");
+								uart_send_byte(NAK) ;
+						  }
+						  break ;
+
+		case TAKE_EVENT_MUX :  	numBytes = str_to_bytes(buff) ;			// number of hex bytes it should return
+
+							if (numBytes == 1) {					// 1 byte really 1 bit config data
+								write_take_event_mux(buff[0]);
+								xil_printf("INTX out MUX configured \r\n");
+								uart_send_byte(ACK) ;
+							} else {
+								xil_printf("Command ERROR: MUX:INT: - Incorrect Data length  \r\n");
+								uart_send_byte(NAK) ;
+						  }
+						  break ;
+		case TIMESTAMP_MUX :  	numBytes = str_to_bytes(buff) ;			// number of hex bytes it should return
+
+							if (numBytes == 1) {					// 1 byte really 1 bit config data
+								write_timestamp_mux(buff[0]);
 								xil_printf("INTX out MUX configured \r\n");
 								uart_send_byte(ACK) ;
 							} else {

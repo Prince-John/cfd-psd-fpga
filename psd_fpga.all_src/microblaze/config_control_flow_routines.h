@@ -28,7 +28,7 @@ enum psd_subtokens  {PSD0, PSD1, ERROR_SUB_PSD};
 enum cfd_tokens {RESET_CFD, WRITE_REG, CFD_GLOBAL_ENABLE, ERROR_CFD};
 
 
-enum mux_tokens {OR_MUX, AMP_MUX, CFD_MUX, INTX_MUX, ERROR_MUX};
+enum mux_tokens {OR_MUX, AMP_MUX, CFD_MUX, INTX_MUX, TAKE_EVENT_MUX, TIMESTAMP_MUX, ERROR_MUX};
 
 
 // PSD sub command table structure

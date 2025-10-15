@@ -1,11 +1,12 @@
-Version: v0.2.0 released at	2025-05-19 16:56:57
-Timestamp: Thu Jun 26 15:39:29 CDT 2025
+Version: v0.4.1-hotfix released at	2025-09-03 15:47:12
+Timestamp: Tue Oct 14 14:31:52 CDT 2025
 
 Processing file -->  gpio.csv
 Creating file -->  gpio_defines.vh
 Creating file -->  gpio_defines.h
 Creating file -->  gpio_assigns.vh
 IGNORING LINE --> GPIO,Dir,Bit,Nickname,Verilog Signal,Comment
+IGNORING LINE --> ,,,,,
 IGNORING LINE --> ,,,,,
 IGNORING LINE --> ,,,,,
 IGNORING LINE --> ,,,,,

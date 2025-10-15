@@ -696,8 +696,8 @@ start_tdc:
 ; Fetch the board id
 
 			fetch		scr0, BOARD_ID
-			;compare 	scr0, 00
-			jump		Z, .done
+			compare 	scr0, 00
+			jump		NZ, .done
 
 ; Start the TDC7200 since the board is 0
 ; We start the TDC7200 by writing to CONFIG1
@@ -841,7 +841,7 @@ time_to_fifo:
 ; If not board 0, then got DONE!
 
 			fetch		scr0, BOARD_ID
-			;compare 	scr0, 00
+			compare 	scr0, 00
 			jump		NZ, .done
 
 ; This is board 0!
@@ -1178,6 +1178,7 @@ fetch op, (SP)
 fetch cnt, (SP)
  
 
+
 			return
 
 ; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1408,8 +1409,7 @@ get_event:
 
 ; We are DONE!
 
-.done:			or led_reg, 10  ; Set bit 4  			;DEBUG FLAG 2 START
-			output		led_reg, LED_PORT	;DEBUG FLAG 2
+.done:
 
 			; Not required as of Mar 31 - Prince
 			;input		ip, STATUS_IPORT	; Tready  is bit 0 of STATUS_IPORT
@@ -1426,15 +1426,14 @@ get_event:
 ; (2)
 ; Get and send time data to the FIFO
 ;
-			or led_reg, 20  ; Set bit 5  			;DEBUG FLAG 3 START
-			output		led_reg, LED_PORT	;DEBUG FLAG 3
+			;output		scr0, LAST_PORT		; temp DEBUG -prince - sep 30
 			call		time_to_fifo
 
-			and led_reg,  f7  ; Clear bit 3 			;DEBUG FLAG 1
-			and led_reg,  fb  ; Clear bit 2 			;DEBUG FLAG 0
-			and led_reg,  df  ; Clear bit 5 			;DEBUG FLAG 3
-			and led_reg,  ef  ; Clear bit 4 			;DEBUG FLAG 2
-			output		led_reg, LED_PORT	;DEBUG FLAG 0,2,3 STOP
+			;clearbit(led_reg, 3) 			;DEBUG FLAG 1
+			;clearbit(led_reg, 2) 			;DEBUG FLAG 0
+			;clearbit(led_reg, 5) 			;DEBUG FLAG 3
+			;clearbit(led_reg, 4) 			;DEBUG FLAG 2
+			;output		led_reg, LED_PORT	;DEBUG FLAG 0,2,3 STOP
 ; (3)
 ; Unset the busy flag (busy flag is same as LED 1)
 ;

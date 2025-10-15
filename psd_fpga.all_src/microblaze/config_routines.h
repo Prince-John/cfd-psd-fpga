@@ -120,6 +120,8 @@ void	write_mux(u8 data) ;
 void	write_intx_mux(u8 data);
 void	write_or_mux(u8 data);
 void	write_cfd_mux(u8 data);
+void	write_timestamp_mux(u8 data);
+void	write_take_event_mux(u8 data);
 void	write_dac(u16 data) ;
 
 void	write_tdc(u16 data) ;

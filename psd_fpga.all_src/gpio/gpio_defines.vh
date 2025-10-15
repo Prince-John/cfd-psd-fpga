@@ -2,8 +2,8 @@
 // *************************************************
 // localparams definitions for the gpio bits   
 // The file is AUTO-GENERATED, DO NOT MODIFY!!!   
-// Timestamp:           Thu Jun 26 15:39:29 CDT 2025
-// TCL Code Version:    v0.2.0 released at	2025-05-19 16:56:57
+// Timestamp:           Tue Oct 14 14:31:52 CDT 2025
+// TCL Code Version:    v0.4.1-hotfix released at	2025-09-03 15:47:12
 // *************************************************
 
 // GPIO INPUT Port 0 -> Board ID bit 0 (input pin)
@@ -42,7 +42,7 @@ localparam	TAKE_EVENT = 10 ;
 // GPIO OUTPUT Port 0 -> 2-bit code used to select which OR we use
 localparam	OR_SEL_0 = 0 ;
 
-// GPIO OUTPUT Port 0 -> 00 is PSD0 OR   01 is PSD1 OR   11 for both PSD Ors  10 is the CFD chip OR
+// GPIO OUTPUT Port 0 -> 00 is PSD0 OR ; 01 is PSD1 OR ; 11 for both PSD Ors; 10 is the CFD chip OR
 localparam	OR_SEL_1 = 1 ;
 
 // GPIO OUTPUT Port 0 -> Select cfd output from either 0- PSD0 or 1– PSD1
@@ -51,8 +51,17 @@ localparam	CFD_OUT_SEL = 2 ;
 // GPIO OUTPUT Port 0 -> Route out intx from either PSD 0 or PSD1 to host
 localparam	PSD_INTX_OUT_SEL = 3 ;
 
-// GPIO OUTPUT Port 0 -> signal from ublaze to switch to acquisition mode (active high) Prince Jun 26- this is to ensure chipboard always boots into microblaze control. 
-localparam	ACQUISITION_MODE = 4 ;
+// GPIO OUTPUT Port 0 -> select for timestamp clock external vs internal
+localparam	TIMESTAMP_IN_SEL = 4 ;
+
+// GPIO OUTPUT Port 0 -> 2-bit select for internal vs external take_event; 00-external 01 is internal delay 500ns
+localparam	TAKE_EVENT_SEL_0 = 5 ;
+
+// GPIO OUTPUT Port 0 -> 10- 1us ; 11- 2us 
+localparam	TAKE_EVENT_SEL_1 = 6 ;
+
+// GPIO OUTPUT Port 0 -> signal from ublaze to switch to acquisition mode (active high) Prince Jun 26- this is to ensure chipboard always boots into microblaze
+localparam	ACQUISITION_MODE = 7 ;
 
 // GPIO INPUT Port 1 -> PSD 0 channel address input bit 0
 localparam	PSD0_CHAN_ADDR_IN_0 = 0 ;
