@@ -3,7 +3,7 @@
 // Company: 
 // Engineer: 
 // 
-// Create Date: 07-Feb-2025
+// Create Date: 21-Jul-2025
 // Design Name: 
 // Module Name: timestamp_interface
 // Project Name: 
@@ -21,10 +21,19 @@
 
 module timestamp_interface(
 
-// Clock and reset
+// Master clock and master reset
+
+    input       mclk,
+    input       mrst,
+    
+// Timestamp clock and reset
 
     input       tstamp_clk,
     input       tstamp_rst,
+    
+// TDC7200 interupt signal
+
+    input       tdc_intb,
 
 // Common stop signal
 
@@ -50,10 +59,6 @@ module timestamp_interface(
 
     input       [7:0] tdc_reg_byte,
     
-// Interrupt signal from the TDC7200
-
-    input       tdc_intb, 
-    
 // Serial output from TDC7200
 
     input       tdc_dout,
@@ -68,12 +73,16 @@ module timestamp_interface(
     
 // TDC register
 
-    output      reg   [23:0] tdc_reg 
+    output      reg   [23:0] tdc_reg,
+    
+//  Let picoblaze know that [47:0]tstamp is ready
+
+    output      reg     tstamp_rdy 
     
 ) ;
     
 // Implement the timestamp counter
-// We can reset the counter!
+// We can reset the counter (synchronous reset)
 // Count changes on posedge of tstamp_clk
 
     reg     [47:0] tstamp_counter ;
@@ -81,23 +90,71 @@ module timestamp_interface(
         if (tstamp_rst == 1'b1) tstamp_counter <= 48'd0 ;
         else tstamp_counter <= tstamp_counter + 48'd1 ;
     end
+   
+// We want to make sure that intb_ena be active for just one clock cycle
+// Use a small FSM to handle this
+
+    reg         [1:0] present_state ;
+    reg         [1:0] next_state ;
     
-// We want to capture counter value on rising edge of common_stop signal
-// There are issues with this but oK for initial testing 
+    parameter   WAIT_INTB_LOW = 2'd0 ;
+    parameter   ISSUE_ENA = 2'd1 ;
+    parameter   ASSERT_RDY = 2'd2 ;
+    parameter   WAIT_INTB_HIGH = 2'd3 ;
+ 
+// Synchronize the tdc_intb signal to mclk
+// FSM runs off of mclk
 
-// Synchronize (2 flop synchronizer) the common_stop signal to tstamp clock
+    wire    tdc_intb_sync ;
+    synchronizer sync0(.async_in(tdc_intb), .sync_out(tdc_intb_sync), .clk(mclk)) ;
+    
+// Present state register       
 
-    reg     common_stop_sync0, common_stop_sync ;
-    always @(negedge tstamp_clk) begin
-        common_stop_sync0 <= common_stop ;
-        common_stop_sync <= common_stop_sync0 ;
+    always @(posedge mclk) begin
+        if (mrst == 1'b1) present_state <= 2'd0 ;
+        else present_state <= next_state ;
     end
 
+// FSM combinational logic
+
+    reg     intb_ena ;
+    always @(*) begin
+        intb_ena = 1'b0 ;
+        tstamp_rdy = 1'b0 ;
+        case (present_state) 
+            WAIT_INTB_LOW: begin
+                                if (tdc_intb_sync == 1'b1) next_state = WAIT_INTB_LOW ;
+                                else next_state = ISSUE_ENA ;
+                            end
+            ISSUE_ENA:      begin
+                                intb_ena = 1'b1 ;
+                                next_state = ASSERT_RDY ;
+                            end
+            ASSERT_RDY:     begin
+                                tstamp_rdy = 1'b1 ;
+                                next_state = WAIT_INTB_HIGH ;
+                            end 
+            WAIT_INTB_HIGH: begin
+                                if (tdc_intb_sync == 1'b0) begin
+                                    next_state = WAIT_INTB_HIGH ;
+                                    tstamp_rdy = 1'b1 ;
+                                end else begin
+                                    next_state = WAIT_INTB_LOW ;
+                                end 
+                            end    
+           default:         next_state = WAIT_INTB_LOW ;         
+        endcase
+    end               
+                              
+// When intb_ena goes high, let's transfer the counter value to tstamp_reg
+// FSM guarantees that intb_ena stays high for only one tstamp_clk period!
+                         
     reg     [47:0] tstamp_reg ;
-    always @(posedge common_stop_sync) begin
-        tstamp_reg <= tstamp_counter ;
-    end    
-    assign  tstamp = tstamp_reg ;   
+    always @(posedge mclk) begin
+        if (mrst == 1'b1) tstamp_reg <= 48'd0 ;
+        else if (intb_ena == 1'b1) tstamp_reg <= tstamp_counter ;
+    end
+    assign  tstamp = tstamp_reg ;
 
 // Implement the tdc register (24 bits)
 // Any of the three bytes can be parallel loaded"
@@ -118,3 +175,4 @@ module timestamp_interface(
     assign  tdc_din = tdc_reg[23] ;
      
 endmodule
+
