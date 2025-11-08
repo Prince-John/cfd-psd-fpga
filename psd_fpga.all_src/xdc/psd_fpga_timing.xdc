@@ -246,5 +246,5 @@ set_output_delay    -clock [get_clocks $CLK] \
                  
 # Remove some warnings that we know don't pose a problem
 
-# set_false_path -to [get_pins {u1/proc0/program_rom/kcpsm6_rom/DIBDI[*]}]
-# set_false_path -to [get_pins {u1/proc0/program_rom/kcpsm6_rom/DIPBDIP[*]}]
+set_false_path -to [get_pins {u1/proc0/program_rom/kcpsm6_rom/DIBDI[*]}]
+set_false_path -to [get_pins {u1/proc0/program_rom/kcpsm6_rom/DIPBDIP[*]}]
