@@ -39,9 +39,7 @@
 ; 7 		PICO Debug Flag 5  
 ;
 ; Prince - March 30: Used remaining bits to bring out 6 debug flag signals. 		
-		
-		
-		
+				
 		constant	ADC_CTL_PORT, 01
 ; --------------------------------
 ; PORT 1 (ADC control)
@@ -215,6 +213,21 @@
 ; 5		psd1_addr_out2
 ; 6		1 (psd chip 1)
 ; 7     0
+
+
+; Adding input PORT 4
+; GLE: 5-Nov-2025
+; Only using bit 0 (tstamp_rdy)
+; It's a delayed version of intb but active HIGH
+; When active we know we have captured the counter
+; value into the holding register in timestamp interface
+;
+
+			constant	RDY_PORT, 04	
+; --------------------------------
+; PORT 4
+; --------------------------------
+; 0		tstamp_rdy
 
 ;
 ; Picoblaze has 16 general purpose registers
@@ -493,7 +506,8 @@ tdc_ena:		clearbit(tdc_ctl_reg, 7)
 				call		dly_us
 				setbit(tdc_ctl_reg, 7)
 				output		tdc_ctl_reg, TDC_CTL_PORT	
-				return				
+				return	
+							
 ; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ; Subroutine Name: tdc_init
 ;
@@ -775,14 +789,12 @@ time_to_fifo:
 ; Wait for FIFO to be ready
 ; Set the status bit LED[2] to high before starting to wait for tready
 			
-.wait0:					
+.wait0:		
 			input		ip, STATUS_IPORT	
-
+			
 ; Test bit 0 of STATUS_PORT (i.e. tready) ... if zero we should wait
-
 			testbit(ip, 0) 
 			jump		Z,	.wait0	
-
 			
 ; When FIFO is ready, send data (what we send to vaild port makes no diff)
 ; Writing to the VALID_port, strobes the tvalid control signal!
@@ -859,7 +871,7 @@ time_to_fifo:
 
 ; Wait for the FIFO to be ready
 
-.wait3:			input		ip, STATUS_IPORT
+.wait3:		input		ip, STATUS_IPORT
 			testbit(ip, 0) 
 			jump		Z,	.wait3
 
@@ -880,11 +892,10 @@ time_to_fifo:
 
 ; Wait for the FIFO to be ready
 
-.wait4:			input		ip, STATUS_IPORT
+.wait4:		input		ip, STATUS_IPORT
 			testbit(ip, 0) 
 			jump		Z,	.wait4
 
-			
 ; Strobe data into FIFO
 		
 			output		scr0, VALID_PORT	
@@ -902,11 +913,10 @@ time_to_fifo:
 
 ; Wait for the FIFO to be ready
 
-.wait5:			input		ip, STATUS_IPORT
+.wait5:		input		ip, STATUS_IPORT
 			testbit(ip, 0) 
 			jump		Z,	.wait5
-
-						
+			
 ; DONE!
 			
 .done:			output		scr0, LAST_PORT
@@ -1216,8 +1226,7 @@ get_event:
 ; Perform adc conversion
 			
 			call		adc_conv
-			
-			
+					
 ; Read PSD address 
 			
 			input		addr_reg, PSD0_IPORT
@@ -1225,7 +1234,6 @@ get_event:
 ; We need to send A, B, C, T off to FIFO
 			
 			call		adc_to_fifo
-		
 			
 ; Bring acq_clk low (acq_clk is bit 3)
 ; Resets the hit and active registers

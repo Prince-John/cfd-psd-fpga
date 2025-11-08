@@ -41,8 +41,6 @@
 ;
 ; Prince - March 30: Used remaining bits to bring out 6 debug flag signals.
 
-
-
 		constant ADC_CTL_PORT, 01 
 
 ; --------------------------------
@@ -229,6 +227,22 @@
 ; 5		psd1_addr_out2
 ; 6		1 (psd chip 1)
 ; 7     0
+
+
+; Adding input PORT 4
+; GLE: 5-Nov-2025
+; Only using bit 0 (tstamp_rdy)
+; It’s a delayed version of intb but active HIGH
+; When active we know we have captured the counter
+; value into the holding register in timestamp interface
+;
+
+			constant RDY_PORT, 04 
+
+; --------------------------------
+; PORT 4
+; --------------------------------
+; 0		tstamp_rdy
 
 ;
 ; Picoblaze has 16 general purpose registers
@@ -523,6 +537,7 @@ tdc_ena:		and tdc_ctl_reg,  7f  ; Clear bit 7
 				or tdc_ctl_reg, 80  ; Set bit 7
 				output		tdc_ctl_reg, TDC_CTL_PORT
 				return
+
 ; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ; Subroutine Name: tdc_init
 ;
@@ -808,10 +823,8 @@ time_to_fifo:
 			input		ip, STATUS_IPORT
 
 ; Test bit 0 of STATUS_PORT (i.e. tready) ... if zero we should wait
-
 			test ip, 01  ; Test bit 0
 			jump		Z,	.wait0
-
 
 ; When FIFO is ready, send data (what we send to vaild port makes no diff)
 ; Writing to the VALID_port, strobes the tvalid control signal!
@@ -888,7 +901,7 @@ time_to_fifo:
 
 ; Wait for the FIFO to be ready
 
-.wait3:			input		ip, STATUS_IPORT
+.wait3:		input		ip, STATUS_IPORT
 			test ip, 01  ; Test bit 0
 			jump		Z,	.wait3
 
@@ -909,10 +922,9 @@ time_to_fifo:
 
 ; Wait for the FIFO to be ready
 
-.wait4:			input		ip, STATUS_IPORT
+.wait4:		input		ip, STATUS_IPORT
 			test ip, 01  ; Test bit 0
 			jump		Z,	.wait4
-
 
 ; Strobe data into FIFO
 
@@ -931,10 +943,9 @@ time_to_fifo:
 
 ; Wait for the FIFO to be ready
 
-.wait5:			input		ip, STATUS_IPORT
+.wait5:		input		ip, STATUS_IPORT
 			test ip, 01  ; Test bit 0
 			jump		Z,	.wait5
-
 
 ; DONE!
 
@@ -1273,7 +1284,6 @@ get_event:
 
 			call		adc_conv
 
-
 ; Read PSD address
 
 			input		addr_reg, PSD0_IPORT
@@ -1281,7 +1291,6 @@ get_event:
 ; We need to send A, B, C, T off to FIFO
 
 			call		adc_to_fifo
-
 
 ; Bring acq_clk low (acq_clk is bit 3)
 ; Resets the hit and active registers
