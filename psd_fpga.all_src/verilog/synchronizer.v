@@ -28,7 +28,7 @@ module synchronizer #(
   input     clk
 );
  
-  reg   [NUM_STAGES:1]    sync_reg;
+ (* ASYNC_REG = "TRUE" *) reg   [NUM_STAGES:1]    sync_reg;
  
   always @ (posedge clk) begin
     sync_reg <= {sync_reg[NUM_STAGES-1:1], async_in};
