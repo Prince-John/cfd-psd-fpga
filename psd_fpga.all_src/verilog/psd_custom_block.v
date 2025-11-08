@@ -175,12 +175,26 @@ module psd_custom_block(
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^     
     
     assign  p3_in = psd1_iport ;  
+  
+// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  
+// Picoblaze input port #4
+// Called PSD1_PORT in picoblaze code
+//
+// Bit 0 : tstamp_rdy (active high)
+// tstamp rdy is delayed version of intb
+// When it goes high, we have valid timestamp
+// waiting for us!
+//
+// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+ 
+    assign  p4_in[7:1] = 7'd0 ; 
+    wire    tstamp_rdy ;  
+    assign  p4_in[0] = tstamp_rdy ;
     
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  
-// Ports 4, 5, 6, 7 currently unused so ground the input lines
+// Ports 5, 6, 7 currently unused so ground the input lines
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  
-      
-    assign  p4_in[7:0] = 8'd0 ;     
+     
     assign  p5_in[7:0] = 8'd0 ;     
     assign  p6_in[7:0] = 8'd0 ;     
     assign  p7_in[7:0] = 8'd0 ;     
@@ -215,7 +229,6 @@ module psd_custom_block(
     assign  led[0] = p0_out[0] ;
     assign  led[1] = p0_out[1] ;
     assign  pico_flag[5:0] = p0_out[7:2];
-    
     
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  
 //  Picoblaze output port #1
@@ -376,7 +389,10 @@ module psd_custom_block(
     wire    [23:0] tdc_reg ;
     wire    [47:0] tstamp_counter ;
 
+
     timestamp_interface tstamp_0(
+            .mclk(mclk),
+            .mrst(mrst),
             .tstamp_clk(tstamp_clk),
             .tstamp_rst(tstamp_rst),
             .common_stop(common_stop),
@@ -389,7 +405,8 @@ module psd_custom_block(
             .tdc_dout(tdc_dout),
             .tdc_din(tdc_din),   
             .tstamp(tstamp_counter),
-            .tdc_reg(tdc_reg) 
+            .tdc_reg(tdc_reg),
+            .tstamp_rdy(tstamp_rdy) 
     ) ;
 
 //  Use the tstamp_clk to stop the TDC7200 
