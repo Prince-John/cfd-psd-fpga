@@ -18,6 +18,19 @@
                       ;
                       ; GLE: 19-Mar-2025
                       ; Reviewing to make sure everything is complete and working
+                      ;
+
+                      ;
+                      ; GLE: 31-Mar-2025
+                      ; Got tdc-test program working to verify that I can
+                      ; correctly write and read to the TD7200 CONFIG2 register!
+                      ;
+
+                      ; ####################################################################
+                      ; GLE: 8-Nov-2025
+                      ; Trying to integrate changes in 31-Mar-2025 version into Prince’s
+                      ; current version
+                      ; ####################################################################
 
                       ; ********************************************
                       ; Output ports (we have 8 "real" output ports)
@@ -87,6 +100,11 @@
                       ; ---> 1010 0000 is TDC TIME2 value
                       ; ---> 1101 0000 is TDC CALIBRATION1 value
                       ; ---> 1110 0000 is TDC CALIBRATION2 value
+                      ;
+                      ; GLE: added on 8-Nov-2025
+                      ;
+                      ; ---> 1111 1111 is code we send when (board is 0) and we need to send tlast
+
 
                       constant TDC_DATA_PORT, 03
 
@@ -237,7 +255,7 @@
                       ; value into the holding register in timestamp interface
                       ;
 
-                      constant RDY_PORT, 04
+                      constant RDY_IPORT, 04
 
                       ; --------------------------------
                       ; PORT 4
@@ -315,7 +333,13 @@
                       ; 24-bit values stored in this register tells us time
                       ; between start and first STOP
 
-                      constant TIME2, 11
+                      ;
+                      ; GLE: 8-Nov-205  (12 not 11)
+                      ;
+
+                      ;			constant	TIME2, 11
+
+                      constant TIME2, 12
 
 
                       ; Address of CALIBRATION1 register (with write bit cleared!)
@@ -361,6 +385,21 @@
 
                       constant TSTAMP_UPPER_TAG, 50
 
+
+                      ; GLE: 8-Nov-205  (Need this! I think!!!)
+                      ; Word with this data tag gets sent to terminate
+                      ; a packet so that tlast get’s sent ALWAYS
+                      ; So if a board in the system has no data to
+                      ; report for an event, we still send one word
+                      ; back with is this special tag and most importantly
+                      ; tlast gets asserted. The C-code ignores the one
+                      ; word that was sent to FIFO in this case.
+                      ; Gets used in time2fifo routine!
+
+                      constant NO_TSTAMP_TAG, ff
+
+                      ;
+
                       constant TDC_TIME1_TAG, 90
 
                       constant TDC_TIME2_TAG, a0
@@ -371,11 +410,16 @@
 
 
                       ; @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-                      ; Our vector which points to main routineis stored at address 000
+                      ; Our vector which points to main routine is stored at address 000
                       ; @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
                       address 000
               origin: jump nuclear
+
+                      ;
+                      ; GLE: 8-Nov-205  (A TDC7200 test program)
+                      ;
+                      ; origin:  	jump      	 run_tdc
 
                       ; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                       ; Subroutine Name: init
@@ -465,13 +509,125 @@
                       compare scr0, 00
                       jump NZ, .done
 
-                      ; If we are board 0, then we need to initialize the TDC7200 chip
+                      ; GLE: 08-Nov-2025 (Add call to tdc_ena)
+
+                      ; If we are board 0, then we need to enable the TDC7200 chip
+                      ; Enable i.e. reset the TDC7200 chip
+                      ; Wait 100 ms before we reset the TDC7200
+
+                      call dly_100ms
+                      call tdc_ena
+
+                      ; We need to program the CONFIG2 register
+                      ; This does not start a TDC7200 measurement!
 
                       call tdc_init
 
                       ; Done so return
 
                .done: return
+
+                      ; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                      ; Added some routines to make handling LEDs a bit
+                      ; easier
+                      ; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+                      ; ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                      ; Routine to turn LED0 on
+                      ; ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+             led0_on: or led_reg, 01                 ; Set bit 0
+                      output led_reg, LED_PORT
+                      return
+
+                      ; ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                      ; Routine to turn LED0 off
+                      ; ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+            led0_off: and led_reg, fe                ; Clear bit 0
+                      output led_reg, LED_PORT
+                      return
+
+                      ; ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                      ; Routine to turn LED1 on
+                      ; ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+             led1_on: or led_reg, 02                 ; Set bit 1
+                      output led_reg, LED_PORT
+                      return
+
+                      ; ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                      ; Routine to turn LED1 off
+                      ; ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+            led1_off: and led_reg, fd                ; Clear bit 1
+                      output led_reg, LED_PORT
+                      return
+
+                      ; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                      ; Subroutine Name: dly_us
+                      ;
+                      ; Delay of 1 usec
+                      ; Delay is [(4 * dly_reg) + 6] / Fclk
+                      ; constant = (clock rate - 6) / 4 where clock rate is in MHz
+                      ;
+                      ; Routine uses dly_reg and does not restore it
+                      ;
+                      ; 24 (i.e $18) assumes a 100 MHz clock
+                      ; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+              dly_us:
+                      load dly_reg, 24'd
+            .wait_us: sub dly_reg, 01
+                      jump NZ, .wait_us
+                      return
+
+                      ; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                      ; Subroutine Name: dly_100ms
+                      ;
+                      ; Delay for "about" 100ms by repeatly calling
+                      ; delay_1us subroutine
+                      ; Note: 100,000 is $0186A0
+                      ;
+                      ; Uses scr0, scr1, cnt but does NOT destroys them
+                      ; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+           dly_100ms:
+
+                      ; Push regs onto stack
+
+                      store scr0, (SP)               ; Push
+                      sub SP, 01
+
+                      store scr1, (SP)               ; Push
+                      sub SP, 01
+
+                      store cnt, (SP)                ; Push
+                      sub SP, 01
+
+
+                      load cnt, 01
+                      load scr1, 86
+                      load scr0, A0
+               .loop: call dly_us
+                      sub scr0, 01
+                      subcy scr1, 00
+                      subcy cnt, 00
+                      jump NC, .loop
+
+                      ; Restore registers
+
+                      add SP, 01                     ; Pop
+                      fetch cnt, (SP)
+
+                      add SP, 01                     ; Pop
+                      fetch scr1, (SP)
+
+                      add SP, 01                     ; Pop
+                      fetch scr0, (SP)
+
+
+                      return
 
                       ; $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
                       ; Collection of support routines for timestamp creation.
@@ -522,95 +678,6 @@
                       output tdc_ctl_reg, TDC_CTL_PORT
                       return
 
-                      ; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-                      ; Subroutine Name: tdc_ena
-                      ;
-                      ; This routine will enable the TDC7200
-                      ; We do this by bringing the tdc_enable (Bit 7) low
-                      ; and then bring it high. Enable must be high
-                      ; for TDC7200 to perform conversions.
-                      ; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-             tdc_ena: and tdc_ctl_reg, 7f            ; Clear bit 7
-                      output tdc_ctl_reg, TDC_CTL_PORT
-                      call dly_us
-                      or tdc_ctl_reg, 80             ; Set bit 7
-                      output tdc_ctl_reg, TDC_CTL_PORT
-                      return
-
-                      ; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-                      ; Subroutine Name: tdc_init
-                      ;
-                      ; Routine to initialize the TDC7200 and related circuits
-                      ; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-            tdc_init:
-
-                      ; Enable the TDC7200
-                      ; This only needs to be done once
-                      ; Brings tdc_ena low and then high!
-
-                      call tdc_ena
-
-                      ; Load config data into CONFIG2 register
-                      ; This only needs to be done once!!!!!
-                      ; addr_reg needs to be loaded with address
-                      ; op needs to be loaded with value to be stored at address
-
-                      load addr_reg, CONFIG2
-                      load op, CONFIG2_VAL
-                      call config_tdc
-
-                      ; Start a TDC7200 measurement!
-
-                      call start_tdc
-
-                      return
-
-                      ; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-                      ; Subroutine Name: tdc_serial
-                      ;
-                      ; Routine to send and receive serial dataa
-                      ; from TDC7200. Used to send both internal
-                      ; register address and data to the TDC7200
-                      ;
-                      ; We should enter with cnt register containing
-                      ; number of clock pulses we want
-                      ;
-                      ; Make sure the tdc_csb is LOW when this routine
-                      ; is called!
-                      ;
-                      ; Minimum sclk period for the TDC7200 is 50 ns
-                      ;
-                      ; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-          tdc_serial:
-
-                      ; Bring the shift control on tdc register high!
-
-                      or tdc_ctl_reg, 10             ; Set bit 4
-                      output tdc_ctl_reg, TDC_CTL_PORT
-
-                      ; Apply clock pulses (number in cnt register)
-                      ; Use scr0 as a clock mask (tdc_sclk is bit 5)
-
-                      load scr0, 00100000'b
-           .clk_loop: xor tdc_ctl_reg, scr0
-                      output tdc_ctl_reg, TDC_CTL_PORT
-                      load se, se                    ; NOP
-                      load se, se                    ; NOP
-                      xor tdc_ctl_reg, scr0
-                      output tdc_ctl_reg, TDC_CTL_PORT
-                      sub cnt, 01
-                      jump NZ, .clk_loop
-
-                      ; Bring the shift control on tdc register low!
-
-                      and tdc_ctl_reg, ef            ; Clear bit 4
-                      output tdc_ctl_reg, TDC_CTL_PORT
-
-                      return
-                      ;
                       ; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                       ; Subroutine Name: tdc_csb_low
                       ;
@@ -620,6 +687,7 @@
          tdc_csb_low: and tdc_ctl_reg, bf            ; Clear bit 6
                       output tdc_ctl_reg, TDC_CTL_PORT
                       return
+
                       ;
                       ; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                       ; Subroutine Name: tdc_csb_high
@@ -631,6 +699,28 @@
                       output tdc_ctl_reg, TDC_CTL_PORT
                       return
 
+
+                      ; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                      ; Subroutine Name: tdc_ena
+                      ;
+                      ; This routine will enable the TDC7200
+                      ; We do this by bringing the tdc_enable (Bit 7) low
+                      ; and then bring it high. Enable must be high
+                      ; for TDC7200 to perform conversions.
+                      ;
+                      ; GLE: 8-Nov-2025 (added two more dly_us calls)
+                      ;
+                      ; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+             tdc_ena: and tdc_ctl_reg, 7f            ; Clear bit 7
+                      output tdc_ctl_reg, TDC_CTL_PORT
+                      call dly_us
+                      call dly_us
+                      call dly_us
+                      or tdc_ctl_reg, 80             ; Set bit 7
+                      output tdc_ctl_reg, TDC_CTL_PORT
+                      return
+
                       ; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                       ; Subroutine Name: config_tdc
                       ;
@@ -638,7 +728,7 @@
                       ; register address we want to load, either CONFGI1 or CONFIG2
                       ;
                       ; Also, when we enter, op register should contain the
-                      ; configuration value, wither CONFIG1_VAL ore CONFIG2_VAL
+                      ; configuration value, either CONFIG1_VAL or CONFIG2_VAL
                       ;
                       ; Loads the TDC7200 CONFIG1 or CONFIG2 register
                       ; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -653,7 +743,7 @@
 
                       ; Assert ld[2] control (most significant byte of tdc register)
                       ; Synchronous load so we need to apply a clock pulse!
-                      ; ld[2] is bit 2 pf the TDC_CTL_PORT
+                      ; ld[2] is bit 2 of the TDC_CTL_PORT
 
                       or tdc_ctl_reg, 04             ; Set bit 2
                       output tdc_ctl_reg, TDC_CTL_PORT
@@ -696,10 +786,29 @@
                       return
 
                       ; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                      ; Subroutine Name: tdc_init
+                      ;
+                      ; Routine to initialize the TDC7200 and related circuits
+                      ; --> Load the CONFIG2 register
+                      ; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+            tdc_init:
+
+                      ; Load config data into CONFIG2 register
+                      ; This only needs to be done once!!!!!
+                      ; addr_reg needs to be loaded with address
+                      ; op needs to be loaded with value to be stored at address
+
+                      load addr_reg, CONFIG2
+                      load op, CONFIG2_VAL
+                      call config_tdc
+                      return
+
+                      ; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                       ; Subroutine Name: start_tdc
                       ;
                       ; This routine will start a measurement on TDC7200
-                      ; if this board 0.
+                      ; Only starts if this is board 0!
                       ;
                       ; Measurements are started by writing to CONFIG1 with
                       ; the least significant bit set!
@@ -708,22 +817,64 @@
 
            start_tdc:
 
-                      ; Fetch the board id
+                      ; If this is board 0 then start the TDC
 
                       fetch scr0, BOARD_ID
                       compare scr0, 00
                       jump NZ, .done
 
-                      ; Start the TDC7200 since the board is 0
                       ; We start the TDC7200 by writing to CONFIG1
 
                       load addr_reg, CONFIG1
                       load op, CONFIG1_VAL
                       call config_tdc
 
-                      ; We are done, so return!
-
                .done: return
+
+                      ; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                      ; Subroutine Name: tdc_serial
+                      ;
+                      ; Routine to send and receive serial dataa
+                      ; from TDC7200. Used to send both internal
+                      ; register address and data to the TDC7200
+                      ;
+                      ; We should enter with cnt register containing
+                      ; number of clock pulses we want
+                      ;
+                      ; Make sure the tdc_csb is LOW when this routine
+                      ; is called!
+                      ;
+                      ; Minimum sclk period for the TDC7200 is 50 ns
+                      ;
+                      ; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+          tdc_serial:
+
+                      ; Bring the shift control on tdc register high!
+
+                      or tdc_ctl_reg, 10             ; Set bit 4
+                      output tdc_ctl_reg, TDC_CTL_PORT
+
+                      ; Apply clock pulses (number in cnt register)
+                      ; Use scr0 as a clock mask (tdc_sclk is bit 5)
+
+                      load scr0, 00
+                      or scr0, 20                    ; Set bit 5
+           .clk_loop: xor tdc_ctl_reg, scr0
+                      output tdc_ctl_reg, TDC_CTL_PORT
+                      ;			nop
+                      ;			nop
+                      xor tdc_ctl_reg, scr0
+                      output tdc_ctl_reg, TDC_CTL_PORT
+                      sub cnt, 01
+                      jump NZ, .clk_loop
+
+                      ; Bring the shift control on tdc register low!
+
+                      and tdc_ctl_reg, ef            ; Clear bit 4
+                      output tdc_ctl_reg, TDC_CTL_PORT
+
+                      return
 
                       ; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                       ; Subroutine Name: read_tdc
@@ -759,7 +910,7 @@
 
                       call tdc_csb_low
 
-                      ; Load cnt register with the number of clock pulses we want i.e. 8
+                      ; Load cnt register with the number of clock pulses
                       ; It takes 8 clock pulses to load the register address (with write bit set)
                       ; and then 24 clocks to read the data so a total of 32 clock pulse
 
@@ -775,6 +926,19 @@
 
                       return
 
+                      ; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                      ; Subroutine Name: wait_rdy
+                      ; We wait for tstamp_rdy to go low before we return
+                      ; scr0 is used but not saved or restored
+                      ; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+            wait_rdy: call led0_on
+               .loop: input scr0, RDY_IPORT
+                      test scr0, 01                  ; Test bit 0
+                      jump NZ, .loop
+                      call led0_off
+                      return
+
                       ; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                       ; Subroutine Name: time_to_fifo
                       ;
@@ -782,6 +946,8 @@
                       ;
                       ;	constant	TSTAMP_LOWER_TAG, 40
                       ;	constant	TSTAMP_UPPER_TAG, 50
+                      ; 	constant	NO_TSTAMP_TAG, FF
+
                       ;	constant	TDC_TIME1_TAG, 90
                       ;	constant	TDC_TIME2_TAG, a0
                       ;	constant	TDC_CAL1_TAG, d0
@@ -804,8 +970,40 @@
 
         time_to_fifo:
 
+                      ; Check to see if we are board 0 or not
+
+                      fetch scr0, BOARD_ID
+                      compare scr0, 00
+                      jump Z, .board0
+
+                      ; ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                      ; Need to terminate the packet if we are not board 0
+                      ; ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+                      load op, NO_TSTAMP_TAG
+                      output op, DATA_TAG_PORT
+
+                      ; Wait for FIFO to be ready (bit 0 id tready)
+                      ; We don’t care what the FIFO_MUX_SEL is set to
+
+              .tlast: input ip, STATUS_IPORT
+                      test ip, 01                    ; Test bit 0
+                      jump Z, .tlast
+                      output scr0, LAST_PORT
+                      return
+
+                      ; ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                      ; Wait for TDC7200 tstamp_rdy to go low
+                      ; Can’t read registers until intb is low
+                      ; tstamp_rdy is bit 0 of the RDY_IPORT
+                      ; ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+             .board0:
+                      call wait_rdy
+
+                      ; ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
                       ; Send tstamp_counter (lower 24 bits)
-                      ; Start by writing out correct data tag
+                      ; ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
                       load op, TSTAMP_LOWER_TAG
                       output op, DATA_TAG_PORT
@@ -816,22 +1014,16 @@
                       and misc_oport_reg, fb         ; Clear bit 2
                       output misc_oport_reg, MISC_OPORT
 
-                      ; Wait for FIFO to be ready
-                      ; Set the status bit LED[2] to high before starting to wait for tready
+                      ; Wait for FIFO to be ready (bit 0 is tready)
 
-              .wait0:
-                      input ip, STATUS_IPORT
-
-                      ; Test bit 0 of STATUS_PORT (i.e. tready) ... if zero we should wait
+              .wait0: input ip, STATUS_IPORT
                       test ip, 01                    ; Test bit 0
                       jump Z, .wait0
-
-                      ; When FIFO is ready, send data (what we send to vaild port makes no diff)
-                      ; Writing to the VALID_port, strobes the tvalid control signal!
-
                       output scr0, VALID_PORT
 
+                      ; ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
                       ; Send tstamp counter (upper 24 bits)
+                      ; ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
                       load op, TSTAMP_UPPER_TAG
                       output op, DATA_TAG_PORT
@@ -843,59 +1035,38 @@
 
                       ; Wait for FIFO to be ready
 
-              .wait1:
-                      input ip, STATUS_IPORT
+              .wait1: input ip, STATUS_IPORT
                       test ip, 01                    ; Test bit 0
                       jump Z, .wait1
-
-
-                      ; Need to check if we are board 0 or not?
-                      ; The board ID is saved in scratchpad memory
-                      ; If not board 0, then got DONE!
-
-                      fetch scr0, BOARD_ID
-                      compare scr0, 00
-                      jump NZ, .done
-
-                      ; This is board 0!
-
                       output scr0, VALID_PORT
 
-                      ; Send tag to DATA_TAG_PORT
+                      ; ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                      ; Send TIME1 data (24 bits)
+                      ; ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
                       load op, TDC_TIME1_TAG
                       output op, DATA_TAG_PORT
+                      load addr_reg, TIME1
+                      call read_tdc
 
                       ; Set the fifo_mux_sel to 01 (it was 11)
 
                       and misc_oport_reg, f7         ; Clear bit 3
                       output misc_oport_reg, MISC_OPORT
 
-                      ; Get and send TIME1 value
-
-                      load addr_reg, TIME1
-                      call read_tdc
-
                       ; Wait for the FIFO to be ready
 
-              .wait2:
-                      input ip, STATUS_IPORT
+              .wait2: input ip, STATUS_IPORT
                       test ip, 01                    ; Test bit 0
                       jump Z, .wait2
-
-
-                      ; Strobe TIME1 data into FIFO
-
                       output scr0, VALID_PORT
 
-                      ; Ready to handle TIME2 data!
-                      ; Send tag to DATA_TAG_PORT
+                      ; ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                      ; Send TIME2 data (24 bits)
+                      ; ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
                       load op, TDC_TIME2_TAG
                       output op, DATA_TAG_PORT
-
-                      ; Get TIME2 value
-
                       load addr_reg, TIME2
                       call read_tdc
 
@@ -904,19 +1075,14 @@
               .wait3: input ip, STATUS_IPORT
                       test ip, 01                    ; Test bit 0
                       jump Z, .wait3
-
-                      ; Strobe data into FIFO
-
                       output scr0, VALID_PORT
 
-                      ; Ready to handle CALIBRATION1 value
-                      ; Send tag to DATA_TAG_PORT
+                      ; ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                      ; Send CALIBRATON1 data (24 bits)
+                      ; ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
                       load op, TDC_CAL1_TAG
                       output op, DATA_TAG_PORT
-
-                      ; Get CALIBRATION1 value
-
                       load addr_reg, CALIBRATION1
                       call read_tdc
 
@@ -925,19 +1091,14 @@
               .wait4: input ip, STATUS_IPORT
                       test ip, 01                    ; Test bit 0
                       jump Z, .wait4
-
-                      ; Strobe data into FIFO
-
                       output scr0, VALID_PORT
 
-                      ; Ready to handle the CALIBRATION2 value
-                      ; Send tag to DATA_TAG_PORT
+                      ; ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                      ; Send CALIBRATON2 data (24 bits)
+                      ; ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
                       load op, TDC_CAL2_TAG
                       output op, DATA_TAG_PORT
-
-                      ; Get CALABRATION1 value
-
                       load addr_reg, CALIBRATION2
                       call read_tdc
 
@@ -946,28 +1107,7 @@
               .wait5: input ip, STATUS_IPORT
                       test ip, 01                    ; Test bit 0
                       jump Z, .wait5
-
-                      ; DONE!
-
-               .done: output scr0, LAST_PORT
-                      return
-
-                      ; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-                      ; Subroutine Name: dly_us
-                      ;
-                      ; Delay of 1 usec
-                      ; Delay is [(4 * dly_reg) + 6] / Fclk
-                      ; constant = (clock rate - 6) / 4 where clock rate is in MHz
-                      ;
-                      ; Routine uses dly_reg and does not restore it
-                      ;
-                      ; 24 (i.e $18) assumes a 100 MHz clock
-                      ; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-              dly_us:
-                      load dly_reg, 24'd
-            .wait_us: sub dly_reg, 01
-                      jump NZ, .wait_us
+                      output scr0, LAST_PORT
                       return
 
                       ; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1189,7 +1329,6 @@
                       fetch cnt, (SP)
 
 
-
                       return
 
                       ; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1210,6 +1349,8 @@
 
                       ; Set the busy bit (also led[1])
                       ; Bit 1 of LED_PORT is led[1] which is also the busy bit!
+
+                      ; GLE: 10-Nov-2025 ... Do we want to set busy bit here???????
 
                       or led_reg, 02                 ; Set bit 1
                       output led_reg, LED_PORT
@@ -1299,7 +1440,7 @@
                       output op, PSD0_OPORT
 
                       ; Check token out from PSD 0 (token_out is bit 1)
-                      ; If token_out is HIGH then contine else we are done
+                      ; If token_out is HIGH then continue else we are done
 
                       input ip, PSD0_IPORT
                       test ip, 02                    ; Test bit 1
@@ -1446,6 +1587,9 @@
                       ; (3)
                       ; Unset the busy flag (busy flag is same as LED 1)
                       ;
+
+                      ; GLE: 10-Nov-2025 ... Do we want to set busy bit here???????
+
                       and led_reg, fd                ; Clear bit 1
                       output led_reg, LED_PORT
 
@@ -1473,7 +1617,9 @@
              nuclear:
 
                       ; Initialize registers, ports, etc
-                      ; If board id is 0 then also configure and start TDC7200
+                      ; GLE: 10-Nov-2025 (modified the comment)
+                      ; If board id is 0 then the init routine will enable (i.e. reset) the TDC7200
+                      ; Init routine also now writes to CONFIG2 register by calling init_tdc
 
                       call init
 
@@ -1481,6 +1627,11 @@
 
                       ; setbit(misc_oport_reg, 4)
                       ; output		misc_oport_reg, MISC_OPORT
+
+                      ; GLE: 10-Nov-2025 (We need to start the tdc)
+                      ; start_tdc looks to see if this is board 0 or not!
+
+                      call start_tdc
 
                       ; Turn led[0] on (On while we wait for take_event to go high!)
 
@@ -1538,9 +1689,76 @@
                       and misc_oport_reg, fe         ; Clear bit 0
                       output misc_oport_reg, MISC_OPORT
 
+                      ; GLE: 10-Nov-2025 (We need to start the tdc)
+                      ; start_tdc looks to see if this is board 0 or not!
+
+                      call start_tdc
+
                       ; Go back and wait for the next event
 
                       jump .loop                     ;
+
+
+                      ; &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+                      ; ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                      ; Program used to test the TDC7200 routines
+                      ; ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                      ; &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+
+                      ; Enable the TDC7200 ..
+                      ; The tdc_ena is called from init if we are board 0
+                      ; tdc_init is also called from init if we are board 0
+
+             run_tdc:
+                      call init
+                      call led0_off
+                      call led1_off
+
+                      ; Bring the TDC7200 chip select inactive (high)
+
+                      call tdc_csb_high
+               .loop:
+
+                      ; Clear busy bit
+
+                      call led1_off
+
+                      ; Wait for take_event to go low
+                      ; Take event is bit 1 of the STATUS_IPORT
+
+              .loop0: input ip, STATUS_IPORT
+                      test ip, 02                    ; Test bit 1
+                      jump NZ, .loop0
+
+                      ; Start the tdc
+
+                      call start_tdc
+
+                      ; Wait for take_event to go HIGH
+                      ; Take event is bit 1 of the STATUS_IPORT
+
+              .loop1: input ip, STATUS_IPORT
+                      test ip, 02                    ; Test bit 1
+                      jump Z, .loop1
+
+                      ; Set busy bit
+
+                      call led1_on
+
+                      ; Wait for tstamp_rdy to go high (active)
+
+                      call wait_rdy
+
+                      ; Read serial data (32 bits)
+
+                      load addr_reg, TIME1
+                      call read_tdc
+
+                      ; Go back and do it all over again
+
+                      jump .loop
+
 
                       ; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                       ; Interrupt service routine
@@ -1551,6 +1769,7 @@
                       address 380
               my_isr:
                       returni disable
+
                       ;
                       ; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                       ; Interrupt vector is stored at location $3FF
