@@ -20,6 +20,7 @@ set	errorList {
 "{[Opt 31-1131]}"
 "{[Power 33-332]}"
 "{[Synth 8-6030]}"
+"{[filemgmt 56-199]}"
 }
 
 #set		cmd 	"set_msg_config -suppress -severity INFO"
