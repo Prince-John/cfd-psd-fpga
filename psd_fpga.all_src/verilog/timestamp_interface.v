@@ -77,90 +77,73 @@ module timestamp_interface(
     
 //  Let picoblaze know that [47:0]tstamp is ready
 
-    output      reg     tstamp_rdy 
+    output      tstamp_rdy,
     
+// GLE: 14-Nov-2025 ... added signal to tell us if we are board 0
+
+    input       board0    
 ) ;
-    
+
+// ********************************************************************************  
 // Implement the timestamp counter
 // We can reset the counter (synchronous reset)
 // Count changes on posedge of tstamp_clk
+// ********************************************************************************  
 
     reg     [47:0] tstamp_counter ;
     always @(posedge tstamp_clk) begin
         if (tstamp_rst == 1'b1) tstamp_counter <= 48'd0 ;
         else tstamp_counter <= tstamp_counter + 48'd1 ;
     end
-   
-// We want to make sure that intb_ena be active for just one clock cycle
-// Use a small FSM to handle this
-
-    reg         [1:0] present_state ;
-    reg         [1:0] next_state ;
     
-    parameter   WAIT_INTB_LOW = 2'd0 ;
-    parameter   ISSUE_ENA = 2'd1 ;
-    parameter   ASSERT_RDY = 2'd2 ;
-    parameter   WAIT_INTB_HIGH = 2'd3 ;
+// ********************************************************************************   
+// Instantiate the timestamp counter and related logic for boards whose ID is NOT 0
+// ********************************************************************************   
+
+    wire    [47:0] tstamp_not_board_0 ;
+    wire    tstamp_rdy_not_board_0 ;
+    
+    tstamp_nonzero  u0(
+            .mclk(mclk),
+            .mrst(mrst),
+            .common_stop(common_stop),
+            .tstamp_counter(tstamp_counter),
+            .tstamp(tstamp_not_board_0),
+            .tstamp_rdy(tstamp_rdy_not_board_0)
+    );  
+    
+// ****************************************************************************   
+// Instantiate the timestamp counter and related logic for boards whose ID IS 0
+// ****************************************************************************   
+
+    wire    [47:0] tstamp_board_0 ;
+    wire    tstamp_rdy_board_0 ;
+    
+    tstamp_zero u1(
+            .mclk(mclk),
+            .mrst(mrst),
+            .tdc_intb(tdc_intb),
+            .tstamp_counter(tstamp_counter),
+            .tstamp(tstamp_board_0),
+            .tstamp_rdy(tstamp_rdy_board_0)
+    );  
  
-// Synchronize the tdc_intb signal to mclk
-// FSM runs off of mclk
-
-    wire    tdc_intb_sync ;
-    synchronizer sync0(.async_in(tdc_intb), .sync_out(tdc_intb_sync), .clk(mclk)) ;
+ // ****************************************************************************     
+ // The board0 signal will be used as a multiplexer select
+ // ****************************************************************************  
+ 
+    assign tstamp_rdy = (board0 == 1'b1) ? tstamp_rdy_board_0 : tstamp_rdy_not_board_0 ;
+    assign tstamp = (board0 == 1'b1) ? tstamp_board_0 : tstamp_not_board_0 ;
     
-// Present state register       
-
-    always @(posedge mclk) begin
-        if (mrst == 1'b1) present_state <= 2'd0 ;
-        else present_state <= next_state ;
-    end
-
-// FSM combinational logic
-
-    reg     intb_ena ;
-    always @(*) begin
-        intb_ena = 1'b0 ;
-        tstamp_rdy = 1'b0 ;
-        case (present_state) 
-            WAIT_INTB_LOW: begin
-                                if (tdc_intb_sync == 1'b1) next_state = WAIT_INTB_LOW ;
-                                else next_state = ISSUE_ENA ;
-                            end
-            ISSUE_ENA:      begin
-                                intb_ena = 1'b1 ;
-                                next_state = ASSERT_RDY ;
-                            end
-            ASSERT_RDY:     begin
-                                tstamp_rdy = 1'b1 ;
-                                next_state = WAIT_INTB_HIGH ;
-                            end 
-            WAIT_INTB_HIGH: begin
-                                if (tdc_intb_sync == 1'b0) begin
-                                    next_state = WAIT_INTB_HIGH ;
-                                    tstamp_rdy = 1'b1 ;
-                                end else begin
-                                    next_state = WAIT_INTB_LOW ;
-                                end 
-                            end    
-           default:         next_state = WAIT_INTB_LOW ;         
-        endcase
-    end               
-                              
-// When intb_ena goes high, let's transfer the counter value to tstamp_reg
-// FSM guarantees that intb_ena stays high for only one tstamp_clk period!
-                         
-    reg     [47:0] tstamp_reg ;
-    always @(posedge mclk) begin
-        if (mrst == 1'b1) tstamp_reg <= 48'd0 ;
-        else if (intb_ena == 1'b1) tstamp_reg <= tstamp_counter ;
-    end
-    assign  tstamp = tstamp_reg ;
-
+// ******************************************************************
+// Support for TDC7200
+// So we can communicate serially with it
 // Implement the tdc register (24 bits)
 // Any of the three bytes can be parallel loaded"
 // We can also reset the entire register!
 // We want to shift data out on the negedge of the tdc sclk
 // tdc_dout gets shifted into least significant bit
+// *********************************************************************
 
     always @(negedge tdc_sclk) begin
         if (tdc_reg_rst) tdc_reg <= 24'd0 ;
@@ -175,4 +158,3 @@ module timestamp_interface(
     assign  tdc_din = tdc_reg[23] ;
      
 endmodule
-

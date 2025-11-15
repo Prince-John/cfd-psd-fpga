@@ -389,7 +389,12 @@ module psd_custom_block(
     wire    [23:0] tdc_reg ;
     wire    [47:0] tstamp_counter ;
 
+// GLE: 14-Nov-2025 
+// Modified timestamp interface so it knows if this is board 0 or not
 
+    wire    board0 ;
+    assign  board0 = (board_id_port == 8'd0) ? 1'b1 : 1'b0 ;
+    
     timestamp_interface tstamp_0(
             .mclk(mclk),
             .mrst(mrst),
@@ -406,7 +411,8 @@ module psd_custom_block(
             .tdc_din(tdc_din),   
             .tstamp(tstamp_counter),
             .tdc_reg(tdc_reg),
-            .tstamp_rdy(tstamp_rdy) 
+            .tstamp_rdy(tstamp_rdy),
+            .board0(board0) 
     ) ;
 
 //  Use the tstamp_clk to stop the TDC7200 

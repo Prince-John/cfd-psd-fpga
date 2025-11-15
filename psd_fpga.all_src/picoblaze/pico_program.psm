@@ -1577,7 +1577,8 @@ nuclear:
 						
 ; First thing we need to do is bring veto_reset
 ; high on PSD chips before they auto_reset and
-; disable (global enable low!) the PSD chips
+; disable (global enable low!) the PSD chips 
+;--Prince: Global En Low here might be redundant, address at some point.
 
 			setbit(misc_oport_reg, 1)		; Assert veto_reset
 			clearbit(misc_oport_reg, 4)		; Disable PSD
