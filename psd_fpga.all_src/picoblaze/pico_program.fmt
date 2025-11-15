@@ -19,8 +19,6 @@
                       ; GLE: 19-Mar-2025
                       ; Reviewing to make sure everything is complete and working
                       ;
-
-                      ;
                       ; GLE: 31-Mar-2025
                       ; Got tdc-test program working to verify that I can
                       ; correctly write and read to the TD7200 CONFIG2 register!
@@ -30,6 +28,12 @@
                       ; GLE: 8-Nov-2025
                       ; Trying to integrate changes in 31-Mar-2025 version into Prince’s
                       ; current version
+                      ;
+                      ; GLE: 15-Nov-2025
+                      ; Modified so all boards send back some type of timestamp.
+                      ; Non-zero boards just send timestamp counter value.
+                      ; Even boards with no ADC data to report, send timestamp data.
+                      ; Modifications made to time_to_fifo routine.
                       ; ####################################################################
 
                       ; ********************************************
@@ -101,10 +105,6 @@
                       ; ---> 1101 0000 is TDC CALIBRATION1 value
                       ; ---> 1110 0000 is TDC CALIBRATION2 value
                       ;
-                      ; GLE: added on 8-Nov-2025
-                      ;
-                      ; ---> 1111 1111 is code we send when (board is 0) and we need to send tlast
-
 
                       constant TDC_DATA_PORT, 03
 
@@ -250,7 +250,6 @@
                       ; Adding input PORT 4
                       ; GLE: 5-Nov-2025
                       ; Only using bit 0 (tstamp_rdy)
-                      ; It’s a delayed version of intb but active HIGH
                       ; When active we know we have captured the counter
                       ; value into the holding register in timestamp interface
                       ;
@@ -970,35 +969,17 @@
 
         time_to_fifo:
 
-                      ; Check to see if we are board 0 or not
-
-                      fetch scr0, BOARD_ID
-                      compare scr0, 00
-                      jump Z, .board0
-
-                      ; ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-                      ; Need to terminate the packet if we are not board 0
-                      ; ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-                      load op, NO_TSTAMP_TAG
-                      output op, DATA_TAG_PORT
-
-                      ; Wait for FIFO to be ready (bit 0 id tready)
-                      ; We don’t care what the FIFO_MUX_SEL is set to
-
-              .tlast: input ip, STATUS_IPORT
-                      test ip, 01                    ; Test bit 0
-                      jump Z, .tlast
-                      output scr0, LAST_PORT
-                      return
-
                       ; ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
                       ; Wait for TDC7200 tstamp_rdy to go low
-                      ; Can’t read registers until intb is low
+                      ; Can’t read registers until tstamp_rdy is high!
                       ; tstamp_rdy is bit 0 of the RDY_IPORT
+                      ;
+                      ; GLE: 15-Nov-2025
+                      ; Modified so all boards send timestamp counter
+                      ; value back!
+                      ; Board0 0 also sends TDC7200 data
                       ; ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-             .board0:
                       call wait_rdy
 
                       ; ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1033,17 +1014,29 @@
                       or misc_oport_reg, 04          ; Set bit 2
                       output misc_oport_reg, MISC_OPORT
 
+                      ; Check to see if we are board 0 or not
+
+                      fetch scr0, BOARD_ID
+                      compare scr0, 00
+                      jump Z, .board0
+
+                      ; If we are NOT board 0
                       ; Wait for FIFO to be ready
+                      ; and then send tvalid/tlast
+                      ; Then return!
 
               .wait1: input ip, STATUS_IPORT
                       test ip, 01                    ; Test bit 0
                       jump Z, .wait1
-                      output scr0, VALID_PORT
+                      output scr0, LAST_PORT
+                      return
 
                       ; ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                      ; We are board 0
                       ; Send TIME1 data (24 bits)
                       ; ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+             .board0:
                       load op, TDC_TIME1_TAG
                       output op, DATA_TAG_PORT
                       load addr_reg, TIME1
@@ -1648,6 +1641,7 @@
                       ; First thing we need to do is bring veto_reset
                       ; high on PSD chips before they auto_reset and
                       ; disable (global enable low!) the PSD chips
+                      ;--Prince: Global En Low here might be redundant, address at some point.
 
                       or misc_oport_reg, 02          ; Set bit 1		; Assert veto_reset
                       and misc_oport_reg, ef         ; Clear bit 4		; Disable PSD
