@@ -1684,6 +1684,10 @@
                       ; &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
                       ; ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
                       ; Program used to test the TDC7200 routines
+                      ; GLE: 19-Nov-2025
+                      ; Use this to make sure can reset, configure, read from
+                      ; TDC7200. Can see INTB go low, etc.
+                      ; No data goes back to uBlaze
                       ; ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
                       ; &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
