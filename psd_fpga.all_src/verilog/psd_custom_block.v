@@ -179,7 +179,9 @@ module psd_custom_block(
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  
 // Picoblaze input port #4
 // Called PSD1_PORT in picoblaze code
-//
+// *************************************
+// GLE: Nov 2025
+// *************************************
 // Bit 0 : tstamp_rdy (active high)
 // tstamp rdy is delayed version of intb
 // When it goes high, we have valid timestamp

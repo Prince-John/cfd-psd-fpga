@@ -384,19 +384,6 @@
 
 			constant TSTAMP_UPPER_TAG, 50 
 
-
-; GLE: 8-Nov-205  (Need this! I think!!!)
-; Word with this data tag gets sent to terminate
-; a packet so that tlast get’s sent ALWAYS
-; So if a board in the system has no data to
-; report for an event, we still send one word
-; back with is this special tag and most importantly
-; tlast gets asserted. The C-code ignores the one
-; word that was sent to FIFO in this case.
-; Gets used in time2fifo routine!
-
-			constant NO_TSTAMP_TAG, ff 
-
 ;
 
 			constant TDC_TIME1_TAG, 90 
@@ -927,15 +914,13 @@ read_tdc:		call		clr_tdc_reg		; clears all 24-bits of tdc_reg
 
 ; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ; Subroutine Name: wait_rdy
-; We wait for tstamp_rdy to go low before we return
+; We wait for tstamp_rdy to go high before we return
 ; scr0 is used but not saved or restored
 ; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-wait_rdy:	call		led0_on
-.loop:		input		scr0, RDY_IPORT
+wait_rdy:	input		scr0, RDY_IPORT
 			test scr0, 01  ; Test bit 0
-			jump		NZ, .loop
-			call		led0_off
+			jump		NZ, wait_rdy
 			return
 
 ; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -945,7 +930,6 @@ wait_rdy:	call		led0_on
 ;
 ;	constant	TSTAMP_LOWER_TAG, 40
 ;	constant	TSTAMP_UPPER_TAG, 50
-; 	constant	NO_TSTAMP_TAG, FF
 
 ;	constant	TDC_TIME1_TAG, 90
 ;	constant	TDC_TIME2_TAG, a0
@@ -979,6 +963,10 @@ time_to_fifo:
 ; value back!
 ; Board0 0 also sends TDC7200 data
 ; ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+ ; Wait tfor the tstamp_rdy signal to go high
+ ; Once it goes high, we know that the timestamp
+ ; counter has been transferred to holding register
 
 			call		wait_rdy
 
@@ -1024,6 +1012,8 @@ time_to_fifo:
 ; Wait for FIFO to be ready
 ; and then send tvalid/tlast
 ; Then return!
+; So all boards send the timestamp counter back but
+; if board is 0 then ALSO send the TDC7200 data!
 
 .wait1:		input		ip, STATUS_IPORT
 			test ip, 01  ; Test bit 0
@@ -1043,6 +1033,8 @@ time_to_fifo:
 			call		read_tdc
 
 ; Set the fifo_mux_sel to 01 (it was 11)
+; When fifo_mux_sel is 01 then we can send data read back
+; from TDC7200 to FIFO
 
 			and misc_oport_reg,  f7  ; Clear bit 3
 			output		misc_oport_reg, MISC_OPORT
@@ -1343,8 +1335,6 @@ get_event:
 ; Set the busy bit (also led[1])
 ; Bit 1 of LED_PORT is led[1] which is also the busy bit!
 
-; GLE: 10-Nov-2025 ... Do we want to set busy bit here???????
-
 			or led_reg, 02  ; Set bit 1
 			output		led_reg, LED_PORT
 
@@ -1580,8 +1570,6 @@ get_event:
 ; (3)
 ; Unset the busy flag (busy flag is same as LED 1)
 ;
-
-; GLE: 10-Nov-2025 ... Do we want to set busy bit here???????
 
 			and led_reg,  fd  ; Clear bit 1
 			output		led_reg, LED_PORT

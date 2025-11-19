@@ -60,15 +60,67 @@ module tstamp_nonzero(
     wire    common_stop_sync ;
     synchronizer sync_stop(.async_in(common_stop), .sync_out(common_stop_sync), .clk(mclk)) ;
 
-// For boards other than 0, use this for the tstamp register
+// We want to make sure that intb_ena be active for just one clock cycle
+// Use a small FSM to handle this
+   
+    parameter   WAIT_STOP_HIGH = 2'd0 ;
+    parameter   ISSUE_ENA = 2'd1 ;
+    parameter   ASSERT_RDY = 2'd2 ;
+    parameter   WAIT_STOP_LOW = 2'd3 ;
 
+    reg         [1:0] present_state ;
+    reg         [1:0] next_state ;
+       
+// Present state register       
+
+    always @(posedge mclk) begin
+        if (mrst == 1'b1) present_state <= 2'd0 ;
+        else present_state <= next_state ;
+    end
+
+// FSM combinational logic
+
+    reg     stop_ena ;
+    reg     tstamp_rdy_reg ;
+    
+    always @(*) begin
+        stop_ena = 1'b0 ;
+        tstamp_rdy_reg = 1'b0 ;
+        case (present_state) 
+            WAIT_STOP_HIGH: begin
+                                if (common_stop_sync == 1'b0) next_state = WAIT_STOP_HIGH ;
+                                else next_state = ISSUE_ENA ;
+                            end
+            ISSUE_ENA:      begin
+                                stop_ena = 1'b1 ;
+                                next_state = ASSERT_RDY ;
+                            end
+            ASSERT_RDY:     begin
+                                tstamp_rdy_reg = 1'b1 ;
+                                next_state = WAIT_STOP_LOW ;
+                            end 
+            WAIT_STOP_LOW:  begin
+                                if (common_stop_sync == 1'b1) begin
+                                    next_state = WAIT_STOP_LOW ;
+                                    tstamp_rdy_reg = 1'b1 ;
+                                end else begin
+                                    next_state = WAIT_STOP_HIGH ;
+                                end 
+                            end    
+            default:        next_state = WAIT_STOP_HIGH ;         
+        endcase
+    end               
+
+// When intb_ena goes high, let's transfer the counter value to tstamp_reg
+// FSM guarantees that intb_ena stays high for only one tstamp_clk period!
+                         
     reg     [47:0] tstamp_reg ;
     always @(posedge mclk) begin
         if (mrst == 1'b1) tstamp_reg <= 48'd0 ;
-        else if (common_stop_sync == 1'b1) tstamp_reg <= tstamp_counter_sync ;
+        else if (stop_ena == 1'b1) tstamp_reg <= tstamp_counter_sync ;
     end
-    
+        
     assign tstamp = tstamp_reg ;
-    assign tstamp_rdy = common_stop_sync ;
+    assign tstamp_rdy = tstamp_rdy_reg ;
     
 endmodule
