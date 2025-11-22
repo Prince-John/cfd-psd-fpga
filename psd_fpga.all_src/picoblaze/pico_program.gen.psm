@@ -400,12 +400,12 @@
 ; @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
       		address      000
-origin:  	jump      	 nuclear
+; origin:  	jump      	 nuclear
 
 ;
 ; GLE: 8-Nov-205  (A TDC7200 test program)
 ;
-; origin:  	jump      	 run_tdc
+origin:  	jump      	 run_tdc
 
 ; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ; Subroutine Name: init
@@ -705,6 +705,8 @@ tdc_ena:		and tdc_ctl_reg,  7f  ; Clear bit 7
 				call		dly_us
 				or tdc_ctl_reg, 80  ; Set bit 7
 				output		tdc_ctl_reg, TDC_CTL_PORT
+				call 		dly_100ms
+; Added delay after enable transistion to wait for TDC7200 to stabilize - Prince Nov 22’26
 				return
 
 ; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -862,6 +864,55 @@ tdc_serial:
 
 			return
 
+
+; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+; Subroutine Name: read_tdc_8
+;
+; Reads a 8-bit register from the TDC7200
+;
+; When we enter, addr_reg should contain the register we
+; want to read from
+; Takes a total of 16 clock pulses to do the read
+; First 8 loads the register address and then last 8
+; clocks read out the data
+; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+read_tdc_8: 	call		clr_tdc_reg		; clears all 24-bits of tdc_reg
+
+			    output		addr_reg, TDC_DATA_PORT
+
+
+; Assert ld[2] control (most significant byte of tdc register)
+; Load address of register into ms byte of tdc_reg
+; Synchronous load so we need to apply clock pulse
+
+				or tdc_ctl_reg, 04  ; Set bit 2
+				output		tdc_ctl_reg, TDC_CTL_PORT
+				call		tdc_reg_clk
+				and tdc_ctl_reg,  fb  ; Clear bit 2
+				output		tdc_ctl_reg, TDC_CTL_PORT
+
+; Bring tdc_csb pin low (active)
+				call		tdc_csb_low
+
+; Load cnt with the number of clock pulses we want i.e. 16
+; We need 8 clocks to load register address and 8 to load the value
+; Address goes in first followed by data
+
+				load		cnt, 16'd
+
+; Call our TDC serial routine
+
+				call		tdc_serial
+
+; Bring tdc_csb pin high (inactive)
+
+				call		tdc_csb_high
+
+				return
+
+
+
+
 ; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ; Subroutine Name: read_tdc
 ;
@@ -920,7 +971,19 @@ read_tdc:		call		clr_tdc_reg		; clears all 24-bits of tdc_reg
 
 wait_rdy:	input		scr0, RDY_IPORT
 			test scr0, 01  ; Test bit 0
-			jump		NZ, wait_rdy
+			jump		Z, wait_rdy
+			return
+
+
+; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+; Subroutine Name: wait_intb
+; We wait for intb to go low before we return
+; scr0 is used but not saved or restored
+; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+wait_intb:	input		scr0, STATUS_IPORT
+			test scr0, 04  ; Test bit 2
+			jump		NZ, wait_intb
 			return
 
 ; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1696,18 +1759,48 @@ nuclear:
 ; The tdc_ena is called from init if we are board 0
 ; tdc_init is also called from init if we are board 0
 
-run_tdc:
-			call	init
+run_tdc:	call	init
 			call	led0_off
 			call	led1_off
 
 ; Bring the TDC7200 chip select inactive (high)
-
 			call	tdc_csb_high
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;Wait for take event to go high - This simply delays the debug
+;instructions enough for the ILA to be ready to trigger after boot up.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+.loop20:	input		ip, STATUS_IPORT
+			test ip, 02  ; Test bit 1
+			jump		Z, .loop20
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	; DEBUG Section - I’m explicitly initializing the TDC with additional delays. - Prince
+			call		dly_100ms
+			call		tdc_ena
+			call		dly_100ms
+
+	; Read CONFIG 2 Register from TDC - before writing expect reset value 0x40
+			load	addr_reg, 01
+			call 	read_tdc_8
+	; Write Config 2
+			call 	tdc_init
+	; Read CONFIG 2 Register from TDC - after tdc_init expect 0x01
+			load	addr_reg, 01
+			call 	read_tdc_8
+
+	; Read CONFIG 1 Register from TDC - before tdc_start expect 0x00
+			load	addr_reg, 00
+			call 	read_tdc_8
+	; Start the tdc
+
+			call	start_tdc
+	; Read CONFIG 1 Register from TDC - before tdc_start expect 0x01
+			load	addr_reg, 00
+			call 	read_tdc_8
+
+
 .loop:
 
 ; Clear busy bit
-
 			call	led1_off
 
 ; Wait for take_event to go low
@@ -1730,16 +1823,17 @@ run_tdc:
 
 ; Set busy bit
 
-			call	led1_on
+			call	led1_on ; Red LED
 
-; Wait for tstamp_rdy to go high (active)
+; Wait for tstamp_intb to go low (active)
 
-			call	wait_rdy
+			call	wait_intb
 
 ; Read serial data (32 bits)
 
 			load	addr_reg, TIME1
 			call	read_tdc
+			call	led0_on
 
 ; Go back and do it all over again
 

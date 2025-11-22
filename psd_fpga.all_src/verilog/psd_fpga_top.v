@@ -150,7 +150,7 @@ module psd_fpga_top(
         .tdc_enable(tdc_enable),
         .tdc_sclk(tdc_sclk),
         .tdc_start(tdc_start),
-        .tdc_stop(tdc_stop), 
+        .tdc_stop(tdc_stop),
         .pico_flag(debug_flags_from_pico)            
     ) ;
     
@@ -254,7 +254,6 @@ module psd_fpga_top(
 
     assign pico_in_control = pico_in_control_reg;
     
-//  assign  pico_in_control = take_event ;
 
 // ******************************** 
 // Reset related logics
@@ -452,8 +451,8 @@ module psd_fpga_top(
 
     assign debug_gpio[0] = take_event_micro;  
     assign debug_gpio[1] = take_event_connect;  
-    assign debug_gpio[2] = common_stop; 
-    assign debug_gpio[3] = tstamp_clk_connect ;
+    assign debug_gpio[2] = pico_in_control; 
+    assign debug_gpio[3] = led[1] ;
     assign debug_gpio[6:4] = debug_flags_from_pico[2:0];
       
 endmodule

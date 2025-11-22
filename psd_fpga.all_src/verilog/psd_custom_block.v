@@ -102,7 +102,7 @@ module psd_custom_block(
     output  tdc_sclk,
     output  tdc_start,
     output  tdc_stop,
-    
+
  // PICO Debug Flags
     
     output  [5:0]   pico_flag
@@ -128,7 +128,7 @@ module psd_custom_block(
 //
 // Bit 0 : tready FIFO signal
 // Bit 1 : take_event signal
-// Bit 3 : tdc_intb
+// Bit 2 : tdc_intb
 // Ground the other bits
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
