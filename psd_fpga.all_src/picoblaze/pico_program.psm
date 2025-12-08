@@ -246,6 +246,19 @@
 ; --------------------------------
 ; 0		tstamp_rdy
 
+
+; Adding input PORT 5
+; Prince: 24-Nov-2025
+; Connected to the lowest byte of the 24 bit TDC serial register
+; Make sure that the no more tdc serial clocks are given before reading this.
+;
+
+			constant	TDC_BYTE_IPORT, 05	
+; --------------------------------
+; PORT 5
+; --------------------------------
+; [7:0] = tdc_reg[7:0]
+
 ;
 ; Picoblaze has 16 general purpose registers
 ; We can use s0 - sd, se and sf are special
@@ -370,12 +383,12 @@
 ; @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@	
 
       		address      000     		
-; origin:  	jump      	 nuclear
+ origin:  	jump      	 nuclear
 	
 ;
 ; GLE: 8-Nov-205  (A TDC7200 test program)	
 ;
-origin:  	jump      	 run_tdc
+;origin:  	jump      	 run_tdc
 
 ; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ; Subroutine Name: init
@@ -537,6 +550,41 @@ dly_us:
 .wait_us:	sub         dly_reg, 01
 			jump		NZ, .wait_us
 			return	
+
+; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+; Subroutine Name: dly_1ms
+; 
+; Delay for "about" 1ms by repeatly calling 
+; delay_1us subroutine
+; Note: 100,000 is $0003E8
+;
+; Uses scr0, scr1, cnt but does NOT destroys them
+; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+dly_1ms:	
+
+; Push regs onto stack
+
+			push(scr0) 
+			push(scr1)
+			push(cnt)
+			
+			load		cnt, 00
+			load		scr1, 03
+			load		scr0, E8
+.loop:		call		dly_us
+			sub			scr0, 01
+			subcy		scr1, 00
+			subcy		cnt, 00
+			jump		NC, .loop
+
+; Restore registers
+			
+			pop(cnt)
+			pop(scr1)
+			pop(scr0)
+			
+			return	
 						
 ; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ; Subroutine Name: dly_100ms
@@ -658,12 +706,10 @@ tdc_csb_high:	setbit(tdc_ctl_reg, 6)
 
 tdc_ena:		clearbit(tdc_ctl_reg, 7)
 				output		tdc_ctl_reg, TDC_CTL_PORT		
-				call		dly_us				
-				call		dly_us				
-				call		dly_us
+				call		dly_1ms
 				setbit(tdc_ctl_reg, 7)
 				output		tdc_ctl_reg, TDC_CTL_PORT
-				call 		dly_100ms 
+				call 		dly_100ms  
 ; Added delay after enable transistion to wait for TDC7200 to stabilize - Prince Nov 22'26 
 				return	
 							
@@ -1043,11 +1089,17 @@ time_to_fifo:
 			return
 			
 ; ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^	
-; We are board 0		
+; We are board 0	
+; Send upper 24 tstamp counter valid signal then	
 ; Send TIME1 data (24 bits)
 ; ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^	
 
-.board0:
+.board0:	input		ip, STATUS_IPORT	
+			testbit(ip, 0) 
+			jump		Z,	.board0	
+			output		scr0, VALID_PORT
+	; Send the TVALID signal for the upper 24 bits of the TSTAMP counter
+	
 			load		op, TDC_TIME1_TAG
 			output		op, DATA_TAG_PORT
 			load		addr_reg, TIME1
@@ -1291,7 +1343,7 @@ adc_to_fifo:
 			jump		Z,	.wait_trdy	
 			
 			
-; When FIFO is ready, send data (what we send to vaild port makes no diff) --Prince: How do we know that the data is ready and stable?
+; When FIFO is ready, send data (what we send to vaild port makes no diff) 
 	
 			output		op, VALID_PORT
 	
@@ -1553,14 +1605,9 @@ get_event:
 ; (2)
 ; Get and send time data to the FIFO
 ;				
-			;output		scr0, LAST_PORT		; temp DEBUG -prince - sep 30
 			call		time_to_fifo
 			
-			;clearbit(led_reg, 3) 			;DEBUG FLAG 1
-			;clearbit(led_reg, 2) 			;DEBUG FLAG 0
-			;clearbit(led_reg, 5) 			;DEBUG FLAG 3
-			;clearbit(led_reg, 4) 			;DEBUG FLAG 2
-			;output		led_reg, LED_PORT	;DEBUG FLAG 0,2,3 STOP
+			
 ; (3)			
 ; Unset the busy flag (busy flag is same as LED 1)
 ;
@@ -1598,11 +1645,7 @@ nuclear:
 
 			call		init
 		
-; Enable the PSD chips (turn on global enable)
-		
-			; setbit(misc_oport_reg, 4)
-			; output		misc_oport_reg, MISC_OPORT	
-		
+
 ; GLE: 10-Nov-2025 (We need to start the tdc)
 ; start_tdc looks to see if this is board 0 or not!
 
@@ -1704,34 +1747,63 @@ run_tdc:	call	init
 			testbit(ip, 1)	
 			jump		Z, .loop20		
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;			
-	; DEBUG Section - I'm explicitly initializing the TDC with additional delays. - Prince		
-			call		dly_100ms	
-			call		tdc_ena
-			call		dly_100ms
+	; DEBUG Section 	
+	
+	;		call		tdc_ena  ; Reset the TDC by pulseing ENABLE line.
+	
 	
 	; Read CONFIG 2 Register from TDC - before writing expect reset value 0x40
-			load	addr_reg, 01				
-			call 	read_tdc_8	
+	;		load	addr_reg, 01				
+	;		call 	read_tdc_8	
+	;		input 	scr0, TDC_BYTE_IPORT
+	; Test if we have read back, what we expect.
+	;		compare scr0, 40
+	;		jump 	Z, .loop21 ; if match LEDs stay off
+	;		call 	led1_on
+	;		jump    .loop21
+			
+			
 	; Write Config 2		
-			call 	tdc_init						
+	;		call 	tdc_init						
 	; Read CONFIG 2 Register from TDC - after tdc_init expect 0x01
-			load	addr_reg, 01				
-			call 	read_tdc_8		
+	;		load	addr_reg, 01				
+	;		call 	read_tdc_8		
+			
+	;		input 	scr0, TDC_BYTE_IPORT
+			
+	; Test if we have read back, what we expect.
+	;		compare scr0, 01
+	;		jump 	NZ, .red
+	; If correct, Turn on green led
+	
+	;		call	led0_on
+	;		call 	led1_off
+	;		jump	.loop21		
+	; If incorrect, Turn on red led
+	;.red:	call 	led1_on
+	;		call 	led0_off
+			
 	
 	; Read CONFIG 1 Register from TDC - before tdc_start expect 0x00
-			load	addr_reg, 00				
-			call 	read_tdc_8	
+	;		load	addr_reg, 00				
+	;		call 	read_tdc_8	
 	; Start the tdc
 
-			call	start_tdc	
+	;		call	start_tdc	
 	; Read CONFIG 1 Register from TDC - before tdc_start expect 0x01
-			load	addr_reg, 00				
-			call 	read_tdc_8	
-			
+	;		load	addr_reg, 00				
+	;		call 	read_tdc_8	
+	
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;			
+; Here to stall the Picoblaze 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;								
+;.loop21:	nop
+;			jump	.loop21			
 
 .loop:		
 
 ; Clear busy bit
+			call	led0_off
 			call	led1_off
 			
 ; Wait for take_event to go low 
@@ -1758,7 +1830,7 @@ run_tdc:	call	init
 
 ; Wait for tstamp_intb to go low (active)
 
-			call	wait_intb
+			call	wait_rdy
 	
 ; Read serial data (32 bits)
 

@@ -294,6 +294,7 @@ void eventHandler(void) {
 						data_packet[adc_lower] = *(byte_ptr) ;
 						data_packet[adc_lower + 1] = *(byte_ptr + 1);
 						if (data_subtype == 3) chan_cnt++ ; 	// increment channel count
+
 						break ;  // adc data
 
 			case 1 :	if (board_id == 0) {

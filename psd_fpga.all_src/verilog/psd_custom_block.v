@@ -193,11 +193,17 @@ module psd_custom_block(
     wire    tstamp_rdy ;  
     assign  p4_in[0] = tstamp_rdy ;
     
+//**************************************************
+//  Debug TDC input: Added byte zero of TDC Reg to 
+//  verify that picoblaze has loaded the correct values 
+//  into the TDC configuration regiseters
+//**************************************************
+    wire    [23:0] tdc_reg ;
+    assign  p5_in[7:0] = tdc_reg[7:0] ;
+     
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  
 // Ports 5, 6, 7 currently unused so ground the input lines
-// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  
-     
-    assign  p5_in[7:0] = 8'd0 ;     
+// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^        
     assign  p6_in[7:0] = 8'd0 ;     
     assign  p7_in[7:0] = 8'd0 ;     
         
@@ -388,7 +394,8 @@ module psd_custom_block(
 // Instantiate the timestamp circuit
 // $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$  
 
-    wire    [23:0] tdc_reg ;
+// Moving this declaration before assignment in pico input. - Prince Nov 24.     
+//  wire    [23:0] tdc_reg ;
     wire    [47:0] tstamp_counter ;
 
 // GLE: 14-Nov-2025 
