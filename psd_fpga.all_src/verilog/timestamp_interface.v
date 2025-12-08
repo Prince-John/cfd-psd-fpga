@@ -3,7 +3,7 @@
 // Company: 
 // Engineer: 
 // 
-// Create Date: 07-Feb-2025
+// Create Date: 21-Jul-2025
 // Design Name: 
 // Module Name: timestamp_interface
 // Project Name: 
@@ -21,10 +21,19 @@
 
 module timestamp_interface(
 
-// Clock and reset
+// Master clock and master reset
+
+    input       mclk,
+    input       mrst,
+    
+// Timestamp clock and reset
 
     input       tstamp_clk,
     input       tstamp_rst,
+    
+// TDC7200 interupt signal
+
+    input       tdc_intb,
 
 // Common stop signal
 
@@ -50,10 +59,6 @@ module timestamp_interface(
 
     input       [7:0] tdc_reg_byte,
     
-// Interrupt signal from the TDC7200
-
-    input       tdc_intb, 
-    
 // Serial output from TDC7200
 
     input       tdc_dout,
@@ -68,13 +73,22 @@ module timestamp_interface(
     
 // TDC register
 
-    output      reg   [23:0] tdc_reg 
+    output      reg   [23:0] tdc_reg,
     
+//  Let picoblaze know that [47:0]tstamp is ready
+
+    output      tstamp_rdy,
+    
+// GLE: 14-Nov-2025 ... added signal to tell us if we are board 0
+
+    input       board0    
 ) ;
-    
+
+// ********************************************************************************  
 // Implement the timestamp counter
-// We can reset the counter!
+// We can reset the counter (synchronous reset)
 // Count changes on posedge of tstamp_clk
+// ********************************************************************************  
 
     reg     [47:0] tstamp_counter ;
     always @(posedge tstamp_clk) begin
@@ -82,28 +96,54 @@ module timestamp_interface(
         else tstamp_counter <= tstamp_counter + 48'd1 ;
     end
     
-// We want to capture counter value on rising edge of common_stop signal
-// There are issues with this but oK for initial testing 
+// ********************************************************************************   
+// Instantiate the timestamp counter and related logic for boards whose ID is NOT 0
+// ********************************************************************************   
 
-// Synchronize (2 flop synchronizer) the common_stop signal to tstamp clock
+    wire    [47:0] tstamp_not_board_0 ;
+    wire    tstamp_rdy_not_board_0 ;
+    
+    tstamp_nonzero  u0(
+            .mclk(mclk),
+            .mrst(mrst),
+            .common_stop(common_stop),
+            .tstamp_counter(tstamp_counter),
+            .tstamp(tstamp_not_board_0),
+            .tstamp_rdy(tstamp_rdy_not_board_0)
+    );  
+    
+// ****************************************************************************   
+// Instantiate the timestamp counter and related logic for boards whose ID IS 0
+// ****************************************************************************   
 
-    reg     common_stop_sync0, common_stop_sync ;
-    always @(negedge tstamp_clk) begin
-        common_stop_sync0 <= common_stop ;
-        common_stop_sync <= common_stop_sync0 ;
-    end
-
-    reg     [47:0] tstamp_reg ;
-    always @(posedge common_stop_sync) begin
-        tstamp_reg <= tstamp_counter ;
-    end    
-    assign  tstamp = tstamp_reg ;   
-
+    wire    [47:0] tstamp_board_0 ;
+    wire    tstamp_rdy_board_0 ;
+    
+    tstamp_zero u1(
+            .mclk(mclk),
+            .mrst(mrst),
+            .tdc_intb(tdc_intb),
+            .tstamp_counter(tstamp_counter),
+            .tstamp(tstamp_board_0),
+            .tstamp_rdy(tstamp_rdy_board_0)
+    );  
+ 
+ // ****************************************************************************     
+ // The board0 signal will be used as a multiplexer select
+ // ****************************************************************************  
+ 
+    assign tstamp_rdy = (board0 == 1'b1) ? tstamp_rdy_board_0 : tstamp_rdy_not_board_0 ;
+    assign tstamp = (board0 == 1'b1) ? tstamp_board_0 : tstamp_not_board_0 ;
+    
+// ******************************************************************
+// Support for TDC7200
+// So we can communicate serially with it
 // Implement the tdc register (24 bits)
 // Any of the three bytes can be parallel loaded"
 // We can also reset the entire register!
 // We want to shift data out on the negedge of the tdc sclk
 // tdc_dout gets shifted into least significant bit
+// *********************************************************************
 
     always @(negedge tdc_sclk) begin
         if (tdc_reg_rst) tdc_reg <= 24'd0 ;

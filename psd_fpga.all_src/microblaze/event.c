@@ -296,6 +296,7 @@ void eventHandler(void) {
 						if (data_subtype == 3) chan_cnt++ ; 	// increment channel count
 						xil_printf("Event number -> %d, Multiplicity-> %d, ch no = %d, adc byte index %d \r\n", event_number, chan_cnt, data_packet[ADC_OS + 9 * chan_cnt], adc_lower);
 
+
 						break ;  // adc data
 
 			case 1 :	if (board_id == 0) {

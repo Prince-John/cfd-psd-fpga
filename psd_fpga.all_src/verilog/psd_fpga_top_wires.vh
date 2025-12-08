@@ -75,6 +75,7 @@
     wire    intx_out ;
     wire    [1:0] led ;
     wire    [5:0] debug_flags_from_pico; // March 30, Prince
+    //wire    tstamp_ready; // Nov 20, 26 - prince, debug
     wire    mux_en ;
     wire    [3:0] mux_sel ;
     wire    or_connect ;

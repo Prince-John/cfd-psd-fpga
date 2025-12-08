@@ -150,7 +150,7 @@ module psd_fpga_top(
         .tdc_enable(tdc_enable),
         .tdc_sclk(tdc_sclk),
         .tdc_start(tdc_start),
-        .tdc_stop(tdc_stop), 
+        .tdc_stop(tdc_stop),
         .pico_flag(debug_flags_from_pico)            
     ) ;
     
@@ -158,26 +158,23 @@ module psd_fpga_top(
 // *******************************************************
 // Creating an take_event signal synced to the clock domain
 // ******************************************************
-    reg     take_event_sync0, take_event_sync ;
-    always @(posedge mclk) begin
-        take_event_sync0 <= take_event ;
-        take_event_sync <= take_event_sync0 ;
-    end      
+
+    wire    take_event_sync ;
+    synchronizer sync1(.async_in(take_event), .sync_out(take_event_sync), .clk(mclk)) ;
     
 // *******************************************************
 // Creating an or signal synced to the clock domain
 // ******************************************************
-    reg     or_sync0, or_sync ;
-    always @(posedge mclk) begin
-        or_sync0 <= cfd_or ;
-        or_sync <= or_sync0 ;
-    end           
+
+     wire   or_sync ;
+     synchronizer sync2(.async_in(cfd_or), .sync_out(or_sync), .clk(mclk)) ;       
         
     // =====================================================
     // Delay selection 
     // =====================================================
     // take_event_sel decides which delay preset to latch
-     reg [7:0] delay_cycles;
+    
+    reg [7:0] delay_cycles;
     always @(*) begin
         case (take_event_sel)
             2'b01: delay_cycles = 8'd50;   // 0.5 µs
@@ -186,6 +183,7 @@ module psd_fpga_top(
             default: delay_cycles = 8'd200;
         endcase
     end    
+    
    //************************ Take Event Select **********************************
 //  Take event signal can either be external, default, 
 //  or a delayed version of the cfd or ouput.
@@ -199,15 +197,18 @@ module psd_fpga_top(
     // parameter defaults
     parameter PULSE_WIDTH = 100;  // 1 us @ 100 MHz default width
     
+// Dummy reset is not connected to anything on TE0711 so it does nothing
+// GLE: 5-Nov-2025
+
     always @(posedge mclk or posedge dummy_reset) begin
         if (dummy_reset) begin
-            counter              <= 0;
+            counter              <= 16'd0;
             take_event_delay     <= 1'b0;
             active               <= 1'b0;
         end 
         else 
             begin
-            if (or_sync && !active) begin
+            if (or_sync & ~active) begin
                 // start delay+width window
                 counter              <= delay_cycles + PULSE_WIDTH;
                 active               <= 1'b1;
@@ -227,7 +228,6 @@ module psd_fpga_top(
     end
     
 
-  
     assign  take_event_connect = (take_event_sel == 2'b00) ? take_event_sync : take_event_delay;
     
     assign  take_event_micro = (acquisition_mode == 1'b1) ?  take_event_connect : 1'b0; //(acquisition_mode_reg == 1'b1) ? (or_sync): 1'b0 ; 
@@ -237,22 +237,23 @@ module psd_fpga_top(
     reg pico_busy_delay;
     
     always @(posedge mclk) begin
+    
         // Register busy signal
         pico_busy       <= led[1];
         pico_busy_delay <= pico_busy;  // delayed version
     
         // Control logic
+        
         if ((take_event_connect == 1'b1) && (acquisition_mode == 1'b1)) begin
             pico_in_control_reg <= 1'b1;  // take control when OR fires
         end 
-        else if (pico_busy_delay && ~pico_busy) begin
+        else if (pico_busy_delay & ~pico_busy) begin
             pico_in_control_reg <= 1'b0;  // release on falling edge of busy
         end
     end
 
     assign pico_in_control = pico_in_control_reg;
     
-//  assign  pico_in_control = take_event ;
 
 // ******************************** 
 // Reset related logics
@@ -369,11 +370,14 @@ module psd_fpga_top(
     end
     assign  or_connect = or_connect_reg ;
 
-
-
 // Microblaze need to select either timestamp clock from internal vs external 
 
-    assign  tstamp_clk_connect = (timestamp_in_sel == 1'b1) ? clk10 : tstamp_clk ;
+// For time being, let's ditch the clock mux (GLE: 04-Nov-25)
+
+//    assign  tstamp_clk_connect = (timestamp_in_sel == 1'b1) ? clk10 : tstamp_clk ;
+
+    assign tstamp_clk_connect = clk10 ;
+    
     assign tdc_clock = tstamp_clk_connect;
     
 // Microblaze need to select either timestamp clock reset from internal vs external 
@@ -447,11 +451,8 @@ module psd_fpga_top(
 
     assign debug_gpio[0] = take_event_micro;  
     assign debug_gpio[1] = take_event_connect;  
-    assign debug_gpio[2] = common_stop; 
-    assign debug_gpio[3] = tstamp_clk_connect ;
+    assign debug_gpio[2] = pico_in_control; 
+    assign debug_gpio[3] = led[1] ;
     assign debug_gpio[6:4] = debug_flags_from_pico[2:0];
-    
-    
-
-    
+      
 endmodule
