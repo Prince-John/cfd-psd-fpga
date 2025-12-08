@@ -143,6 +143,7 @@ int get_packet (XLlFifo *InstancePtr, u32* buffer) {
 	if (occupancy) {
 		ReceiveLength = (XLlFifo_iRxGetLen(InstancePtr)) / FIFO_WORD_SIZE ;
 		for (i=0; i < ReceiveLength; i++) {
+			xil_printf("Fifo Word Length: %d, buffer index =  %d \r\n", ReceiveLength, i );
 			RxWord = XLlFifo_RxGetWord(InstancePtr);
 			*(buffer+i) = RxWord;
 		} // end for
@@ -289,11 +290,12 @@ void eventHandler(void) {
 
 		switch (data_type) {
 			case 0 :	data_packet[ADC_OS + 9 * chan_cnt]=  data_tag & 0x0f  ;
-
 						adc_lower = ADC_OS + (9 * chan_cnt) + (2 * data_subtype) + 1 ;
 						data_packet[adc_lower] = *(byte_ptr) ;
 						data_packet[adc_lower + 1] = *(byte_ptr + 1);
 						if (data_subtype == 3) chan_cnt++ ; 	// increment channel count
+						xil_printf("Event number -> %d, Multiplicity-> %d, ch no = %d, adc byte index %d \r\n", event_number, chan_cnt, data_packet[ADC_OS + 9 * chan_cnt], adc_lower);
+
 						break ;  // adc data
 
 			case 1 :	if (board_id == 0) {

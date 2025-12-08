@@ -101,7 +101,7 @@
 
 // Max packet length
 
-#define 	MAX_PACKET_LEN 			60
+#define 	MAX_PACKET_LEN 			120
 #define 	NO_OF_PACKETS 			1
 #define 	MAX_DATA_BUFFER_SIZE 	(NO_OF_PACKETS * MAX_PACKET_LEN)
 #define		MAX_PACKET_BYTE_SIZE	200
