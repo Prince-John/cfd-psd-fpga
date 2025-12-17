@@ -132,10 +132,10 @@ int main() {
 
 
     	if ((acquisition_mode && isEventMode()) || fifo_occupancy_flag) {
-    		xil_printf("Event # -> %d\r\n", event_number);
+    		xil_printf("Before Event Handler: Event #: %d\r\n", event_number);
     		eventHandler() ;
 
-			xil_printf("Fifo Occupancy: %d\r\n", fifo_occupancy_flag);
+			xil_printf("After Event Handler Fifo Occupancy: %d\r\n", fifo_occupancy_flag);
 			xil_printf("Debug: out of event mode \r\n") ;
     	}
     		

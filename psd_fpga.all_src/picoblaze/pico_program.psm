@@ -1554,7 +1554,7 @@ get_event:
 			
 ; Read PSD 0 address
 
-			input		adc_reg, PSD0_IPORT			
+			input		addr_reg, PSD0_IPORT			
 			
 ; We need to send A, B, C, T off to FIFO
 			
@@ -1562,7 +1562,7 @@ get_event:
 			
 ; Read PSD 1 address 
 			
-			input		adc_reg, PSD1_IPORT
+			input		addr_reg, PSD1_IPORT
 			
 ; We need to send A, B, C, T off to FIFO
 
