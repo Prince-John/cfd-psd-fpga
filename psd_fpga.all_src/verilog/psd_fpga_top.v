@@ -137,7 +137,7 @@ module psd_fpga_top(
 // TDC related signals
 // For initial testing on digilent board use take_event (button) for common stop
 
-        .common_stop(common_stop),
+        .common_stop(common_stop_connect),
 //        .common_stop(take_event_micro),
         .tdc_dout(tdc_dout),
         .tdc_intb(tdc_intb),
@@ -230,7 +230,16 @@ module psd_fpga_top(
 
     assign  take_event_connect = (take_event_sel == 2'b00) ? take_event_sync : take_event_delay;
     
+    
     assign  take_event_micro = (acquisition_mode == 1'b1) ?  take_event_connect : 1'b0; //(acquisition_mode_reg == 1'b1) ? (or_sync): 1'b0 ; 
+    
+    //********************************* COMMON STOP CONNECT****************************************************************/
+    //* Dec 11, Prince- Added this GUI controllable toggle to prevent a deadlock if external common stop is not connected
+    // NOTE: All timing information will be INVALID if the common stop connect is routed to internally generated common stop.
+    // 
+    // *************FIXME: For initial testing, I'm using take_event_sel - need to change this later.********** 
+    //*****************************************************************************************************************/
+    assign  common_stop_connect = (take_event_sel == 2'b00) ? common_stop : take_event_delay;
     
     reg pico_in_control_reg;
     reg pico_busy;
@@ -449,10 +458,10 @@ module psd_fpga_top(
     
 //  ****** Routing Digital signals that go to the backplane NIM translators ******
 
-    assign debug_gpio[0] = take_event_micro;  
-    assign debug_gpio[1] = take_event_connect;  
-    assign debug_gpio[2] = pico_in_control; 
-    assign debug_gpio[3] = led[1] ;
-    assign debug_gpio[6:4] = debug_flags_from_pico[2:0];
+//    assign debug_gpio[0] = take_event_micro;  
+//    assign debug_gpio[1] = take_event_connect;  
+//    assign debug_gpio[2] = pico_in_control; 
+//    assign debug_gpio[3] = led[1] ;
+//    assign debug_gpio[6:4] = debug_flags_from_pico[2:0];
       
 endmodule

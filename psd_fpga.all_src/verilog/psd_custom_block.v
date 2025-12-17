@@ -87,7 +87,11 @@ module psd_custom_block(
 // PSD global enable
 
     output  psd_glob_ena,
+    
+// Pico in control signal: This signal will go high once per event and go low only after picoblaze is done with its get_event() routine.
 
+    input  pico_in_control, 
+    
 // TDC related signals
 
     input   common_stop,
@@ -421,6 +425,7 @@ module psd_custom_block(
             .tstamp(tstamp_counter),
             .tdc_reg(tdc_reg),
             .tstamp_rdy(tstamp_rdy),
+            .pico_in_control(pico_in_control),
             .board0(board0) 
     ) ;
 

@@ -79,6 +79,7 @@
     wire    mux_en ;
     wire    [3:0] mux_sel ;
     wire    or_connect ;
+    wire    common_stop_connect;
     wire    psd_acq_all ;
     wire    psd_acq_clk_0 ;
     wire    psd_acq_clk_1 ;
@@ -241,6 +242,7 @@
 
 	wire   [1:0] or_sel ;
 	wire   [1:0] take_event_sel ;
+	wire   common_stop_sel ; // Prince - Dec 11 
 	wire   cfd_out_sel  ;
 	wire   psd_intx_out_sel  ;
 	wire   force_reset_from_micro ;

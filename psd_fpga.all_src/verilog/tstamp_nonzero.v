@@ -32,6 +32,9 @@ module tstamp_nonzero(
 
     input       common_stop,
     
+// Pico in control signal, stays high until event is completely read out. goes high once per event. 
+    input       pico_in_control,
+    
 // Timestamp counter
 
     input       [47:0] tstamp_counter,
@@ -100,7 +103,7 @@ module tstamp_nonzero(
                                 next_state = WAIT_STOP_LOW ;
                             end 
             WAIT_STOP_LOW:  begin
-                                if (common_stop_sync == 1'b1) begin
+                                if (pico_in_control == 1'b1) begin
                                     next_state = WAIT_STOP_LOW ;
                                     tstamp_rdy_reg = 1'b1 ;
                                 end else begin

@@ -81,7 +81,9 @@ module timestamp_interface(
     
 // GLE: 14-Nov-2025 ... added signal to tell us if we are board 0
 
-    input       board0    
+    input       board0,
+// Pico in control flag to indicate when an event readout is done, included to signal the FSM for non-zero board tstamp_rdy output that was going low before the picoblaze would poll. - Prince Dec, 11   
+    input       pico_in_control 
 ) ;
 
 // ********************************************************************************  
@@ -107,6 +109,7 @@ module timestamp_interface(
             .mclk(mclk),
             .mrst(mrst),
             .common_stop(common_stop),
+            .pico_in_control(pico_in_control),
             .tstamp_counter(tstamp_counter),
             .tstamp(tstamp_not_board_0),
             .tstamp_rdy(tstamp_rdy_not_board_0)
