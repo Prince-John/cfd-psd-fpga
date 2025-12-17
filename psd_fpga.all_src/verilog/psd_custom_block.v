@@ -87,7 +87,11 @@ module psd_custom_block(
 // PSD global enable
 
     output  psd_glob_ena,
+    
+// Pico in control signal: This signal will go high once per event and go low only after picoblaze is done with its get_event() routine.
 
+    input  pico_in_control, 
+    
 // TDC related signals
 
     input   common_stop,
@@ -102,7 +106,7 @@ module psd_custom_block(
     output  tdc_sclk,
     output  tdc_start,
     output  tdc_stop,
-    
+
  // PICO Debug Flags
     
     output  [5:0]   pico_flag
@@ -128,7 +132,7 @@ module psd_custom_block(
 //
 // Bit 0 : tready FIFO signal
 // Bit 1 : take_event signal
-// Bit 3 : tdc_intb
+// Bit 2 : tdc_intb
 // Ground the other bits
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -175,13 +179,35 @@ module psd_custom_block(
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^     
     
     assign  p3_in = psd1_iport ;  
+  
+// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  
+// Picoblaze input port #4
+// Called PSD1_PORT in picoblaze code
+// *************************************
+// GLE: Nov 2025
+// *************************************
+// Bit 0 : tstamp_rdy (active high)
+// tstamp rdy is delayed version of intb
+// When it goes high, we have valid timestamp
+// waiting for us!
+//
+// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+ 
+    assign  p4_in[7:1] = 7'd0 ; 
+    wire    tstamp_rdy ;  
+    assign  p4_in[0] = tstamp_rdy ;
     
+//**************************************************
+//  Debug TDC input: Added byte zero of TDC Reg to 
+//  verify that picoblaze has loaded the correct values 
+//  into the TDC configuration regiseters
+//**************************************************
+    wire    [23:0] tdc_reg ;
+    assign  p5_in[7:0] = tdc_reg[7:0] ;
+     
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  
-// Ports 4, 5, 6, 7 currently unused so ground the input lines
-// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  
-      
-    assign  p4_in[7:0] = 8'd0 ;     
-    assign  p5_in[7:0] = 8'd0 ;     
+// Ports 5, 6, 7 currently unused so ground the input lines
+// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^        
     assign  p6_in[7:0] = 8'd0 ;     
     assign  p7_in[7:0] = 8'd0 ;     
         
@@ -215,7 +241,6 @@ module psd_custom_block(
     assign  led[0] = p0_out[0] ;
     assign  led[1] = p0_out[1] ;
     assign  pico_flag[5:0] = p0_out[7:2];
-    
     
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  
 //  Picoblaze output port #1
@@ -373,10 +398,19 @@ module psd_custom_block(
 // Instantiate the timestamp circuit
 // $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$  
 
-    wire    [23:0] tdc_reg ;
+// Moving this declaration before assignment in pico input. - Prince Nov 24.     
+//  wire    [23:0] tdc_reg ;
     wire    [47:0] tstamp_counter ;
 
+// GLE: 14-Nov-2025 
+// Modified timestamp interface so it knows if this is board 0 or not
+
+    wire    board0 ;
+    assign  board0 = (board_id_port == 8'd0) ? 1'b1 : 1'b0 ;
+    
     timestamp_interface tstamp_0(
+            .mclk(mclk),
+            .mrst(mrst),
             .tstamp_clk(tstamp_clk),
             .tstamp_rst(tstamp_rst),
             .common_stop(common_stop),
@@ -389,7 +423,10 @@ module psd_custom_block(
             .tdc_dout(tdc_dout),
             .tdc_din(tdc_din),   
             .tstamp(tstamp_counter),
-            .tdc_reg(tdc_reg) 
+            .tdc_reg(tdc_reg),
+            .tstamp_rdy(tstamp_rdy),
+            .pico_in_control(pico_in_control),
+            .board0(board0) 
     ) ;
 
 //  Use the tstamp_clk to stop the TDC7200 

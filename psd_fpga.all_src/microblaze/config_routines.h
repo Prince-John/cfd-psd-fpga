@@ -110,6 +110,7 @@ void 	configure_psd_0_test_mode(u8 addr, u8 enable);
 void 	configure_psd_1_test_mode(u8 addr, u8 enable);
 void	psd_global_enable(u8 value);
 void	psd_reset_all(void);
+void 	psd_force_reset();
 void	psd_reset(u8 value);
 
 

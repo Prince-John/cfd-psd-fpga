@@ -60,6 +60,14 @@ psd_fpga.all_src/python/__pycache__/*
 #Ignore version headers
 psd_fpga.all_src/microblaze/version.h
 
+# Ignore generated picoblaze files
+psd_fpga.all_src/picoblaze/pico_program.fmt
+psd_fpga.all_src/picoblaze/pico_program.gen.psm
+psd_fpga.all_src/picoblaze/pico_program.log
+psd_fpga.all_src/picoblaze/pico_program.mem
+psd_fpga.all_src/picoblaze/pico_program.v
+
+
 
 *.launch
 *.mmi

@@ -128,15 +128,15 @@ module picoblaze_controller  (
 
     always @ (posedge clk) begin
         if (write_strobe == 1'b1) begin
-            case (port_id[2:0]) 
-                3'd0:   P0_out <= out_port ;
-                3'd1:   P1_out <= out_port ;
-                3'd2:   P2_out <= out_port ;
-                3'd3:   P3_out <= out_port ;
-                3'd4:   P4_out <= out_port ;
-                3'd5:   P5_out <= out_port ;
-                3'd6:   P6_out <= out_port ;
-                3'd7:   P7_out <= out_port ;                           
+            case (port_id[7:0]) 
+                8'd0:   P0_out <= out_port ;
+                8'd1:   P1_out <= out_port ;
+                8'd2:   P2_out <= out_port ;
+                8'd3:   P3_out <= out_port ;
+                8'd4:   P4_out <= out_port ;
+                8'd5:   P5_out <= out_port ;
+                8'd6:   P6_out <= out_port ;
+                8'd7:   P7_out <= out_port ;                           
                 default: P0_out <= out_port ;
             endcase
         end

@@ -70,12 +70,16 @@ u8	get_board_id() {
  * This routine updates the global board state flag and writes to the
  * GPIO line to set FPGA hardware into acquisition mode.
  *
+ *	Change: DEC 17, 26; this will also assert a FORCE RESET on the
+ *	PSD chips to clear the analog circuits before we enable the
+ *	hardware acquisition logic control.
  * Input u8 mode: only the LSB is valid, 1 - acquisition mode
  */
 void 	set_mode(u8 mode){
 
 	if (mode == 1){
 		xil_printf("Chipboard in Acquisition Mode! \r\n") ;
+		psd_force_reset();
 		acquisition_mode = true;
 		write_gpio_port(TAKE_EVENT_PORT, 1, ACQUISITION_MODE, HIGH) ;
 	}

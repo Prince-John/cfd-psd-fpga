@@ -19,7 +19,9 @@
 extern int fifo_occupancy_flag;
 
 bool	isEventMode() {
-	if (read_gpio_port(TAKE_EVENT_PORT, 1, TAKE_EVENT)) {
+
+	if (XLlFifo_iRxOccupancy(&FifoInstance)){
+	//if (read_gpio_port(TAKE_EVENT_PORT, 1, TAKE_EVENT)) {
 		return true ;
 	} else {
 		return false ;
@@ -140,11 +142,17 @@ int get_packet (XLlFifo *InstancePtr, u32* buffer) {
 
 	ReceiveLength = 0 ;
 	occupancy = XLlFifo_iRxOccupancy(InstancePtr) ;
+
+		xil_printf("*********************************************\r\n");
+		xil_printf("Fetching Data from FIFO for Event number: %d \r\n", event_number);
+		xil_printf("*********************************************\r\n");
 	if (occupancy) {
 		ReceiveLength = (XLlFifo_iRxGetLen(InstancePtr)) / FIFO_WORD_SIZE ;
+		xil_printf("Fifo Word Length: %d\r\n", ReceiveLength);
 		for (i=0; i < ReceiveLength; i++) {
 			RxWord = XLlFifo_RxGetWord(InstancePtr);
 			*(buffer+i) = RxWord;
+			xil_printf("   buffer index =  %d:  word -> %08x \r\n", i, RxWord );
 		} // end for
 	} // end if
 
@@ -274,7 +282,9 @@ void eventHandler(void) {
 // Microblaze by default uses LITTLE ENDIAN
 // Use this fact to access bytes correctly
 // along with pointer arithmetic!
-
+	xil_printf("*********************************************\r\n");
+	xil_printf("Building Data packet for Event number: %d \r\n", event_number);
+	xil_printf("*********************************************\r\n");
 	for (int i = 0; i < packet_word_len; i++) {
 
 // Go through and process each 32-bit word in the FIFO buffer
@@ -286,14 +296,20 @@ void eventHandler(void) {
 		data_subtype = (data_tag >> 4) & 0x03 ;
 
 // We have 4 different types of data (adc, time counter, tdc time data, tdc cal data)
+		xil_printf("Word index: %d, tag: 0x%02x, word: 0x%08x ", i, data_tag, word);
 
 		switch (data_type) {
 			case 0 :	data_packet[ADC_OS + 9 * chan_cnt]=  data_tag & 0x0f  ;
-
 						adc_lower = ADC_OS + (9 * chan_cnt) + (2 * data_subtype) + 1 ;
 						data_packet[adc_lower] = *(byte_ptr) ;
 						data_packet[adc_lower + 1] = *(byte_ptr + 1);
+						xil_printf(" --> ADC data counter: %d, Ch# in Tag: %d, data_subtype: %d ",
+																							chan_cnt, 
+																							data_tag & 0x0f, 
+																							data_subtype);
 						if (data_subtype == 3) chan_cnt++ ; 	// increment channel count
+						
+
 						break ;  // adc data
 
 			case 1 :	if (board_id == 0) {
@@ -323,6 +339,7 @@ void eventHandler(void) {
 						} // end if
 						break ;	// CALIB1 or CALIB2 data
 		} // end switch
+		xil_printf("\r\n");
 	} // end for
 
 // ORDINARY packet
@@ -389,7 +406,7 @@ void eventHandler(void) {
 
 // Don't leave this eventHandler until take_event goes low
 	fifo_occupancy_flag = XLlFifo_iRxOccupancy(&FifoInstance);
-	while (isEventMode()){ } ;
+	//while (isEventMode()){ } ;
 
 } // end eventHandler
 
